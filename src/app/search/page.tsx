@@ -3,7 +3,9 @@ import Footer from "@/components/layout/footer";
 import SearchResults from "@/components/search/search-results";
 import SearchFilters from "@/components/search/search-filters";
 import { PlaceHolderProperties } from "@/lib/placeholder-properties";
-import allStates from "@/jsons/nigeria-states.json";
+import allStatesWithLgas from "@/jsons/nigeria-states.json";
+
+const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lgas]);
 
 export default function SearchPage({ searchParams }: { searchParams?: { q?: string } }) {
   const searchQuery = searchParams?.q || "";
@@ -19,7 +21,7 @@ export default function SearchPage({ searchParams }: { searchParams?: { q?: stri
       <Header />
       <main className="flex-grow">
         <div className="sticky top-16 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <SearchFilters searchQuery={searchQuery} allLocations={allStates}/>
+          <SearchFilters searchQuery={searchQuery} allLocations={allLocations}/>
         </div>
         <SearchResults properties={filteredProperties} />
       </main>

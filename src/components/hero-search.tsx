@@ -19,7 +19,9 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import AutocompleteSearch from "./autocomplete-search";
-import allStates from "@/jsons/nigeria-states.json";
+import allStatesWithLgas from "@/jsons/nigeria-states.json";
+
+const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lgas]);
 
 const NairaPriceIcon = () => (
     <span className="font-bold">₦</span>
@@ -56,13 +58,13 @@ export default function HeroSearch() {
             <TabsTrigger value="sold" className="text-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Sold</TabsTrigger>
           </TabsList>
           <TabsContent value="buy">
-            <SearchForm allLocations={allStates} />
+            <SearchForm allLocations={allLocations} />
           </TabsContent>
           <TabsContent value="rent">
-            <SearchForm allLocations={allStates} />
+            <SearchForm allLocations={allLocations} />
           </TabsContent>
           <TabsContent value="sold">
-            <SearchForm allLocations={allStates} />
+            <SearchForm allLocations={allLocations} />
           </TabsContent>
         </Tabs>
       </div>
