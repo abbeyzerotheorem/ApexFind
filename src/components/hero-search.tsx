@@ -56,7 +56,7 @@ export default function HeroSearch() {
       )}
       <div className="absolute inset-0 bg-black/50" />
       <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-4 text-center sm:px-6 lg:px-8">
-        <h1 className="font-headline text-5xl font-bold text-white sm:text-6xl md:text-7xl">
+        <h1 className="text-5xl font-bold text-white sm:text-6xl md:text-7xl">
           Find Your Place
         </h1>
         <p className="mt-4 max-w-2xl text-lg text-gray-200">
@@ -66,9 +66,9 @@ export default function HeroSearch() {
 
         <Tabs defaultValue="buy" className="mt-8 w-full max-w-4xl">
           <TabsList className="mx-auto grid w-full max-w-md grid-cols-3 bg-white/20 p-1 backdrop-blur-sm">
-            <TabsTrigger value="buy" className="text-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Buy</TabsTrigger>
-            <TabsTrigger value="rent" className="text-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Rent</TabsTrigger>
-            <TabsTrigger value="sold" className="text-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Sold</TabsTrigger>
+            <TabsTrigger value="buy" className="text-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium">Buy</TabsTrigger>
+            <TabsTrigger value="rent" className="text-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium">Rent</TabsTrigger>
+            <TabsTrigger value="sold" className="text-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium">Sold</TabsTrigger>
           </TabsList>
           <TabsContent value="buy">
             <SearchForm allLocations={allLocations} />
@@ -140,7 +140,7 @@ function SearchForm({ allLocations }: { allLocations: string[] }) {
             onSelectedTypesChange={setSelectedHomeTypes}
             />
       </div>
-      <Button type="submit" size="lg" className="w-full sm:w-auto">
+      <Button type="submit" size="lg" className="w-full sm:w-auto font-medium">
         Search
       </Button>
     </form>
@@ -151,14 +151,14 @@ function PriceFilterDropdown({ minPrice, maxPrice, onPriceChange }: { minPrice: 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="hidden sm:flex">
+        <Button variant="outline" className="hidden sm:flex font-normal">
           <NairaPriceIcon />
           <span className="ml-2">Price</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-80 p-4">
         <div className="space-y-4">
-          <DropdownMenuLabel className="p-0">Price Range (₦)</DropdownMenuLabel>
+          <DropdownMenuLabel className="p-0 font-semibold">Price Range (₦)</DropdownMenuLabel>
           <div className="flex justify-between text-sm text-muted-foreground">
              <span>{minPrice.toLocaleString()}</span>
              <span>{maxPrice.toLocaleString()}{maxPrice === 500000000 ? '+' : ''}</span>
@@ -181,18 +181,18 @@ function BedsAndBathsFilterDropdown({ icon: Icon, label, value, onValueChange }:
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="hidden sm:flex">
+          <Button variant="outline" className="hidden sm:flex font-normal">
             <Icon className="mr-2 h-4 w-4" />
             {label}
             {value !== 'any' && <span className="ml-2 rounded-full bg-primary px-2 text-xs text-primary-foreground">{value}{value.includes('+') ? '' : '+' }</span>}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-            <DropdownMenuLabel>{label}</DropdownMenuLabel>
+            <DropdownMenuLabel className="font-semibold">{label}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup value={value} onValueChange={onValueChange}>
                 {options.map(option => (
-                    <DropdownMenuRadioItem key={option} value={option}>
+                    <DropdownMenuRadioItem key={option} value={option} className="font-normal">
                         {option === 'any' ? 'Any' : `${option}${option.includes('+') ? '' : '+'}`}
                     </DropdownMenuRadioItem>
                 ))}
@@ -214,20 +214,21 @@ function HomeTypeFilterDropdown({ selectedTypes, onSelectedTypesChange }: { sele
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="hidden sm:flex">
+                <Button variant="outline" className="hidden sm:flex font-normal">
                     <Home className="mr-2 h-4 w-4" />
                     Home Type
                     {selectedTypes.length > 0 && <span className="ml-2 rounded-full bg-primary px-2 text-xs text-primary-foreground">{selectedTypes.length}</span>}
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-                <DropdownMenuLabel>Home Type</DropdownMenuLabel>
+                <DropdownMenuLabel className="font-semibold">Home Type</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {homeTypes.map(type => (
                     <DropdownMenuCheckboxItem
                         key={type}
                         checked={selectedTypes.includes(type)}
                         onSelect={(e) => { e.preventDefault(); handleSelect(type) }}
+                        className="font-normal"
                     >
                         {type}
                     </DropdownMenuCheckboxItem>

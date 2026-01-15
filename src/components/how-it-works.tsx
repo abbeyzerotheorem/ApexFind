@@ -26,7 +26,7 @@ export default function HowItWorks() {
     <section className="bg-secondary py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+          <h2 className="font-semibold text-4xl tracking-tight text-foreground sm:text-5xl">
             Your Journey to a New Home
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
@@ -40,7 +40,7 @@ export default function HowItWorks() {
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <step.icon className="h-8 w-8" />
               </div>
-              <h3 className="mt-6 font-headline text-2xl font-bold">
+              <h3 className="mt-6 text-2xl font-semibold">
                 {step.title}
               </h3>
               <p className="mt-2 text-muted-foreground">{step.description}</p>

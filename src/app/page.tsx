@@ -17,7 +17,7 @@ export default function Home() {
         <section className="bg-background py-16 sm:py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <h2 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+              <h2 className="font-semibold text-4xl tracking-tight text-foreground sm:text-5xl">
                 Tools for your search, and more
               </h2>
               <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
@@ -25,15 +25,15 @@ export default function Home() {
                 expertise to help you find a home you'll love.
               </p>
               <div className="mt-10 flex flex-wrap justify-center gap-4">
-                <Button size="lg" variant="outline" className="text-base">
+                <Button size="lg" variant="outline" className="text-base font-medium">
                   Get Pre-Approved
                 </Button>
-                <Button size="lg" variant="outline" className="text-base">
+                <Button size="lg" variant="outline" className="text-base font-medium">
                   See Your Home's Value
                 </Button>
                 <Button
                   size="lg"
-                  className="bg-accent text-accent-foreground hover:bg-accent/90 text-base"
+                  className="bg-accent text-accent-foreground hover:bg-accent/90 text-base font-medium"
                 >
                   Find a Local Agent
                 </Button>

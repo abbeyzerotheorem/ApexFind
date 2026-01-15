@@ -72,35 +72,35 @@ export function PropertyCard({ property, viewMode = 'list' }: { property: Proper
                 />
             </Button>
         </div>
-         {property.status && <Badge variant="secondary" className="absolute left-3 top-3">{property.status}</Badge>}
+         {property.status && <Badge variant="secondary" className="absolute left-3 top-3 font-medium">{property.status}</Badge>}
       </div>
       <CardContent className={cn("p-4", isGallery && "sm:w-1/2 flex flex-col justify-center")}>
         <div>
-          <p className="font-headline text-2xl font-bold">
+          <p className="text-2xl font-bold text-primary">
             ₦{property.price.toLocaleString()}
           </p>
-          <p className="mt-1 text-muted-foreground">{property.address}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{property.address}</p>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t pt-4 text-muted-foreground text-sm">
           <div className="flex items-center gap-2">
             <BedDouble className="h-5 w-5" />
-            <span>{property.beds} beds</span>
+            <span><span className="font-medium text-foreground">{property.beds}</span> beds</span>
           </div>
           <div className="flex items-center gap-2">
             <Bath className="h-5 w-5" />
-            <span>{property.baths} baths</span>
+            <span><span className="font-medium text-foreground">{property.baths}</span> baths</span>
           </div>
           <div className="flex items-center gap-2">
             <Maximize className="h-5 w-5" />
-            <span>{property.sqft.toLocaleString()} sqft</span>
+            <span><span className="font-medium text-foreground">{property.sqft.toLocaleString()}</span> sqft</span>
           </div>
           {property.lotSize && <div className="flex items-center gap-2">
              <Maximize className="h-5 w-5" />
-            <span>{(property.lotSize)} acre lot</span>
+            <span><span className="font-medium text-foreground">{(property.lotSize)}</span> acre lot</span>
           </div>}
         </div>
         {property.agent && <div className="mt-4 border-t pt-4 text-sm text-muted-foreground">
-            Listed by: {property.agent}
+            Listed by: <span className="font-medium text-foreground">{property.agent}</span>
         </div>}
       </CardContent>
     </Card>

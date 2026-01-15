@@ -15,7 +15,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           <div className="space-y-8">
-            <h3 className="font-headline text-2xl font-bold">ApexFind</h3>
+            <h3 className="text-2xl font-bold">ApexFind</h3>
             <p className="text-muted-foreground">
               Your destination for finding the perfect place to call home.
             </p>
@@ -37,7 +37,7 @@ export default function Footer() {
           <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
             {Object.entries(footerLinks).map(([category, links]) => (
               <div key={category}>
-                <h4 className="font-headline text-md font-semibold tracking-wider text-foreground">
+                <h4 className="text-md font-semibold tracking-wider text-foreground">
                   {category}
                 </h4>
                 <ul className="mt-4 space-y-4">
@@ -45,7 +45,7 @@ export default function Footer() {
                     <li key={link}>
                       <Link
                         href="#"
-                        className="text-base text-muted-foreground hover:text-foreground"
+                        className="text-base font-normal text-muted-foreground hover:text-foreground"
                       >
                         {link}
                       </Link>

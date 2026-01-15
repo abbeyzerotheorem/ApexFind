@@ -11,7 +11,7 @@ export default function MarketInsights() {
         <div className="relative overflow-hidden rounded-lg bg-primary/10 p-8 sm:p-12">
           <div className="relative z-10 grid gap-8 md:grid-cols-2">
             <div>
-              <h2 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+              <h2 className="font-semibold text-4xl tracking-tight text-foreground sm:text-5xl">
                 Explore markets across the country
               </h2>
               <p className="mt-6 max-w-lg text-lg text-muted-foreground">
@@ -19,7 +19,7 @@ export default function MarketInsights() {
                 into local market trends, school ratings, and lifestyle insights
                 to find the perfect community for you.
               </p>
-              <Button size="lg" className="mt-8 bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button size="lg" className="mt-8 bg-primary text-primary-foreground hover:bg-primary/90 font-medium">
                 Start Exploring <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
