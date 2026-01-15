@@ -45,7 +45,9 @@ export default function Header() {
           </nav>
         </div>
         <div className="hidden items-center gap-4 md:flex">
-          <Button>Sign In</Button>
+          <Button asChild>
+            <Link href="/auth">Sign In</Link>
+          </Button>
         </div>
         <Sheet>
           <SheetTrigger asChild className="md:hidden">
@@ -65,7 +67,9 @@ export default function Header() {
                   {link.name}
                 </Link>
               ))}
-               <Button>Sign In</Button>
+               <Button asChild>
+                <Link href="/auth">Sign In</Link>
+              </Button>
             </nav>
           </SheetContent>
         </Sheet>
