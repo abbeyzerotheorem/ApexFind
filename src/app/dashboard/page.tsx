@@ -3,11 +3,16 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SavedHomes from "@/components/dashboard/saved-homes";
-import { Heart, Search, User, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { Heart, Search, User, MoreVertical, Pencil, Trash2, History, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
+import Image from "next/image";
+import { PlaceHolderProperties } from "@/lib/placeholder-properties";
+import Link from "next/link";
+
+const viewedProperties = PlaceHolderProperties.slice(3, 6);
 
 export default function DashboardPage() {
   return (
@@ -19,7 +24,7 @@ export default function DashboardPage() {
             My Dashboard
           </h1>
           <Tabs defaultValue="saved-homes" className="mt-8">
-            <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 max-w-2xl">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
               <TabsTrigger value="saved-homes">
                 <Heart className="mr-2 h-4 w-4" />
                 Saved Homes
@@ -27,6 +32,10 @@ export default function DashboardPage() {
               <TabsTrigger value="saved-searches">
                 <Search className="mr-2 h-4 w-4" />
                 Saved Searches
+              </TabsTrigger>
+              <TabsTrigger value="viewed-history">
+                <History className="mr-2 h-4 w-4" />
+                Viewed History
               </TabsTrigger>
               <TabsTrigger value="profile">
                 <User className="mr-2 h-4 w-4" />
@@ -99,6 +108,48 @@ export default function DashboardPage() {
                             </CardFooter>
                         </Card>
                     </div>
+                </div>
+            </TabsContent>
+            <TabsContent value="viewed-history">
+                <div className="mt-8">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+                        <div>
+                            <h2 className="text-2xl font-bold">Recently Viewed Homes</h2>
+                            <p className="text-muted-foreground">A log of properties you have recently viewed.</p>
+                        </div>
+                        <Button variant="outline">Clear History</Button>
+                    </div>
+                     <div className="space-y-4">
+                        {viewedProperties.map((property, index) => (
+                            <Card key={property.id} className="flex overflow-hidden">
+                                <Link href={`/property/${property.id}`} className="relative w-32 h-32 sm:w-48 sm:h-auto flex-shrink-0">
+                                    <Image src={property.imageUrl} alt={property.address} layout="fill" objectFit="cover" />
+                                </Link>
+                                <div className="p-4 flex-grow">
+                                    <Link href={`/property/${property.id}`}>
+                                        <p className="font-semibold hover:text-primary">{property.address}</p>
+                                    </Link>
+                                    <p className="text-lg font-bold text-primary">₦{property.price.toLocaleString()}</p>
+                                    <p className="text-sm text-muted-foreground">{property.beds} beds • {property.baths} baths • {property.sqft.toLocaleString()} sqft</p>
+                                </div>
+                                <div className="p-4 flex flex-col justify-between items-end">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <X className="h-4 w-4" />
+                                        <span className="sr-only">Remove from history</span>
+                                    </Button>
+                                    <p className="text-xs text-muted-foreground whitespace-nowrap">
+                                        Viewed {index + 1} day{index > 0 ? 's' : ''} ago
+                                    </p>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                    {viewedProperties.length === 0 && (
+                        <div className="mt-8 text-center py-24 bg-secondary rounded-lg">
+                            <h2 className="text-2xl font-semibold">No Viewed History</h2>
+                            <p className="text-muted-foreground mt-2">Properties you view will appear here.</p>
+                        </div>
+                    )}
                 </div>
             </TabsContent>
              <TabsContent value="profile">
