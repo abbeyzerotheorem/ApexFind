@@ -9,19 +9,25 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React from "react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
 
 type FilterControlsProps = {
     minPrice: number;
     maxPrice: number;
+    beds: string;
+    baths: string;
 }
 
-export function FilterControls({ minPrice: initialMin, maxPrice: initialMax }: FilterControlsProps) {
+export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, beds: initialBeds, baths: initialBaths }: FilterControlsProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     
     const [minPrice, setMinPrice] = React.useState(initialMin);
     const [maxPrice, setMaxPrice] = React.useState(initialMax);
+    const [beds, setBeds] = React.useState(initialBeds);
+    const [baths, setBaths] = React.useState(initialBaths);
 
     const handlePriceChange = (value: number[]) => {
         setMinPrice(value[0]);
@@ -41,6 +47,19 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax }: F
         } else {
             params.delete('maxPrice');
         }
+
+        if (beds !== 'any') {
+            params.set('beds', beds);
+        } else {
+            params.delete('beds');
+        }
+
+        if (baths !== 'any') {
+            params.set('baths', baths);
+        } else {
+            params.delete('baths');
+        }
+
         router.push(`${pathname}?${params.toString()}`);
     }
 
@@ -48,8 +67,13 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax }: F
         const params = new URLSearchParams(searchParams.toString());
         params.delete('minPrice');
         params.delete('maxPrice');
+        params.delete('beds');
+        params.delete('baths');
         router.push(`${pathname}?${params.toString()}`);
     }
+
+    const bedOptions = ["any", "1", "2", "3", "4", "5+"];
+    const bathOptions = ["any", "1", "2", "3", "4", "5+"];
 
     return (
         <div className="space-y-6 py-4">
@@ -77,23 +101,23 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax }: F
                         <div className="space-y-4">
                             <div>
                                 <Label>Beds</Label>
-                                <RadioGroup defaultValue="any" className="flex gap-2 mt-2">
-                                    <Button variant="outline">Any</Button>
-                                    <Button variant="outline">1+</Button>
-                                    <Button variant="outline">2+</Button>
-                                    <Button variant="outline">3+</Button>
-                                    <Button variant="outline">4+</Button>
-                                </RadioGroup>
+                                <ToggleGroup type="single" value={beds} onValueChange={(value) => value && setBeds(value)} className="flex-wrap justify-start mt-2">
+                                    {bedOptions.map(option => (
+                                        <ToggleGroupItem key={`bed-${option}`} value={option} aria-label={`${option} beds`} className="rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                                           {option === 'any' ? 'Any' : `${option}${option === "5+" ? "" : "+"}`}
+                                        </ToggleGroupItem>
+                                    ))}
+                                </ToggleGroup>
                             </div>
                             <div>
                                 <Label>Baths</Label>
-                                <RadioGroup defaultValue="any" className="flex gap-2 mt-2">
-                                    <Button variant="outline">Any</Button>
-                                    <Button variant="outline">1+</Button>
-                                    <Button variant="outline">2+</Button>
-                                    <Button variant="outline">3+</Button>
-                                    <Button variant="outline">4+</Button>
-                                </RadioGroup>
+                                 <ToggleGroup type="single" value={baths} onValueChange={(value) => value && setBaths(value)} className="flex-wrap justify-start mt-2">
+                                    {bathOptions.map(option => (
+                                        <ToggleGroupItem key={`bath-${option}`} value={option} aria-label={`${option} baths`} className="rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                                           {option === 'any' ? 'Any' : `${option}${option === "5+" ? "" : "+"}`}
+                                        </ToggleGroupItem>
+                                    ))}
+                                </ToggleGroup>
                             </div>
                         </div>
                     </AccordionContent>

@@ -28,6 +28,8 @@ type SearchFiltersProps = {
   allLocations: string[];
   minPrice: number;
   maxPrice: number;
+  beds: string;
+  baths: string;
   propertyCount: number;
 };
 
@@ -36,6 +38,8 @@ export default function SearchFilters({
   allLocations, 
   minPrice, 
   maxPrice,
+  beds,
+  baths,
   propertyCount
 }: SearchFiltersProps) {
     const router = useRouter();
@@ -100,6 +104,8 @@ export default function SearchFilters({
                             <FilterControls 
                                 minPrice={minPrice}
                                 maxPrice={maxPrice}
+                                beds={beds}
+                                baths={baths}
                             />
                           </SheetContent>
                         </Sheet>
@@ -122,4 +128,3 @@ export default function SearchFilters({
         </div>
     )
 }
-

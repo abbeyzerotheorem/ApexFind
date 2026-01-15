@@ -12,11 +12,15 @@ export default function SearchPage({ searchParams }: {
     q?: string,
     minPrice?: string,
     maxPrice?: string,
+    beds?: string,
+    baths?: string,
   } 
 }) {
   const searchQuery = searchParams?.q || "";
   const minPrice = searchParams?.minPrice ? parseInt(searchParams.minPrice) : 0;
   const maxPrice = searchParams?.maxPrice ? parseInt(searchParams.maxPrice) : 500000000;
+  const beds = searchParams?.beds;
+  const baths = searchParams?.baths;
 
   let filteredProperties = PlaceHolderProperties.filter(property => {
     let matches = true;
@@ -28,6 +32,14 @@ export default function SearchPage({ searchParams }: {
     }
     if (maxPrice < 500000000) {
       matches = matches && property.price <= maxPrice;
+    }
+    if (beds && beds !== 'any') {
+        const minBeds = parseInt(beds);
+        matches = matches && property.beds >= minBeds;
+    }
+    if (baths && baths !== 'any') {
+        const minBaths = parseInt(baths);
+        matches = matches && property.baths >= minBaths;
     }
     return matches;
   });
@@ -42,6 +54,8 @@ export default function SearchPage({ searchParams }: {
             allLocations={allLocations}
             minPrice={minPrice}
             maxPrice={maxPrice}
+            beds={beds || 'any'}
+            baths={baths || 'any'}
             propertyCount={filteredProperties.length}
           />
         </div>

@@ -17,6 +17,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -85,6 +87,8 @@ function SearchForm({ allLocations }: { allLocations: string[] }) {
   const router = useRouter();
   const [minPrice, setMinPrice] = React.useState(0);
   const [maxPrice, setMaxPrice] = React.useState(500000000);
+  const [beds, setBeds] = React.useState("any");
+  const [baths, setBaths] = React.useState("any");
 
   const handlePriceChange = (value: number[]) => {
     setMinPrice(value[0]);
@@ -100,6 +104,8 @@ function SearchForm({ allLocations }: { allLocations: string[] }) {
     if (query) params.set('q', query);
     if (minPrice > 0) params.set('minPrice', String(minPrice));
     if (maxPrice < 500000000) params.set('maxPrice', String(maxPrice));
+    if (beds !== 'any') params.set('beds', beds);
+    if (baths !== 'any') params.set('baths', baths);
     
     router.push(`/search?${params.toString()}`);
   }
@@ -113,8 +119,18 @@ function SearchForm({ allLocations }: { allLocations: string[] }) {
             maxPrice={maxPrice} 
             onPriceChange={handlePriceChange} 
             />
-        <FilterDropdown icon={BedDouble} label="Beds" />
-        <FilterDropdown icon={Bath} label="Baths" />
+        <BedsAndBathsFilterDropdown 
+            icon={BedDouble} 
+            label="Beds" 
+            value={beds}
+            onValueChange={setBeds}
+            />
+        <BedsAndBathsFilterDropdown 
+            icon={Bath} 
+            label="Baths" 
+            value={baths}
+            onValueChange={setBaths}
+            />
         <FilterDropdown icon={Home} label="Home Type" />
         <FilterDropdown icon={MoreHorizontal} label="More" />
       </div>
@@ -139,7 +155,7 @@ function PriceFilterDropdown({ minPrice, maxPrice, onPriceChange }: { minPrice: 
           <DropdownMenuLabel className="p-0">Price Range (₦)</DropdownMenuLabel>
           <div className="flex justify-between text-sm text-muted-foreground">
              <span>{minPrice.toLocaleString()}</span>
-             <span>{maxPrice.toLocaleString()}+</span>
+             <span>{maxPrice.toLocaleString()}{maxPrice === 500000000 ? '+' : ''}</span>
           </div>
           <Slider
             min={0}
@@ -153,6 +169,32 @@ function PriceFilterDropdown({ minPrice, maxPrice, onPriceChange }: { minPrice: 
     </DropdownMenu>
   );
 }
+
+function BedsAndBathsFilterDropdown({ icon: Icon, label, value, onValueChange }: { icon: React.ElementType, label: string, value: string, onValueChange: (value: string) => void }) {
+    const options = ["any", "1", "2", "3", "4", "5+"];
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="hidden sm:flex">
+            <Icon className="mr-2 h-4 w-4" />
+            {label}
+            {value !== 'any' && <span className="ml-2 rounded-full bg-primary px-2 text-xs text-primary-foreground">{value}{value !== "5+" && "+"}</span>}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+            <DropdownMenuLabel>{label}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup value={value} onValueChange={onValueChange}>
+                {options.map(option => (
+                    <DropdownMenuRadioItem key={option} value={option}>
+                        {option === 'any' ? 'Any' : `${option}${option === "5+" ? "" : "+"}`}
+                    </DropdownMenuRadioItem>
+                ))}
+            </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
 
 
 function FilterDropdown({ icon: Icon, label }: { icon: React.ElementType, label: string }) {
@@ -173,4 +215,3 @@ function FilterDropdown({ icon: Icon, label }: { icon: React.ElementType, label:
     </DropdownMenu>
   );
 }
-
