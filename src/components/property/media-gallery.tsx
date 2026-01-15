@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-export function MediaGallery({ images }: { images: string[] }) {
+export function MediaGallery({ images, propertyAddress }: { images: string[], propertyAddress: string }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const mainImage = images[currentIndex];
     const visibleThumbnails = images.slice(1, 5);
@@ -29,51 +29,52 @@ export function MediaGallery({ images }: { images: string[] }) {
         <div>
             <Dialog>
                 <div className="relative h-[300px] w-full overflow-hidden rounded-lg md:h-[500px]">
-                     <Image
-                        src={mainImage}
-                        alt="Main property image"
-                        fill
-                        className="object-cover"
-                        priority
-                        onClick={() => openGalleryAtIndex(currentIndex)}
-                    />
+                     <DialogTrigger asChild>
+                        <Image
+                            src={mainImage}
+                            alt={`Main image of ${propertyAddress}`}
+                            fill
+                            className="cursor-pointer object-cover"
+                            priority
+                            onClick={() => openGalleryAtIndex(currentIndex)}
+                        />
+                     </DialogTrigger>
                     <DialogTrigger asChild>
                          <Button variant="secondary" className="absolute bottom-4 right-4">See all {images.length} photos</Button>
                     </DialogTrigger>
                 </div>
                 <div className="mt-4 grid grid-cols-4 gap-4">
                     {images.slice(1, 5).map((image, index) => (
-                        <div
-                            key={index}
-                            className={cn(
-                                "relative h-24 w-full cursor-pointer overflow-hidden rounded-lg transition-all",
-                                currentIndex === (index + 1) ? 'ring-2 ring-primary ring-offset-2' : 'hover:opacity-80'
-                            )}
-                            onClick={() => setCurrentIndex(index + 1)}
-                        >
-                            <Image
-                                src={image}
-                                alt={`Property thumbnail ${index + 2}`}
-                                fill
-                                className="object-cover"
-                            />
-                            {index === 3 && images.length > 5 && (
-                                <DialogTrigger asChild>
+                         <DialogTrigger asChild key={index}>
+                            <div
+                                className={cn(
+                                    "relative h-24 w-full cursor-pointer overflow-hidden rounded-lg transition-all",
+                                    currentIndex === (index + 1) ? 'ring-2 ring-primary ring-offset-2' : 'hover:opacity-80'
+                                )}
+                                onClick={() => setCurrentIndex(index + 1)}
+                            >
+                                <Image
+                                    src={image}
+                                    alt={`Property thumbnail ${index + 2} for ${propertyAddress}`}
+                                    fill
+                                    className="object-cover"
+                                />
+                                {index === 3 && images.length > 5 && (
                                     <div className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/50" onClick={() => openGalleryAtIndex(4)}>
                                         <span className="text-lg font-bold text-white">+{images.length - 5}</span>
                                     </div>
-                                </DialogTrigger>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        </DialogTrigger>
                     ))}
                 </div>
 
                 <DialogContent className="max-w-4xl h-[90vh]">
-                    <DialogTitle className="sr-only">Property Image Gallery</DialogTitle>
+                    <DialogTitle>Image gallery for {propertyAddress}</DialogTitle>
                     <div className="relative h-full w-full">
                          <Image
                             src={images[currentIndex]}
-                            alt={`Property image ${currentIndex + 1}`}
+                            alt={`Property image ${currentIndex + 1} of ${propertyAddress}`}
                             fill
                             className="object-contain"
                         />

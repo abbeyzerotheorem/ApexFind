@@ -28,14 +28,50 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
       property.imageUrl,
       ...PlaceHolderProperties.map(p => p.imageUrl).slice(1, 4)
   ];
+  
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    "name": property.address,
+    "image": propertyImages,
+    "description": `Stunning ${property.beds}-bedroom, ${property.baths}-bathroom ${property.type.toLowerCase()} in ${property.address.split(',')[1]}.`,
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": property.address.split(',')[0],
+      "addressLocality": property.address.split(',')[1].trim(),
+      "addressCountry": "NG"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "0.0", // Placeholder
+      "longitude": "0.0" // Placeholder
+    },
+    "numberOfRooms": property.beds,
+    "numberOfBathroomsTotal": property.baths,
+    "floorSize": {
+      "@type": "QuantitativeValue",
+      "value": property.sqft,
+      "unitCode": "FTS"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": property.price,
+      "priceCurrency": "NGN",
+      "availability": "https://schema.org/InStock"
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+       <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Header />
       <main className="flex-grow py-8 sm:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
-          <MediaGallery images={propertyImages} />
+          <MediaGallery images={propertyImages} propertyAddress={property.address} />
 
           <div className="mt-8 grid grid-cols-1 gap-12 lg:grid-cols-3">
             <div className="lg:col-span-2">
@@ -199,5 +235,3 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
     </div>
   );
 }
-
-    
