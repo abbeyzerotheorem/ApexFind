@@ -50,15 +50,39 @@
     },
     {
       "id": "agent-1",
-      "description": "Portrait of a friendly real estate agent.",
+      "description": "Portrait of a friendly female real estate agent.",
       "imageUrl": "https://images.unsplash.com/photo-1546961329-78bef0414d7c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx3b21hbiUyMHBvcnRyYWl0fGVufDB8fHx8MTc2ODQ2NDM4M3ww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "woman portrait"
     },
     {
       "id": "agent-2",
-      "description": "Portrait of a professional real estate agent.",
+      "description": "Portrait of a professional male real estate agent.",
       "imageUrl": "https://images.unsplash.com/photo-1607031542107-f6f46b5d54e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjgzNzU3MDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "man portrait"
+    },
+    {
+      "id": "agent-3",
+      "description": "Portrait of a smiling real estate agent in a suit.",
+      "imageUrl": "https://images.unsplash.com/photo-1583344442165-8da54a4a1595?q=80&w=2592&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "professional man"
+    },
+    {
+      "id": "agent-4",
+      "description": "Portrait of a confident female professional.",
+      "imageUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "confident woman"
+    },
+    {
+      "id": "agent-5",
+      "description": "Headshot of a friendly man with glasses.",
+      "imageUrl": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=2662&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "man glasses"
+    },
+    {
+      "id": "agent-6",
+      "description": "Professional woman in a business setting.",
+      "imageUrl": "https://images.unsplash.com/photo-1557862921-37829c790f19?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "business woman"
     }
   ]
 }

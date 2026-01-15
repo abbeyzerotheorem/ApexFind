@@ -4,11 +4,11 @@ import { Menu } from "lucide-react";
 import Link from "next/link";
 
 const navLinks = [
-  { name: "Buy", href: "#" },
+  { name: "Buy", href: "/search" },
   { name: "Sell", href: "#" },
   { name: "Rent", href: "#" },
   { name: "Mortgage", href: "#" },
-  { name: "Find Agents", href: "#" },
+  { name: "Find Agents", href: "/agents" },
   { name: "Manage Rentals", href: "#" },
 ];
 
