@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import {
   Bath,
   BedDouble,
@@ -66,11 +67,12 @@ export default function HeroSearch() {
 
 function SearchForm() {
   return (
-    <form className="mt-4 flex w-full flex-col items-center gap-2 rounded-lg bg-background p-4 shadow-lg sm:flex-row">
+    <form action="/search" className="mt-4 flex w-full flex-col items-center gap-2 rounded-lg bg-background p-4 shadow-lg sm:flex-row">
       <div className="relative w-full flex-grow">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="search"
+          name="q"
           placeholder="Enter an address, neighborhood, city, or ZIP code"
           className="w-full pl-10 text-base"
         />
@@ -82,8 +84,8 @@ function SearchForm() {
         <FilterDropdown icon={Home} label="Home Type" />
         <FilterDropdown icon={MoreHorizontal} label="More" />
       </div>
-      <Button type="submit" size="lg" className="w-full sm:w-auto">
-        Search
+      <Button type="submit" size="lg" className="w-full sm:w-auto" asChild>
+        <Link href="/search">Search</Link>
       </Button>
     </form>
   );
