@@ -102,7 +102,7 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             My Dashboard
           </h1>
-          <p className="mt-1 text-muted-foreground">Welcome back, {user.email}</p>
+          <p className="mt-1 text-muted-foreground">Welcome back, {user.user_metadata.full_name || user.email}</p>
           <Tabs defaultValue="saved-homes" className="mt-8">
             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-3xl">
               <TabsTrigger value="saved-homes">
@@ -322,7 +322,7 @@ export default function DashboardPage() {
                            <div className="grid sm:grid-cols-2 gap-4">
                              <div className="space-y-2">
                                 <Label htmlFor="name">Full Name</Label>
-                                <Input id="name" defaultValue="John Doe" />
+                                <Input id="name" defaultValue={user.user_metadata.full_name || ''} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>

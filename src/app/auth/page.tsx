@@ -97,6 +97,7 @@ function SignInForm() {
 }
 
 function SignUpForm() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -109,6 +110,9 @@ function SignUpForm() {
       email,
       password,
       options: {
+        data: {
+          full_name: name,
+        },
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
@@ -124,10 +128,21 @@ function SignUpForm() {
     <Card>
         <CardHeader>
             <CardTitle>Create Account</CardTitle>
-            <CardDescription>Enter your email and password to create a new account.</CardDescription>
+            <CardDescription>Enter your details to create a new account.</CardDescription>
         </CardHeader>
         <CardContent>
             <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="signup-name">Full Name</Label>
+                    <Input
+                        id="signup-name"
+                        type="text"
+                        placeholder="Full Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                    />
+                </div>
                 <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
                     <Input
