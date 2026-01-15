@@ -6,7 +6,7 @@ import Link from "next/link";
 
 const navLinks = [
   { name: "Buy", href: "/search" },
-  { name: "Sell", href: "#" },
+  { name: "Sell", href: "/sell" },
   { name: "Rent", href: "/search?type=rent" },
   { name: "Mortgage", href: "#" },
   { name: "Find Agents", href: "/agents" },
