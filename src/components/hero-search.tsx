@@ -18,6 +18,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import AutocompleteSearch from "./autocomplete-search";
+import { PlaceHolderProperties } from "@/lib/placeholder-properties";
 
 const NairaPriceIcon = () => (
     <span className="font-bold">₦</span>
@@ -25,6 +27,7 @@ const NairaPriceIcon = () => (
 
 export default function HeroSearch() {
   const heroImage = PlaceHolderImages.find((img) => img.id === "hero-background");
+  const allLocations = [...new Set(PlaceHolderProperties.map(p => p.address))];
   return (
     <section className="relative h-[600px] w-full">
       {heroImage && (
@@ -54,13 +57,13 @@ export default function HeroSearch() {
             <TabsTrigger value="sold" className="text-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Sold</TabsTrigger>
           </TabsList>
           <TabsContent value="buy">
-            <SearchForm />
+            <SearchForm allLocations={allLocations} />
           </TabsContent>
           <TabsContent value="rent">
-            <SearchForm />
+            <SearchForm allLocations={allLocations} />
           </TabsContent>
           <TabsContent value="sold">
-            <SearchForm />
+            <SearchForm allLocations={allLocations} />
           </TabsContent>
         </Tabs>
       </div>
@@ -68,18 +71,10 @@ export default function HeroSearch() {
   );
 }
 
-function SearchForm() {
+function SearchForm({ allLocations }: { allLocations: string[] }) {
   return (
     <form action="/search" className="mt-4 flex w-full flex-col items-center gap-2 rounded-lg bg-background p-4 shadow-lg sm:flex-row">
-      <div className="relative w-full flex-grow">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          type="search"
-          name="q"
-          placeholder="Enter an address, neighborhood, city, or area"
-          className="w-full pl-10 text-base"
-        />
-      </div>
+      <AutocompleteSearch allLocations={allLocations} />
       <div className="flex w-full gap-2 sm:w-auto">
         <FilterDropdown icon={NairaPriceIcon} label="Price" />
         <FilterDropdown icon={BedDouble} label="Beds" />
@@ -87,8 +82,8 @@ function SearchForm() {
         <FilterDropdown icon={Home} label="Home Type" />
         <FilterDropdown icon={MoreHorizontal} label="More" />
       </div>
-      <Button type="submit" size="lg" className="w-full sm:w-auto" asChild>
-        <Link href="/search">Search</Link>
+      <Button type="submit" size="lg" className="w-full sm:w-auto">
+        Search
       </Button>
     </form>
   );

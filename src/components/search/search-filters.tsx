@@ -9,9 +9,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ChevronRight, ListFilter, Map, SlidersHorizontal, View, X } from "lucide-react";
+import { ChevronRight, SlidersHorizontal, X } from "lucide-react";
 import React from "react";
 import { FilterControls } from "./filter-controls";
+import Link from "next/link";
+import AutocompleteSearch from "../autocomplete-search";
 
 const activeFilters = [
   { label: "3+ Beds", value: "beds_gte_3" },
@@ -19,16 +21,22 @@ const activeFilters = [
   { label: "Pool", value: "features_pool" },
 ];
 
-export default function SearchFilters() {
+export default function SearchFilters({ searchQuery, allLocations }: { searchQuery: string, allLocations: string[] }) {
     const [sort, setSort] = React.useState("relevant");
     return (
         <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col gap-3 py-4">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center text-sm">
-                        <a href="/" className="text-muted-foreground hover:text-foreground">Home</a>
-                        <ChevronRight className="h-4 w-4" />
-                        <span className="font-semibold">Lagos, NG</span>
+                 <div className="flex items-center text-sm">
+                    <Link href="/" className="text-muted-foreground hover:text-foreground">Home</Link>
+                    <ChevronRight className="h-4 w-4" />
+                    <span className="font-semibold">{searchQuery || "Nigeria"}</span>
+                </div>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="flex-grow">
+                        <form action="/search" className="flex items-center gap-2">
+                            <AutocompleteSearch allLocations={allLocations} initialValue={searchQuery} />
+                            <Button type="submit">Search</Button>
+                        </form>
                     </div>
 
                     <div className="flex items-center gap-2">
