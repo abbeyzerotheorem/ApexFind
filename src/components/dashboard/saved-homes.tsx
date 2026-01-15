@@ -1,41 +1,26 @@
+
 'use client';
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
 import { PropertyCard } from "@/components/property-card";
 import { Button } from "../ui/button";
 import { Mail, Phone, Share2 } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 
-export default function SavedHomes() {
-  const [savedProperties, setSavedProperties] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+type Property = {
+  id: number;
+  price: number;
+  address: string;
+  beds: number;
+  baths: number;
+  sqft: number;
+  imageUrl: string;
+  imageHint: string;
+  lotSize?: number;
+  agent?: string;
+  status?: string;
+};
 
-  useEffect(() => {
-    const fetchSavedHomes = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data, error } = await supabase
-          .from('saved_homes')
-          .select('property_data')
-          .eq('user_id', session.user.id)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.error('Error loading saved homes:', error);
-          setSavedProperties([]);
-        } else if (data) {
-          const properties = data.map(item => item.property_data);
-          setSavedProperties(properties);
-        }
-      } else {
-        setSavedProperties([]);
-      }
-      setLoading(false);
-    };
-
-    fetchSavedHomes();
-  }, []);
+export default function SavedHomes({ properties, loading }: { properties: Property[], loading: boolean}) {
 
   if (loading) {
     return (
@@ -58,7 +43,7 @@ export default function SavedHomes() {
     <div>
         <div className="mt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h2 className="text-2xl font-bold">You have {savedProperties.length} saved homes</h2>
+                <h2 className="text-2xl font-bold">You have {properties.length} saved homes</h2>
                 <p className="text-muted-foreground">Compare, share, or add notes to your favorite properties.</p>
             </div>
             <div className="flex gap-2">
@@ -67,9 +52,9 @@ export default function SavedHomes() {
             </div>
         </div>
         
-        {savedProperties.length > 0 ? (
+        {properties.length > 0 ? (
             <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {savedProperties.map((property) => (
+                {properties.map((property) => (
                     <PropertyCard key={property.id} property={property} showDashboardControls={true} />
                 ))}
             </div>
@@ -81,7 +66,7 @@ export default function SavedHomes() {
             </div>
         )}
 
-        {savedProperties.length > 0 && (
+        {properties.length > 0 && (
             <div className="mt-16 rounded-lg bg-secondary p-8 text-center">
                 <h3 className="text-2xl font-bold">Want to tour any of these?</h3>
                 <p className="mt-2 text-muted-foreground max-w-xl mx-auto">An experienced agent can help you see these homes in person and answer any questions you have.</p>

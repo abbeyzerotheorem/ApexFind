@@ -29,22 +29,56 @@ import { Textarea } from "@/components/ui/textarea";
 const viewedProperties = PlaceHolderProperties.slice(3, 6);
 const linkedAgent = PlaceHolderAgents[0];
 
+type Property = {
+  id: number;
+  price: number;
+  address: string;
+  beds: number;
+  baths: number;
+  sqft: number;
+  imageUrl: string;
+  imageHint: string;
+  lotSize?: number;
+  agent?: string;
+  status?: string;
+};
+
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [savedProperties, setSavedProperties] = useState<Property[]>([]);
+  const [savedPropertiesLoading, setSavedPropertiesLoading] = useState(true);
+
 
   useEffect(() => {
-    const checkSession = async () => {
+    const checkSessionAndLoadData = async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
             router.push('/auth');
-        } else {
-            setUser(session.user);
-            setLoading(false);
+            return;
+        } 
+        
+        setUser(session.user);
+        setLoading(false);
+
+        const { data: savedHomesData, error } = await supabase
+          .from('saved_homes')
+          .select('property_data')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error loading saved homes:', error);
+          setSavedProperties([]);
+        } else if (savedHomesData) {
+          const properties = savedHomesData.map(item => item.property_data);
+          setSavedProperties(properties);
         }
+        setSavedPropertiesLoading(false);
     };
-    checkSession();
+
+    checkSessionAndLoadData();
   }, [router]);
 
   if (loading) {
@@ -93,7 +127,7 @@ export default function DashboardPage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="saved-homes">
-                <SavedHomes />
+                <SavedHomes properties={savedProperties} loading={savedPropertiesLoading} />
             </TabsContent>
             <TabsContent value="saved-searches">
                  <div className="mt-8">
@@ -383,3 +417,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
