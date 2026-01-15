@@ -1,10 +1,16 @@
+'use client';
 
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
 
-const navLinks = [
+
+const baseNavLinks = [
   { name: "Buy", href: "/search" },
   { name: "Sell", href: "/sell" },
   { name: "Rent", href: "/search?type=rent" },
@@ -12,10 +18,37 @@ const navLinks = [
   { name: "Find Agents", href: "/agents" },
   { name: "Manage Rentals", href: "/rentals" },
   { name: "Market Insights", href: "/insights" },
-  { name: "Dashboard", href: "/dashboard" },
 ];
 
 export default function Header() {
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+    };
+
+    fetchUser();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+    router.refresh();
+  };
+
+  const navLinks = user ? [...baseNavLinks, { name: "Dashboard", href: "/dashboard" }] : baseNavLinks;
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -45,9 +78,13 @@ export default function Header() {
           </nav>
         </div>
         <div className="hidden items-center gap-4 md:flex">
-          <Button asChild>
-            <Link href="/auth">Sign In</Link>
-          </Button>
+          {user ? (
+            <Button onClick={handleSignOut} variant="outline">Sign Out</Button>
+          ) : (
+            <Button asChild>
+              <Link href="/auth">Sign In</Link>
+            </Button>
+          )}
         </div>
         <Sheet>
           <SheetTrigger asChild className="md:hidden">
@@ -67,9 +104,13 @@ export default function Header() {
                   {link.name}
                 </Link>
               ))}
-               <Button asChild>
-                <Link href="/auth">Sign In</Link>
-              </Button>
+               {user ? (
+                <Button onClick={handleSignOut} variant="outline">Sign Out</Button>
+               ) : (
+                <Button asChild>
+                  <Link href="/auth">Sign In</Link>
+                </Button>
+               )}
             </nav>
           </SheetContent>
         </Sheet>
