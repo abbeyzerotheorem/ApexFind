@@ -56,7 +56,7 @@ const suggestPropertiesFlow = ai.defineFlow(
 
   Suggest properties that the user might be interested in. Return as a list of properties.
   `,
-      model: ai.getModel('googleai/gemini-2.5-flash'),
+      model: 'googleai/gemini-2.5-flash',
       input,
     });
     return output!;
@@ -115,7 +115,7 @@ Existing Locations:
 
 Return the suggestions as a JSON object with a "suggestions" key containing an array of strings.
 `,
-        model: ai.getModel('googleai/gemini-2.5-flash'),
+        model: 'googleai/gemini-2.5-flash',
         output: { schema: SuggestLocationsOutputSchema },
     });
     
