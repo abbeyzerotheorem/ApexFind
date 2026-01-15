@@ -8,7 +8,7 @@ const navLinks = [
   { name: "Buy", href: "/search" },
   { name: "Sell", href: "/sell" },
   { name: "Rent", href: "/search?type=rent" },
-  { name: "Mortgage", href: "#" },
+  { name: "Mortgage", href: "/mortgage" },
   { name: "Find Agents", href: "/agents" },
   { name: "Manage Rentals", href: "#" },
 ];
