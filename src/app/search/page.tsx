@@ -7,14 +7,32 @@ import allStatesWithLgas from "@/jsons/nigeria-states.json";
 
 const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lgas]);
 
-export default function SearchPage({ searchParams }: { searchParams?: { q?: string } }) {
+export default function SearchPage({ searchParams }: { 
+  searchParams?: { 
+    q?: string,
+    minPrice?: string,
+    maxPrice?: string,
+  } 
+}) {
   const searchQuery = searchParams?.q || "";
+  const minPrice = searchParams?.minPrice ? parseInt(searchParams.minPrice) : null;
+  const maxPrice = searchParams?.maxPrice ? parseInt(searchParams.maxPrice) : null;
 
-  const filteredProperties = searchQuery
-    ? PlaceHolderProperties.filter(property => 
+  let filteredProperties = PlaceHolderProperties;
+
+  if (searchQuery) {
+    filteredProperties = filteredProperties.filter(property => 
         property.address.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : PlaceHolderProperties;
+  }
+
+  if (minPrice !== null) {
+    filteredProperties = filteredProperties.filter(p => p.price >= minPrice);
+  }
+
+  if (maxPrice !== null) {
+    filteredProperties = filteredProperties.filter(p => p.price <= maxPrice);
+  }
   
   return (
     <div className="flex min-h-screen flex-col bg-background">

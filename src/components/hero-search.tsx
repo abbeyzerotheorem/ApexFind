@@ -13,6 +13,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -20,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import AutocompleteSearch from "./autocomplete-search";
 import allStatesWithLgas from "@/jsons/nigeria-states.json";
+import { Label } from "./ui/label";
 
 const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lgas]);
 
@@ -77,7 +80,7 @@ function SearchForm({ allLocations }: { allLocations: string[] }) {
     <form action="/search" className="mt-4 flex w-full flex-col items-center gap-2 rounded-lg bg-background p-4 shadow-lg sm:flex-row">
       <AutocompleteSearch allLocations={allLocations} />
       <div className="flex w-full gap-2 sm:w-auto">
-        <FilterDropdown icon={NairaPriceIcon} label="Price" />
+        <PriceFilterDropdown />
         <FilterDropdown icon={BedDouble} label="Beds" />
         <FilterDropdown icon={Bath} label="Baths" />
         <FilterDropdown icon={Home} label="Home Type" />
@@ -89,6 +92,30 @@ function SearchForm({ allLocations }: { allLocations: string[] }) {
     </form>
   );
 }
+
+function PriceFilterDropdown() {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="hidden sm:flex">
+          <NairaPriceIcon />
+          <span className="ml-2">Price</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-64 p-4">
+        <div className="space-y-4">
+          <DropdownMenuLabel className="p-0">Price Range (₦)</DropdownMenuLabel>
+          <div className="flex items-center gap-2">
+            <Input name="minPrice" placeholder="Min" type="number" className="h-8" />
+            <span>-</span>
+            <Input name="maxPrice" placeholder="Max" type="number" className="h-8" />
+          </div>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 
 function FilterDropdown({ icon: Icon, label }: { icon: React.ElementType, label: string }) {
   return (
