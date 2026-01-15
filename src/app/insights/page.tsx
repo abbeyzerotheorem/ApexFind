@@ -9,7 +9,9 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recha
 import { PlaceHolderProperties } from "@/lib/placeholder-properties";
 import { PropertyCard } from "@/components/property-card";
 import AgentPromotion from "@/components/agent-promotion";
-import { Utensils, FerrisWheel, GraduationCap, TramFront } from "lucide-react";
+import { Utensils, FerrisWheel, GraduationCap, TramFront, Building, Wallet, Sun } from "lucide-react";
+import Image from "next/image";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 const marketData = [
     { month: "Jan", price: 140 },
@@ -21,6 +23,8 @@ const marketData = [
 ];
 
 const featuredProperties = PlaceHolderProperties.slice(0, 3);
+const neighborhoodImage = PlaceHolderImages.find((img) => img.id === "property-1");
+
 
 export default function InsightsPage() {
     return (
@@ -98,7 +102,7 @@ export default function InsightsPage() {
                             </CardContent>
                         </Card>
                     </section>
-
+                    
                     <section className="mt-20 bg-secondary py-16 rounded-lg">
                         <div className="text-center px-4">
                             <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
@@ -132,6 +136,58 @@ export default function InsightsPage() {
                         </div>
                     </section>
 
+                    <section className="mt-20">
+                        <div className="text-center">
+                             <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                                Neighborhood Highlights
+                            </h2>
+                              <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
+                                Explore the diverse neighborhoods of Lagos.
+                            </p>
+                        </div>
+                        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            <Card>
+                                {neighborhoodImage && <Image src={neighborhoodImage.imageUrl} alt="Ikoyi" width={600} height={400} className="rounded-t-lg object-cover w-full aspect-[4/3]" />}
+                                <CardHeader>
+                                    <CardTitle>Ikoyi</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-muted-foreground">Known for its luxury apartments, high-end boutiques, and exclusive social clubs. A prime location for affluent professionals and expatriates.</p>
+                                    <div className="flex justify-between items-center mt-4 pt-4 border-t">
+                                        <span className="text-sm text-muted-foreground">Median Price</span>
+                                        <span className="font-bold text-lg">₦350,000,000</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                {neighborhoodImage && <Image src={PlaceHolderImages.find(i=>i.id==='property-2')?.imageUrl ?? ""} alt="Lekki" width={600} height={400} className="rounded-t-lg object-cover w-full aspect-[4/3]" />}
+                                <CardHeader>
+                                    <CardTitle>Lekki</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-muted-foreground">A sprawling, rapidly developing area popular with young professionals and families, offering a mix of modern estates and vibrant commercial centers.</p>
+                                      <div className="flex justify-between items-center mt-4 pt-4 border-t">
+                                        <span className="text-sm text-muted-foreground">Median Price</span>
+                                        <span className="font-bold text-lg">₦120,000,000</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                 {neighborhoodImage && <Image src={PlaceHolderImages.find(i=>i.id==='property-6')?.imageUrl ?? ""} alt="Ikeja" width={600} height={400} className="rounded-t-lg object-cover w-full aspect-[4/3]" />}
+                                <CardHeader>
+                                    <CardTitle>Ikeja</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-muted-foreground">The state capital, a bustling commercial and administrative hub with a mix of residential areas, government offices, and the city's main airport.</p>
+                                      <div className="flex justify-between items-center mt-4 pt-4 border-t">
+                                        <span className="text-sm text-muted-foreground">Median Price</span>
+                                        <span className="font-bold text-lg">₦85,000,000</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </section>
+
 
                     <section className="mt-20">
                          <div className="text-center">
@@ -162,3 +218,5 @@ export default function InsightsPage() {
         </div>
     );
 }
+
+    
