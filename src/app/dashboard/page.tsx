@@ -1,9 +1,17 @@
 
+'use client';
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
+import { Loader2 } from "lucide-react";
+
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SavedHomes from "@/components/dashboard/saved-homes";
-import { Heart, Search, User, MoreVertical, Pencil, Trash2, History, X, Mail, Phone, Building, Link2, MessageSquare, Send } from "lucide-react";
+import { Heart, Search, User as UserIcon, MoreVertical, Pencil, Trash2, History, X, Mail, Phone, Building, Link2, MessageSquare, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -22,6 +30,36 @@ const viewedProperties = PlaceHolderProperties.slice(3, 6);
 const linkedAgent = PlaceHolderAgents[0];
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkSession = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            router.push('/auth');
+        } else {
+            setUser(session.user);
+            setLoading(false);
+        }
+    };
+    checkSession();
+  }, [router]);
+
+  if (loading) {
+    return (
+        <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <h1 className="text-xl text-muted-foreground">Loading Dashboard...</h1>
+        </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Should be redirected by useEffect
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -30,6 +68,7 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             My Dashboard
           </h1>
+          <p className="mt-1 text-muted-foreground">Welcome back, {user.email}</p>
           <Tabs defaultValue="saved-homes" className="mt-8">
             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-3xl">
               <TabsTrigger value="saved-homes">
@@ -49,7 +88,7 @@ export default function DashboardPage() {
                 Messages
               </TabsTrigger>
               <TabsTrigger value="profile">
-                <User className="mr-2 h-4 w-4" />
+                <UserIcon className="mr-2 h-4 w-4" />
                 Profile
               </TabsTrigger>
             </TabsList>
@@ -253,7 +292,7 @@ export default function DashboardPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
-                                <Input id="email" type="email" defaultValue="john.doe@example.com" />
+                                <Input id="email" type="email" defaultValue={user.email} />
                             </div>
                            </div>
                            <div className="space-y-2">
