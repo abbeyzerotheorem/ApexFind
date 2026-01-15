@@ -1,4 +1,5 @@
 
+
 'use client'
 
 import Image from "next/image";
@@ -7,7 +8,6 @@ import {
   Bath,
   BedDouble,
   Home,
-  MoreHorizontal,
   Search,
 } from "lucide-react";
 
@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -140,7 +139,6 @@ function SearchForm({ allLocations }: { allLocations: string[] }) {
             selectedTypes={selectedHomeTypes}
             onSelectedTypesChange={setSelectedHomeTypes}
             />
-        <FilterDropdown icon={MoreHorizontal} label="More" />
       </div>
       <Button type="submit" size="lg" className="w-full sm:w-auto">
         Search
@@ -237,24 +235,4 @@ function HomeTypeFilterDropdown({ selectedTypes, onSelectedTypesChange }: { sele
             </DropdownMenuContent>
         </DropdownMenu>
     )
-}
-
-
-function FilterDropdown({ icon: Icon, label }: { icon: React.ElementType, label: string }) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="hidden sm:flex">
-          <Icon className="mr-2 h-4 w-4" />
-          {label}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem>Any</DropdownMenuItem>
-        <DropdownMenuItem>Option 1</DropdownMenuItem>
-        <DropdownMenuItem>Option 2</DropdownMenuItem>
-        <DropdownMenuItem>Option 3+</DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
 }
