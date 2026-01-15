@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 export function MediaGallery({ images }: { images: string[] }) {
     const [mainImage, setMainImage] = useState(images[0]);
@@ -28,6 +28,7 @@ export function MediaGallery({ images }: { images: string[] }) {
                          <Button variant="secondary" className="absolute bottom-4 right-4">See all {images.length} photos</Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl h-[90vh]">
+                        <DialogTitle className="sr-only">Property Image Gallery</DialogTitle>
                         <div className="relative h-full w-full">
                              <Image
                                 src={mainImage}
@@ -63,6 +64,7 @@ export function MediaGallery({ images }: { images: string[] }) {
                                     </div>
                                 </DialogTrigger>
                                  <DialogContent className="max-w-4xl h-[90vh]">
+                                    <DialogTitle className="sr-only">Property Image Gallery</DialogTitle>
                                     <p>Gallery Here</p>
                                 </DialogContent>
                             </Dialog>
@@ -73,4 +75,3 @@ export function MediaGallery({ images }: { images: string[] }) {
         </div>
     );
 }
-
