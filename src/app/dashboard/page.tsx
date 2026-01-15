@@ -3,7 +3,7 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SavedHomes from "@/components/dashboard/saved-homes";
-import { Heart, Search, User, MoreVertical, Pencil, Trash2, History, X } from "lucide-react";
+import { Heart, Search, User, MoreVertical, Pencil, Trash2, History, X, Mail, Phone, Building, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -11,8 +11,14 @@ import { Switch } from "@/components/ui/switch";
 import Image from "next/image";
 import { PlaceHolderProperties } from "@/lib/placeholder-properties";
 import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PlaceHolderAgents } from "@/lib/placeholder-agents";
 
 const viewedProperties = PlaceHolderProperties.slice(3, 6);
+const linkedAgent = PlaceHolderAgents[0];
 
 export default function DashboardPage() {
   return (
@@ -153,9 +159,102 @@ export default function DashboardPage() {
                 </div>
             </TabsContent>
              <TabsContent value="profile">
-                 <div className="mt-8 text-center py-24 bg-secondary rounded-lg">
-                    <h2 className="text-2xl font-semibold">Coming Soon</h2>
-                    <p className="text-muted-foreground mt-2">Manage your profile and notification settings.</p>
+                 <div className="mt-8 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                    <Card className="lg:col-span-2">
+                        <CardHeader>
+                            <CardTitle>Personal Information</CardTitle>
+                            <CardDescription>Update your name, contact details, and password.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid gap-6">
+                           <div className="grid sm:grid-cols-2 gap-4">
+                             <div className="space-y-2">
+                                <Label htmlFor="name">Full Name</Label>
+                                <Input id="name" defaultValue="John Doe" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input id="email" type="email" defaultValue="john.doe@example.com" />
+                            </div>
+                           </div>
+                           <div className="space-y-2">
+                                <Label htmlFor="phone">Phone Number</Label>
+                                <Input id="phone" type="tel" defaultValue="+234 801 234 5678" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="password">New Password</Label>
+                                <Input id="password" type="password" placeholder="••••••••" />
+                            </div>
+                        </CardContent>
+                        <CardFooter>
+                            <Button>Save Changes</Button>
+                        </CardFooter>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Your Agent</CardTitle>
+                             <CardDescription>Your primary contact for your home search.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {linkedAgent ? (
+                                <div className="flex items-center gap-4">
+                                     <Avatar className="h-16 w-16">
+                                        <AvatarImage src={linkedAgent.imageUrl} alt={linkedAgent.name} />
+                                        <AvatarFallback>{linkedAgent.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="font-bold">{linkedAgent.name}</p>
+                                        <p className="text-sm text-muted-foreground">{linkedAgent.company}</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center text-muted-foreground py-4">
+                                    <p>No linked agent.</p>
+                                    <Button variant="link" size="sm">Find an agent</Button>
+                                </div>
+                            )}
+                        </CardContent>
+                         <CardFooter>
+                            <Button variant="outline" className="w-full">Change Agent</Button>
+                        </CardFooter>
+                    </Card>
+
+                    <Card className="lg:col-span-3">
+                        <CardHeader>
+                            <CardTitle>Communication Preferences</CardTitle>
+                            <CardDescription>Manage how we get in touch with you.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                             <div className="flex items-center justify-between rounded-lg border p-4">
+                                <div>
+                                    <Label htmlFor="sms-notifications" className="font-medium">SMS Notifications</Label>
+                                    <p className="text-sm text-muted-foreground">Receive important updates via text message.</p>
+                                </div>
+                                <Switch id="sms-notifications" />
+                            </div>
+                            <div className="space-y-2 rounded-lg border p-4">
+                                 <p className="font-medium">Email Notifications</p>
+                                 <div className="space-y-2 pl-2">
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox id="email-saved-searches" defaultChecked />
+                                        <Label htmlFor="email-saved-searches" className="font-normal">Saved Search Alerts</Label>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox id="email-market-news" defaultChecked />
+                                        <Label htmlFor="email-market-news" className="font-normal">Market News & Insights</Label>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox id="email-partner-offers" />
+                                        <Label htmlFor="email-partner-offers" className="font-normal">Relevant Partner Offers</Label>
+                                    </div>
+                                 </div>
+                            </div>
+                        </CardContent>
+                        <CardFooter>
+                            <Button>Update Preferences</Button>
+                        </CardFooter>
+                    </Card>
+
                 </div>
             </TabsContent>
           </Tabs>
