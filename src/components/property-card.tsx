@@ -4,12 +4,14 @@
 import Image from "next/image";
 import { useState } from "react";
 import Link from 'next/link';
-import { Bath, BedDouble, Heart, Maximize, Share2, CheckSquare } from "lucide-react";
+import { Bath, BedDouble, Heart, Maximize, Share2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
+import { Checkbox } from "./ui/checkbox";
+import { Label } from "./ui/label";
 
 type Property = {
   id: number;
@@ -27,8 +29,16 @@ type Property = {
 
 type ViewMode = "list" | "map" | "gallery";
 
-export function PropertyCard({ property, viewMode = 'list' }: { property: Property, viewMode?: ViewMode }) {
-  const [isSaved, setIsSaved] = useState(false);
+export function PropertyCard({ 
+    property, 
+    viewMode = 'list',
+    showDashboardControls = false 
+}: { 
+    property: Property, 
+    viewMode?: ViewMode,
+    showDashboardControls?: boolean
+}) {
+  const [isSaved, setIsSaved] = useState(showDashboardControls);
   const isGallery = viewMode === 'gallery';
 
   return (
@@ -109,6 +119,15 @@ export function PropertyCard({ property, viewMode = 'list' }: { property: Proper
             Listed by: <span className="font-medium text-foreground">{property.agent}</span>
         </div>}
       </CardContent>
+       {showDashboardControls && (
+        <CardFooter className="p-4 border-t flex justify-between items-center">
+            <div className="flex items-center space-x-2">
+                <Checkbox id={`compare-${property.id}`} />
+                <Label htmlFor={`compare-${property.id}`} className="text-sm font-normal">Compare</Label>
+            </div>
+            <Button variant="ghost" size="sm">Add Note</Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }
