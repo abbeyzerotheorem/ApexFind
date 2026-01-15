@@ -1,3 +1,64 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-background",
+      "description": "A beautiful modern house exterior at sunset.",
+      "imageUrl": "https://images.unsplash.com/photo-1721815693498-cc28507c0ba2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxtb2Rlcm4lMjBob3VzZXxlbnwwfHx8fDE3NjgzOTEyNjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "modern house"
+    },
+    {
+      "id": "property-1",
+      "description": "A stylish living room with large windows.",
+      "imageUrl": "https://images.unsplash.com/photo-1616047006789-b7af5afb8c20?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxsaXZpbmclMjByb29tfGVufDB8fHx8MTc2ODM5MTI2Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "living room"
+    },
+    {
+      "id": "property-2",
+      "description": "A modern kitchen with an island.",
+      "imageUrl": "https://images.unsplash.com/photo-1628745277862-bc0b2d68c50c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBraXRjaGVufGVufDB8fHx8MTc2ODM5MDM5M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "modern kitchen"
+    },
+    {
+      "id": "property-3",
+      "description": "A cozy bedroom with a large bed.",
+      "imageUrl": "https://images.unsplash.com/photo-1703782498522-f9c2b9c1bc25?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjb3p5JTIwYmVkcm9vbXxlbnwwfHx8fDE3NjgzODQ0MTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cozy bedroom"
+    },
+    {
+      "id": "property-4",
+      "description": "A suburban house with a green lawn.",
+      "imageUrl": "https://images.unsplash.com/photo-1605146768851-eda79da39897?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxzdWJ1cmJhbiUyMGhvdXNlfGVufDB8fHx8MTc2ODQ2NjU1OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "suburban house"
+    },
+    {
+      "id": "property-5",
+      "description": "A house with a pool in the backyard.",
+      "imageUrl": "https://images.unsplash.com/photo-1536745511564-a5fa6e596e7b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxob3VzZSUyMHBvb2x8ZW58MHx8fHwxNzY4NDY2NTU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "house pool"
+    },
+    {
+      "id": "property-6",
+      "description": "An open concept dining area.",
+      "imageUrl": "https://images.unsplash.com/photo-1703565426315-4209c2e88eea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxkaW5pbmclMjBhcmVhfGVufDB8fHx8MTc2ODQ2MjU4N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dining area"
+    },
+    {
+      "id": "market-map",
+      "description": "A stylized map of the United States showing various regions.",
+      "imageUrl": "https://images.unsplash.com/photo-1451988336904-b1a6e8846746?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxVU0ElMjBtYXB8ZW58MHx8fHwxNzY4NDY2NTU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "USA map"
+    },
+    {
+      "id": "agent-1",
+      "description": "Portrait of a friendly real estate agent.",
+      "imageUrl": "https://images.unsplash.com/photo-1546961329-78bef0414d7c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx3b21hbiUyMHBvcnRyYWl0fGVufDB8fHx8MTc2ODQ2NDM4M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman portrait"
+    },
+    {
+      "id": "agent-2",
+      "description": "Portrait of a professional real estate agent.",
+      "imageUrl": "https://images.unsplash.com/photo-1607031542107-f6f46b5d54e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjgzNzU3MDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man portrait"
+    }
+  ]
 }
