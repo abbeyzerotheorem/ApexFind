@@ -15,31 +15,35 @@ export default function SearchPage({ searchParams }: {
   } 
 }) {
   const searchQuery = searchParams?.q || "";
-  const minPrice = searchParams?.minPrice ? parseInt(searchParams.minPrice) : null;
-  const maxPrice = searchParams?.maxPrice ? parseInt(searchParams.maxPrice) : null;
+  const minPrice = searchParams?.minPrice ? parseInt(searchParams.minPrice) : 0;
+  const maxPrice = searchParams?.maxPrice ? parseInt(searchParams.maxPrice) : 500000000;
 
-  let filteredProperties = PlaceHolderProperties;
-
-  if (searchQuery) {
-    filteredProperties = filteredProperties.filter(property => 
-        property.address.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-  }
-
-  if (minPrice !== null) {
-    filteredProperties = filteredProperties.filter(p => p.price >= minPrice);
-  }
-
-  if (maxPrice !== null) {
-    filteredProperties = filteredProperties.filter(p => p.price <= maxPrice);
-  }
+  let filteredProperties = PlaceHolderProperties.filter(property => {
+    let matches = true;
+    if (searchQuery) {
+      matches = matches && property.address.toLowerCase().includes(searchQuery.toLowerCase());
+    }
+    if (minPrice) {
+      matches = matches && property.price >= minPrice;
+    }
+    if (maxPrice < 500000000) {
+      matches = matches && property.price <= maxPrice;
+    }
+    return matches;
+  });
   
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-grow">
         <div className="sticky top-16 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <SearchFilters searchQuery={searchQuery} allLocations={allLocations}/>
+          <SearchFilters 
+            searchQuery={searchQuery} 
+            allLocations={allLocations}
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            propertyCount={filteredProperties.length}
+          />
         </div>
         <SearchResults properties={filteredProperties} />
       </main>

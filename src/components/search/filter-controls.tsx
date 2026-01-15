@@ -1,3 +1,5 @@
+
+'use client';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -5,8 +7,50 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import React from "react";
 
-export function FilterControls() {
+type FilterControlsProps = {
+    minPrice: number;
+    maxPrice: number;
+}
+
+export function FilterControls({ minPrice: initialMin, maxPrice: initialMax }: FilterControlsProps) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    
+    const [minPrice, setMinPrice] = React.useState(initialMin);
+    const [maxPrice, setMaxPrice] = React.useState(initialMax);
+
+    const handlePriceChange = (value: number[]) => {
+        setMinPrice(value[0]);
+        setMaxPrice(value[1]);
+    }
+    
+    const applyFilters = () => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (minPrice > 0) {
+            params.set('minPrice', String(minPrice));
+        } else {
+            params.delete('minPrice');
+        }
+
+        if (maxPrice < 500000000) {
+            params.set('maxPrice', String(maxPrice));
+        } else {
+            params.delete('maxPrice');
+        }
+        router.push(`${pathname}?${params.toString()}`);
+    }
+
+    const clearFilters = () => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('minPrice');
+        params.delete('maxPrice');
+        router.push(`${pathname}?${params.toString()}`);
+    }
+
     return (
         <div className="space-y-6 py-4">
              <Accordion type="multiple" defaultValue={['price', 'beds-baths']}>
@@ -14,11 +58,16 @@ export function FilterControls() {
                     <AccordionTrigger>Price (₦)</AccordionTrigger>
                     <AccordionContent>
                         <div className="space-y-4">
-                            <div className="flex gap-2">
-                                <Input placeholder="Min" type="number" />
-                                <Input placeholder="Max" type="number" />
+                             <div className="flex justify-between text-sm text-muted-foreground">
+                                <span>₦{minPrice.toLocaleString()}</span>
+                                <span>₦{maxPrice.toLocaleString()}{maxPrice === 500000000 ? '+' : ''}</span>
                             </div>
-                            <Slider defaultValue={[50000000, 200000000]} max={500000000} step={1000000} />
+                            <Slider 
+                                value={[minPrice, maxPrice]} 
+                                onValueChange={handlePriceChange}
+                                max={500000000} 
+                                step={1000000} 
+                            />
                         </div>
                     </AccordionContent>
                 </AccordionItem>
@@ -103,8 +152,8 @@ export function FilterControls() {
             </Accordion>
 
             <div className="flex justify-end gap-2">
-                <Button variant="ghost">Clear</Button>
-                <Button>Apply Filters</Button>
+                <Button variant="ghost" onClick={clearFilters}>Clear</Button>
+                <Button onClick={applyFilters}>Apply Filters</Button>
             </div>
         </div>
     )

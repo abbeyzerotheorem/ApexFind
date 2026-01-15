@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import React from "react";
 import { FilterControls } from "./filter-controls";
 import Link from "next/link";
 import AutocompleteSearch from "../autocomplete-search";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const activeFilters = [
   { label: "3+ Beds", value: "beds_gte_3" },
@@ -21,8 +23,35 @@ const activeFilters = [
   { label: "Pool", value: "features_pool" },
 ];
 
-export default function SearchFilters({ searchQuery, allLocations }: { searchQuery: string, allLocations: string[] }) {
+type SearchFiltersProps = {
+  searchQuery: string;
+  allLocations: string[];
+  minPrice: number;
+  maxPrice: number;
+  propertyCount: number;
+};
+
+export default function SearchFilters({ 
+  searchQuery, 
+  allLocations, 
+  minPrice, 
+  maxPrice,
+  propertyCount
+}: SearchFiltersProps) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const [sort, setSort] = React.useState("relevant");
+
+    const createQueryString = React.useCallback(
+      (name: string, value: string) => {
+        const params = new URLSearchParams(searchParams.toString())
+        params.set(name, value)
+        return params.toString()
+      },
+      [searchParams]
+    )
+
     return (
         <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col gap-3 py-4">
@@ -68,7 +97,10 @@ export default function SearchFilters({ searchQuery, allLocations }: { searchQue
                             <SheetHeader>
                               <SheetTitle>All Filters</SheetTitle>
                             </SheetHeader>
-                            <FilterControls />
+                            <FilterControls 
+                                minPrice={minPrice}
+                                maxPrice={maxPrice}
+                            />
                           </SheetContent>
                         </Sheet>
                     </div>
@@ -90,3 +122,4 @@ export default function SearchFilters({ searchQuery, allLocations }: { searchQue
         </div>
     )
 }
+

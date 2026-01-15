@@ -1,3 +1,6 @@
+
+'use client'
+
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -23,6 +26,9 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import AutocompleteSearch from "./autocomplete-search";
 import allStatesWithLgas from "@/jsons/nigeria-states.json";
 import { Label } from "./ui/label";
+import React from "react";
+import { Slider } from "./ui/slider";
+import { useRouter } from "next/navigation";
 
 const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lgas]);
 
@@ -76,11 +82,37 @@ export default function HeroSearch() {
 }
 
 function SearchForm({ allLocations }: { allLocations: string[] }) {
+  const router = useRouter();
+  const [minPrice, setMinPrice] = React.useState(0);
+  const [maxPrice, setMaxPrice] = React.useState(500000000);
+
+  const handlePriceChange = (value: number[]) => {
+    setMinPrice(value[0]);
+    setMaxPrice(value[1]);
+  };
+  
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const query = formData.get('q') as string;
+    
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    if (minPrice > 0) params.set('minPrice', String(minPrice));
+    if (maxPrice < 500000000) params.set('maxPrice', String(maxPrice));
+    
+    router.push(`/search?${params.toString()}`);
+  }
+
   return (
-    <form action="/search" className="mt-4 flex w-full flex-col items-center gap-2 rounded-lg bg-background p-4 shadow-lg sm:flex-row">
+    <form onSubmit={handleSubmit} className="mt-4 flex w-full flex-col items-center gap-2 rounded-lg bg-background p-4 shadow-lg sm:flex-row">
       <AutocompleteSearch allLocations={allLocations} />
       <div className="flex w-full gap-2 sm:w-auto">
-        <PriceFilterDropdown />
+        <PriceFilterDropdown 
+            minPrice={minPrice} 
+            maxPrice={maxPrice} 
+            onPriceChange={handlePriceChange} 
+            />
         <FilterDropdown icon={BedDouble} label="Beds" />
         <FilterDropdown icon={Bath} label="Baths" />
         <FilterDropdown icon={Home} label="Home Type" />
@@ -93,7 +125,7 @@ function SearchForm({ allLocations }: { allLocations: string[] }) {
   );
 }
 
-function PriceFilterDropdown() {
+function PriceFilterDropdown({ minPrice, maxPrice, onPriceChange }: { minPrice: number, maxPrice: number, onPriceChange: (value: number[]) => void }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -102,14 +134,20 @@ function PriceFilterDropdown() {
           <span className="ml-2">Price</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64 p-4">
+      <DropdownMenuContent className="w-80 p-4">
         <div className="space-y-4">
           <DropdownMenuLabel className="p-0">Price Range (₦)</DropdownMenuLabel>
-          <div className="flex items-center gap-2">
-            <Input name="minPrice" placeholder="Min" type="number" className="h-8" />
-            <span>-</span>
-            <Input name="maxPrice" placeholder="Max" type="number" className="h-8" />
+          <div className="flex justify-between text-sm text-muted-foreground">
+             <span>{minPrice.toLocaleString()}</span>
+             <span>{maxPrice.toLocaleString()}+</span>
           </div>
+          <Slider
+            min={0}
+            max={500000000}
+            step={1000000}
+            value={[minPrice, maxPrice]}
+            onValueChange={onPriceChange}
+          />
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -135,3 +173,4 @@ function FilterDropdown({ icon: Icon, label }: { icon: React.ElementType, label:
     </DropdownMenu>
   );
 }
+
