@@ -11,6 +11,7 @@ export const PlaceHolderProperties = [
       lotSize: 0.25,
       agent: "Apex Realty",
       status: "New",
+      type: "Duplex",
       imageUrl: PlaceHolderImages.find((img) => img.id === "property-1")?.imageUrl ?? "",
       imageHint: PlaceHolderImages.find((img) => img.id === "property-1")?.imageHint ?? "",
     },
@@ -24,6 +25,7 @@ export const PlaceHolderProperties = [
       lotSize: 0.5,
       agent: "Urban Dwellings",
       status: "Price Reduced",
+      type: "House",
       imageUrl: PlaceHolderImages.find((img) => img.id === "property-2")?.imageUrl ?? "",
       imageHint: PlaceHolderImages.find((img) => img.id === "property-2")?.imageHint ?? "",
     },
@@ -37,6 +39,7 @@ export const PlaceHolderProperties = [
       lotSize: 0.3,
       agent: "Heartland Homes",
       status: "Coming Soon",
+      type: "Apartment (Flat)",
       imageUrl: PlaceHolderImages.find((img) => img.id === "property-3")?.imageUrl ?? "",
       imageHint: PlaceHolderImages.find((img) => img.id === "property-3")?.imageHint ?? "",
     },
@@ -50,6 +53,7 @@ export const PlaceHolderProperties = [
         lotSize: 0.4,
         agent: "Wayne Enterprises Realty",
         status: "New",
+        type: "House",
         imageUrl:
           PlaceHolderImages.find((img) => img.id === "property-4")?.imageUrl ?? "",
         imageHint:
@@ -65,6 +69,7 @@ export const PlaceHolderProperties = [
         lotSize: 1.2,
         agent: "Queen Consolidated Properties",
         status: "Foreclosure",
+        type: "Terrace",
         imageUrl:
           PlaceHolderImages.find((img) => img.id === "property-5")?.imageUrl ?? "",
         imageHint:
@@ -80,6 +85,7 @@ export const PlaceHolderProperties = [
         lotSize: 0.2,
         agent: "STAR Labs Real Estate",
         status: "New",
+        type: "Apartment (Flat)",
         imageUrl:
           PlaceHolderImages.find((img) => img.id === "property-6")?.imageUrl ?? "",
         imageHint:

@@ -14,6 +14,7 @@ export default function SearchPage({ searchParams }: {
     maxPrice?: string,
     beds?: string,
     baths?: string,
+    homeTypes?: string,
   } 
 }) {
   const searchQuery = searchParams?.q || "";
@@ -21,6 +22,7 @@ export default function SearchPage({ searchParams }: {
   const maxPrice = searchParams?.maxPrice ? parseInt(searchParams.maxPrice) : 500000000;
   const beds = searchParams?.beds;
   const baths = searchParams?.baths;
+  const homeTypes = searchParams?.homeTypes ? searchParams.homeTypes.split(',') : [];
 
   let filteredProperties = PlaceHolderProperties.filter(property => {
     let matches = true;
@@ -34,12 +36,15 @@ export default function SearchPage({ searchParams }: {
       matches = matches && property.price <= maxPrice;
     }
     if (beds && beds !== 'any') {
-        const minBeds = parseInt(beds);
+        const minBeds = parseInt(beds.replace('+', ''));
         matches = matches && property.beds >= minBeds;
     }
     if (baths && baths !== 'any') {
-        const minBaths = parseInt(baths);
+        const minBaths = parseInt(baths.replace('+', ''));
         matches = matches && property.baths >= minBaths;
+    }
+    if (homeTypes.length > 0) {
+      matches = matches && homeTypes.includes(property.type);
     }
     return matches;
   });
@@ -56,6 +61,7 @@ export default function SearchPage({ searchParams }: {
             maxPrice={maxPrice}
             beds={beds || 'any'}
             baths={baths || 'any'}
+            homeTypes={homeTypes}
             propertyCount={filteredProperties.length}
           />
         </div>

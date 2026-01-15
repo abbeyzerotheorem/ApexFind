@@ -21,6 +21,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -33,6 +34,8 @@ import { Slider } from "./ui/slider";
 import { useRouter } from "next/navigation";
 
 const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lgas]);
+const homeTypes = ["House", "Apartment (Flat)", "Duplex", "Terrace"];
+
 
 const NairaPriceIcon = () => (
     <span className="font-bold">₦</span>
@@ -89,6 +92,7 @@ function SearchForm({ allLocations }: { allLocations: string[] }) {
   const [maxPrice, setMaxPrice] = React.useState(500000000);
   const [beds, setBeds] = React.useState("any");
   const [baths, setBaths] = React.useState("any");
+  const [selectedHomeTypes, setSelectedHomeTypes] = React.useState<string[]>([]);
 
   const handlePriceChange = (value: number[]) => {
     setMinPrice(value[0]);
@@ -106,6 +110,7 @@ function SearchForm({ allLocations }: { allLocations: string[] }) {
     if (maxPrice < 500000000) params.set('maxPrice', String(maxPrice));
     if (beds !== 'any') params.set('beds', beds);
     if (baths !== 'any') params.set('baths', baths);
+    if (selectedHomeTypes.length > 0) params.set('homeTypes', selectedHomeTypes.join(','));
     
     router.push(`/search?${params.toString()}`);
   }
@@ -131,7 +136,10 @@ function SearchForm({ allLocations }: { allLocations: string[] }) {
             value={baths}
             onValueChange={setBaths}
             />
-        <FilterDropdown icon={Home} label="Home Type" />
+        <HomeTypeFilterDropdown 
+            selectedTypes={selectedHomeTypes}
+            onSelectedTypesChange={setSelectedHomeTypes}
+            />
         <FilterDropdown icon={MoreHorizontal} label="More" />
       </div>
       <Button type="submit" size="lg" className="w-full sm:w-auto">
@@ -178,7 +186,7 @@ function BedsAndBathsFilterDropdown({ icon: Icon, label, value, onValueChange }:
           <Button variant="outline" className="hidden sm:flex">
             <Icon className="mr-2 h-4 w-4" />
             {label}
-            {value !== 'any' && <span className="ml-2 rounded-full bg-primary px-2 text-xs text-primary-foreground">{value}{value !== "5+" && "+"}</span>}
+            {value !== 'any' && <span className="ml-2 rounded-full bg-primary px-2 text-xs text-primary-foreground">{value}{value.includes('+') ? '' : '+' }</span>}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
@@ -187,7 +195,7 @@ function BedsAndBathsFilterDropdown({ icon: Icon, label, value, onValueChange }:
             <DropdownMenuRadioGroup value={value} onValueChange={onValueChange}>
                 {options.map(option => (
                     <DropdownMenuRadioItem key={option} value={option}>
-                        {option === 'any' ? 'Any' : `${option}${option === "5+" ? "" : "+"}`}
+                        {option === 'any' ? 'Any' : `${option}${option.includes('+') ? '' : '+'}`}
                     </DropdownMenuRadioItem>
                 ))}
             </DropdownMenuRadioGroup>
@@ -195,6 +203,41 @@ function BedsAndBathsFilterDropdown({ icon: Icon, label, value, onValueChange }:
       </DropdownMenu>
     );
   }
+
+function HomeTypeFilterDropdown({ selectedTypes, onSelectedTypesChange }: { selectedTypes: string[], onSelectedTypesChange: (types: string[]) => void }) {
+    
+    const handleSelect = (type: string) => {
+        const newSelectedTypes = selectedTypes.includes(type)
+            ? selectedTypes.filter(t => t !== type)
+            : [...selectedTypes, type];
+        onSelectedTypesChange(newSelectedTypes);
+    }
+    
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="hidden sm:flex">
+                    <Home className="mr-2 h-4 w-4" />
+                    Home Type
+                    {selectedTypes.length > 0 && <span className="ml-2 rounded-full bg-primary px-2 text-xs text-primary-foreground">{selectedTypes.length}</span>}
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                <DropdownMenuLabel>Home Type</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {homeTypes.map(type => (
+                    <DropdownMenuCheckboxItem
+                        key={type}
+                        checked={selectedTypes.includes(type)}
+                        onSelect={(e) => { e.preventDefault(); handleSelect(type) }}
+                    >
+                        {type}
+                    </DropdownMenuCheckboxItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    )
+}
 
 
 function FilterDropdown({ icon: Icon, label }: { icon: React.ElementType, label: string }) {

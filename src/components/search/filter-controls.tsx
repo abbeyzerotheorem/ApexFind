@@ -17,9 +17,12 @@ type FilterControlsProps = {
     maxPrice: number;
     beds: string;
     baths: string;
+    homeTypes: string[];
 }
 
-export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, beds: initialBeds, baths: initialBaths }: FilterControlsProps) {
+const homeTypeOptions = ["House", "Apartment (Flat)", "Duplex", "Terrace"];
+
+export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, beds: initialBeds, baths: initialBaths, homeTypes: initialHomeTypes }: FilterControlsProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -28,10 +31,19 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
     const [maxPrice, setMaxPrice] = React.useState(initialMax);
     const [beds, setBeds] = React.useState(initialBeds);
     const [baths, setBaths] = React.useState(initialBaths);
+    const [selectedHomeTypes, setSelectedHomeTypes] = React.useState<string[]>(initialHomeTypes);
+
 
     const handlePriceChange = (value: number[]) => {
         setMinPrice(value[0]);
         setMaxPrice(value[1]);
+    }
+
+    const handleHomeTypeChange = (type: string) => {
+        const newSelectedTypes = selectedHomeTypes.includes(type)
+            ? selectedHomeTypes.filter(t => t !== type)
+            : [...selectedHomeTypes, type];
+        setSelectedHomeTypes(newSelectedTypes);
     }
     
     const applyFilters = () => {
@@ -60,6 +72,12 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
             params.delete('baths');
         }
 
+        if (selectedHomeTypes.length > 0) {
+            params.set('homeTypes', selectedHomeTypes.join(','));
+        } else {
+            params.delete('homeTypes');
+        }
+
         router.push(`${pathname}?${params.toString()}`);
     }
 
@@ -69,6 +87,7 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
         params.delete('maxPrice');
         params.delete('beds');
         params.delete('baths');
+        params.delete('homeTypes');
         router.push(`${pathname}?${params.toString()}`);
     }
 
@@ -77,7 +96,7 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
 
     return (
         <div className="space-y-6 py-4">
-             <Accordion type="multiple" defaultValue={['price', 'beds-baths']}>
+             <Accordion type="multiple" defaultValue={['price', 'beds-baths', 'home-type']}>
                 <AccordionItem value="price">
                     <AccordionTrigger>Price (₦)</AccordionTrigger>
                     <AccordionContent>
@@ -104,7 +123,7 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
                                 <ToggleGroup type="single" value={beds} onValueChange={(value) => value && setBeds(value)} className="flex-wrap justify-start mt-2">
                                     {bedOptions.map(option => (
                                         <ToggleGroupItem key={`bed-${option}`} value={option} aria-label={`${option} beds`} className="rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                                           {option === 'any' ? 'Any' : `${option}${option === "5+" ? "" : "+"}`}
+                                           {option === 'any' ? 'Any' : `${option}${option.includes('+') ? '' : '+'}`}
                                         </ToggleGroupItem>
                                     ))}
                                 </ToggleGroup>
@@ -114,7 +133,7 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
                                  <ToggleGroup type="single" value={baths} onValueChange={(value) => value && setBaths(value)} className="flex-wrap justify-start mt-2">
                                     {bathOptions.map(option => (
                                         <ToggleGroupItem key={`bath-${option}`} value={option} aria-label={`${option} baths`} className="rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                                           {option === 'any' ? 'Any' : `${option}${option === "5+" ? "" : "+"}`}
+                                           {option === 'any' ? 'Any' : `${option}${option.includes('+') ? '' : '+'}`}
                                         </ToggleGroupItem>
                                     ))}
                                 </ToggleGroup>
@@ -125,11 +144,17 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
                  <AccordionItem value="home-type">
                     <AccordionTrigger>Home Type</AccordionTrigger>
                     <AccordionContent>
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2"><Checkbox id="ht-house"/> <Label htmlFor="ht-house">House</Label></div>
-                            <div className="flex items-center gap-2"><Checkbox id="ht-condo"/> <Label htmlFor="ht-condo">Apartment (Flat)</Label></div>
-                            <div className="flex items-center gap-2"><Checkbox id="ht-townhouse"/> <Label htmlFor="ht-townhouse">Duplex</Label></div>
-                            <div className="flex items-center gap-2"><Checkbox id="ht-multifamily"/> <Label htmlFor="ht-multifamily">Terrace</Label></div>
+                        <div className="grid grid-cols-2 gap-2">
+                            {homeTypeOptions.map(type => (
+                                <div key={type} className="flex items-center gap-2">
+                                    <Checkbox 
+                                        id={`ht-${type}`} 
+                                        checked={selectedHomeTypes.includes(type)}
+                                        onCheckedChange={() => handleHomeTypeChange(type)}
+                                    /> 
+                                    <Label htmlFor={`ht-${type}`} className="font-normal">{type}</Label>
+                                </div>
+                            ))}
                         </div>
                     </AccordionContent>
                 </AccordionItem>

@@ -30,6 +30,7 @@ type SearchFiltersProps = {
   maxPrice: number;
   beds: string;
   baths: string;
+  homeTypes: string[];
   propertyCount: number;
 };
 
@@ -40,6 +41,7 @@ export default function SearchFilters({
   maxPrice,
   beds,
   baths,
+  homeTypes,
   propertyCount
 }: SearchFiltersProps) {
     const router = useRouter();
@@ -106,6 +108,7 @@ export default function SearchFilters({
                                 maxPrice={maxPrice}
                                 beds={beds}
                                 baths={baths}
+                                homeTypes={homeTypes}
                             />
                           </SheetContent>
                         </Sheet>
