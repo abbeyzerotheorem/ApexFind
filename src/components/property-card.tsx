@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useState } from "react";
 import Link from 'next/link';
 import { Bath, BedDouble, Heart, Maximize, Share2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -39,7 +41,48 @@ export function PropertyCard({
     showDashboardControls?: boolean
 }) {
   const [isSaved, setIsSaved] = useState(showDashboardControls);
+  const router = useRouter();
   const isGallery = viewMode === 'gallery';
+
+  const handleToggleSave = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+        router.push('/auth');
+        return;
+    }
+
+    const userId = session.user.id;
+
+    if (isSaved) {
+        // Property is currently saved, so unsave it
+        const { error } = await supabase
+            .from('saved_homes')
+            .delete()
+            .match({ user_id: userId, property_id: property.id });
+
+        if (!error) {
+            setIsSaved(false);
+        } else {
+            console.error('Error unsaving property:', error.message);
+        }
+    } else {
+        // Property is not saved, so save it
+        const { error } = await supabase
+            .from('saved_homes')
+            .insert({ 
+                user_id: userId,
+                property_id: property.id,
+                property_data: property 
+            });
+
+        if (!error) {
+            setIsSaved(true);
+        } else {
+            console.error('Error saving property:', error.message);
+        }
+    }
+  };
 
   return (
     <Card className={cn(
@@ -75,7 +118,7 @@ export function PropertyCard({
                     size="icon"
                     variant="secondary"
                     className="h-8 w-8 rounded-full bg-white/80 hover:bg-white"
-                    onClick={() => setIsSaved(!isSaved)}
+                    onClick={handleToggleSave}
                     aria-label={isSaved ? "Unsave property" : "Save property"}
                 >
                     <Heart
