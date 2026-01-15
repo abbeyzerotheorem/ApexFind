@@ -27,7 +27,7 @@ const NairaPriceIcon = () => (
 
 export default function HeroSearch() {
   const heroImage = PlaceHolderImages.find((img) => img.id === "hero-background");
-  const allLocations = [...new Set(PlaceHolderProperties.map(p => p.address))];
+  const allLocations = [...new Set(PlaceHolderProperties.map(p => p.address.split(',')[1].trim()))];
   return (
     <section className="relative h-[600px] w-full">
       {heroImage && (

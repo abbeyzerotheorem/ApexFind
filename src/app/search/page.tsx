@@ -2,104 +2,18 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import SearchResults from "@/components/search/search-results";
 import SearchFilters from "@/components/search/search-filters";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
-
-const allProperties = [
-    {
-      id: 1,
-      price: 150000000,
-      address: "123 Banana Island, Lagos",
-      beds: 4,
-      baths: 5,
-      sqft: 3500,
-      lotSize: 0.25,
-      agent: "Apex Realty",
-      status: "New",
-      imageUrl: PlaceHolderImages.find((img) => img.id === "property-1")?.imageUrl ?? "",
-      imageHint: PlaceHolderImages.find((img) => img.id === "property-1")?.imageHint ?? "",
-    },
-    {
-      id: 2,
-      price: 250000000,
-      address: "456 Asokoro, Abuja",
-      beds: 5,
-      baths: 6,
-      sqft: 4200,
-      lotSize: 0.5,
-      agent: "Urban Dwellings",
-      status: "Price Reduced",
-      imageUrl: PlaceHolderImages.find((img) => img.id === "property-2")?.imageUrl ?? "",
-      imageHint: PlaceHolderImages.find((img) => img.id === "property-2")?.imageHint ?? "",
-    },
-    {
-      id: 3,
-      price: 85000000,
-      address: "789 GRA, Port Harcourt",
-      beds: 3,
-      baths: 3,
-      sqft: 2800,
-      lotSize: 0.3,
-      agent: "Heartland Homes",
-      status: "Coming Soon",
-      imageUrl: PlaceHolderImages.find((img) => img.id === "property-3")?.imageUrl ?? "",
-      imageHint: PlaceHolderImages.find((img) => img.id === "property-3")?.imageHint ?? "",
-    },
-    {
-        id: 4,
-        price: 180000000,
-        address: "101 Maitama, Abuja",
-        beds: 4,
-        baths: 4,
-        sqft: 3800,
-        lotSize: 0.4,
-        agent: "Wayne Enterprises Realty",
-        status: "New",
-        imageUrl:
-          PlaceHolderImages.find((img) => img.id === "property-4")?.imageUrl ?? "",
-        imageHint:
-          PlaceHolderImages.find((img) => img.id === "property-4")?.imageHint ?? "",
-    },
-    {
-        id: 5,
-        price: 320000000,
-        address: "212 Lekki Phase 1, Lagos",
-        beds: 6,
-        baths: 7,
-        sqft: 5500,
-        lotSize: 1.2,
-        agent: "Queen Consolidated Properties",
-        status: "Foreclosure",
-        imageUrl:
-          PlaceHolderImages.find((img) => img.id === "property-5")?.imageUrl ?? "",
-        imageHint:
-          PlaceHolderImages.find((img) => img.id === "property-5")?.imageHint ?? "",
-    },
-    {
-        id: 6,
-        price: 75000000,
-        address: "333 Bodija, Ibadan",
-        beds: 3,
-        baths: 4,
-        sqft: 2500,
-        lotSize: 0.2,
-        agent: "STAR Labs Real Estate",
-        status: "New",
-        imageUrl:
-          PlaceHolderImages.find((img) => img.id === "property-6")?.imageUrl ?? "",
-        imageHint:
-          PlaceHolderImages.find((img) => img.id === "property-6")?.imageHint ?? "",
-      },
-  ];
+import { PlaceHolderProperties } from "@/lib/placeholder-properties";
 
 export default function SearchPage({ searchParams }: { searchParams?: { q?: string } }) {
   const searchQuery = searchParams?.q || "";
 
-  const filteredProperties = allProperties.filter(property => 
-    property.address.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProperties = searchQuery
+    ? PlaceHolderProperties.filter(property => 
+        property.address.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : PlaceHolderProperties;
   
-  const allLocations = [...new Set(allProperties.map(p => p.address.split(',')[1].trim()))];
-
+  const allLocations = [...new Set(PlaceHolderProperties.map(p => p.address.split(',')[1].trim()))];
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
