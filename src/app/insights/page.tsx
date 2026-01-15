@@ -9,9 +9,11 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recha
 import { PlaceHolderProperties } from "@/lib/placeholder-properties";
 import { PropertyCard } from "@/components/property-card";
 import AgentPromotion from "@/components/agent-promotion";
-import { Utensils, FerrisWheel, GraduationCap, TramFront, Building, Wallet, Sun } from "lucide-react";
+import { Utensils, GraduationCap, TramFront, Wallet } from "lucide-react";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import AutocompleteSearch from "@/components/autocomplete-search";
+import allStatesWithLgas from "@/jsons/nigeria-states.json";
 
 const marketData = [
     { month: "Jan", price: 140 },
@@ -24,6 +26,7 @@ const marketData = [
 
 const featuredProperties = PlaceHolderProperties.slice(0, 3);
 const neighborhoodImage = PlaceHolderImages.find((img) => img.id === "property-1");
+const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lgas]);
 
 
 export default function InsightsPage() {
@@ -34,11 +37,19 @@ export default function InsightsPage() {
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="text-center">
                         <h1 className="text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
-                            Explore Local Real Estate Markets
+                            Explore Real Estate Markets
                         </h1>
                         <p className="mt-6 max-w-3xl mx-auto text-lg text-muted-foreground">
                             Get the latest data, trends, and insights to make informed decisions about where to buy, sell, or rent your next home.
                         </p>
+                        <div className="mt-8 mx-auto max-w-xl">
+                            <form className="flex flex-col sm:flex-row gap-4">
+                                <AutocompleteSearch allLocations={allLocations} initialValue="Lagos"/>
+                                <Button size="lg" type="submit" className="h-12 font-medium">
+                                    Search
+                                </Button>
+                            </form>
+                        </div>
                     </div>
 
                     <section className="mt-16">
@@ -116,22 +127,22 @@ export default function InsightsPage() {
                             <div className="text-center">
                                 <Utensils className="h-10 w-10 text-primary mx-auto"/>
                                 <h3 className="mt-4 text-xl font-semibold">Vibrant Lifestyle</h3>
-                                <p className="mt-2 text-muted-foreground">From world-class restaurants to bustling markets and a thriving arts scene, Lagos offers a dynamic cultural experience.</p>
+                                <p className="mt-2 text-muted-foreground">From world-class restaurants and bustling open-air markets to a thriving arts and music scene, Lagos offers a dynamic cultural experience. Explore high-end boutiques in Victoria Island or discover unique crafts at the Lekki Arts & Crafts Market.</p>
                             </div>
-                             <div className="text-center">
-                                <FerrisWheel className="h-10 w-10 text-primary mx-auto"/>
-                                <h3 className="mt-4 text-xl font-semibold">Entertainment</h3>
-                                <p className="mt-2 text-muted-foreground">Enjoy beautiful beaches, luxury resorts, and a nightlife scene that is second to none in West Africa.</p>
+                            <div className="text-center">
+                                <Wallet className="h-10 w-10 text-primary mx-auto"/>
+                                <h3 className="mt-4 text-xl font-semibold">Cost of Living</h3>
+                                <p className="mt-2 text-muted-foreground">While housing in prime areas like Ikoyi and Lekki is expensive, Lagos offers a wide range of options. Daily expenses for food and transport are affordable, but costs vary significantly based on lifestyle and location.</p>
                             </div>
-                             <div className="text-center">
+                            <div className="text-center">
                                 <GraduationCap className="h-10 w-10 text-primary mx-auto"/>
                                 <h3 className="mt-4 text-xl font-semibold">Top Schools</h3>
-                                <p className="mt-2 text-muted-foreground">Home to some of the nation's top universities and a wide range of excellent primary and secondary schools.</p>
+                                <p className="mt-2 text-muted-foreground">The city is home to top-tier private primary and secondary schools with international curriculums. It also hosts prestigious universities like the University of Lagos, making it a hub for education and research in West Africa.</p>
                             </div>
-                             <div className="text-center">
+                            <div className="text-center">
                                 <TramFront className="h-10 w-10 text-primary mx-auto"/>
                                 <h3 className="mt-4 text-xl font-semibold">Improving Commute</h3>
-                                <p className="mt-2 text-muted-foreground">Major infrastructure projects, including the Blue and Red Line rail systems, are transforming how Lagosians move around the city.</p>
+                                <p className="mt-2 text-muted-foreground">Navigating Lagos is easier with major infrastructure projects. The new Blue and Red Line rail systems are set to significantly reduce traffic, complementing the existing network of ferries and an expanding road system.</p>
                             </div>
                         </div>
                     </section>
@@ -218,5 +229,3 @@ export default function InsightsPage() {
         </div>
     );
 }
-
-    
