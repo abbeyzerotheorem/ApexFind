@@ -4,9 +4,8 @@ import Image from 'next/image';
 import { PlaceHolderProperties } from '@/lib/placeholder-properties';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
-import { BedDouble, Bath, Maximize, Calendar, Car, Home, Droplet, Wind } from 'lucide-react';
+import { BedDouble, Bath, Maximize, Calendar, Car, Home, Droplet, Wind, Heart, Share2, MapPin, CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Heart, Share2, MapPin } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -200,3 +199,5 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
     </div>
   );
 }
+
+    
