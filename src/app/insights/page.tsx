@@ -9,6 +9,7 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recha
 import { PlaceHolderProperties } from "@/lib/placeholder-properties";
 import { PropertyCard } from "@/components/property-card";
 import AgentPromotion from "@/components/agent-promotion";
+import { Utensils, FerrisWheel, GraduationCap, TramFront } from "lucide-react";
 
 const marketData = [
     { month: "Jan", price: 140 },
@@ -97,6 +98,40 @@ export default function InsightsPage() {
                             </CardContent>
                         </Card>
                     </section>
+
+                    <section className="mt-20 bg-secondary py-16 rounded-lg">
+                        <div className="text-center px-4">
+                            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                                Life in Lagos
+                            </h2>
+                            <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
+                                Discover what it's like to live in Nigeria's vibrant economic hub.
+                            </p>
+                        </div>
+                        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-8">
+                            <div className="text-center">
+                                <Utensils className="h-10 w-10 text-primary mx-auto"/>
+                                <h3 className="mt-4 text-xl font-semibold">Vibrant Lifestyle</h3>
+                                <p className="mt-2 text-muted-foreground">From world-class restaurants to bustling markets and a thriving arts scene, Lagos offers a dynamic cultural experience.</p>
+                            </div>
+                             <div className="text-center">
+                                <FerrisWheel className="h-10 w-10 text-primary mx-auto"/>
+                                <h3 className="mt-4 text-xl font-semibold">Entertainment</h3>
+                                <p className="mt-2 text-muted-foreground">Enjoy beautiful beaches, luxury resorts, and a nightlife scene that is second to none in West Africa.</p>
+                            </div>
+                             <div className="text-center">
+                                <GraduationCap className="h-10 w-10 text-primary mx-auto"/>
+                                <h3 className="mt-4 text-xl font-semibold">Top Schools</h3>
+                                <p className="mt-2 text-muted-foreground">Home to some of the nation's top universities and a wide range of excellent primary and secondary schools.</p>
+                            </div>
+                             <div className="text-center">
+                                <TramFront className="h-10 w-10 text-primary mx-auto"/>
+                                <h3 className="mt-4 text-xl font-semibold">Improving Commute</h3>
+                                <p className="mt-2 text-muted-foreground">Major infrastructure projects, including the Blue and Red Line rail systems, are transforming how Lagosians move around the city.</p>
+                            </div>
+                        </div>
+                    </section>
+
 
                     <section className="mt-20">
                          <div className="text-center">
