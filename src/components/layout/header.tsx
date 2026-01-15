@@ -45,10 +45,7 @@ export default function Header() {
           </nav>
         </div>
         <div className="hidden items-center gap-4 md:flex">
-          <Button variant="ghost" className="font-medium">Sign In</Button>
-          <Button className="bg-accent text-accent-foreground hover:bg-accent/90 font-medium">
-            List Your Rental
-          </Button>
+          <Button>Sign In</Button>
         </div>
         <Sheet>
           <SheetTrigger asChild className="md:hidden">
@@ -68,10 +65,7 @@ export default function Header() {
                   {link.name}
                 </Link>
               ))}
-               <Button variant="ghost" className="font-medium">Sign In</Button>
-                <Button className="bg-accent text-accent-foreground hover:bg-accent/90 font-medium">
-                  List Your Rental
-                </Button>
+               <Button>Sign In</Button>
             </nav>
           </SheetContent>
         </Sheet>
