@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import AutocompleteSearch from "./autocomplete-search";
-import { PlaceHolderProperties } from "@/lib/placeholder-properties";
+import allStates from "@/jsons/nigeria-states.json";
 
 const NairaPriceIcon = () => (
     <span className="font-bold">₦</span>
@@ -27,7 +27,6 @@ const NairaPriceIcon = () => (
 
 export default function HeroSearch() {
   const heroImage = PlaceHolderImages.find((img) => img.id === "hero-background");
-  const allLocations = [...new Set(PlaceHolderProperties.map(p => p.address.split(',')[1].trim()))];
   return (
     <section className="relative h-[600px] w-full">
       {heroImage && (
@@ -57,13 +56,13 @@ export default function HeroSearch() {
             <TabsTrigger value="sold" className="text-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Sold</TabsTrigger>
           </TabsList>
           <TabsContent value="buy">
-            <SearchForm allLocations={allLocations} />
+            <SearchForm allLocations={allStates} />
           </TabsContent>
           <TabsContent value="rent">
-            <SearchForm allLocations={allLocations} />
+            <SearchForm allLocations={allStates} />
           </TabsContent>
           <TabsContent value="sold">
-            <SearchForm allLocations={allLocations} />
+            <SearchForm allLocations={allStates} />
           </TabsContent>
         </Tabs>
       </div>

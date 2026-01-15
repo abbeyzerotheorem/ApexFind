@@ -1,6 +1,5 @@
 'use client';
 
-import { suggestLocations } from '@/ai/ai-property-suggestions';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import { Search, Loader2 } from 'lucide-react';
@@ -18,28 +17,19 @@ export default function AutocompleteSearch({
   const router = useRouter();
   const [query, setQuery] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const debouncedQuery = useDebounce(query, 300);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const fetchSuggestions = useCallback(async () => {
+  const fetchSuggestions = useCallback(() => {
     if (debouncedQuery.length > 1) {
-      setIsLoading(true);
-      try {
-        const result = await suggestLocations({
-          query: debouncedQuery,
-          existingLocations: allLocations,
-        });
-        setSuggestions(result.suggestions);
-        setIsOpen(result.suggestions.length > 0);
-      } catch (error) {
-        console.error('Error fetching suggestions:', error);
-        setSuggestions([]);
-        setIsOpen(false);
-      } finally {
-        setIsLoading(false);
-      }
+      const filteredSuggestions = allLocations
+        .filter((location) =>
+          location.toLowerCase().includes(debouncedQuery.toLowerCase())
+        )
+        .slice(0, 5);
+      setSuggestions(filteredSuggestions);
+      setIsOpen(filteredSuggestions.length > 0);
     } else {
       setSuggestions([]);
       setIsOpen(false);
@@ -49,6 +39,7 @@ export default function AutocompleteSearch({
   useEffect(() => {
     fetchSuggestions();
   }, [fetchSuggestions]);
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -78,6 +69,11 @@ export default function AutocompleteSearch({
     }
   }
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push(`/search?q=${encodeURIComponent(query)}`);
+  }
+
   return (
     <div className="relative w-full flex-grow" ref={containerRef}>
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -91,7 +87,6 @@ export default function AutocompleteSearch({
         onFocus={() => setIsOpen(suggestions.length > 0)}
         autoComplete="off"
       />
-      {isLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" />}
       
       {isOpen && suggestions.length > 0 && (
         <div className="absolute top-full z-10 mt-1 w-full rounded-md border bg-background shadow-lg">
