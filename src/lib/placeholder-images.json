@@ -9,7 +9,7 @@
     {
       "id": "property-1",
       "description": "A stylish living room with large windows.",
-      "imageUrl": "https://images.unsplash.com/photo-1616047006789-b7af5afb8c20?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxsaXZpbmclMjByb29tfGVufDB8fHx8MTc2ODM5MTI2Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1616047006789-b7af5afb8c20?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxsaXZpbmclMjByb29tfGVufDB8fHx8fDE3NjgzOTEyNjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "living room"
     },
     {
@@ -83,6 +83,18 @@
       "description": "Professional woman in a business setting.",
       "imageUrl": "https://images.unsplash.com/photo-1557862921-37829c790f19?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "imageHint": "business woman"
+    },
+    {
+      "id": "landlord-1",
+      "description": "Portrait of a happy property owner.",
+      "imageUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxibGFjayUyMGJ1c2luZXNzJTIwd29tYW58ZW58MHx8fHwxNzY4NTM0MzcxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "business woman"
+    },
+    {
+      "id": "landlord-2",
+      "description": "Portrait of a satisfied landlord.",
+      "imageUrl": "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYWxlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY4NTM0Mzg2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "male portrait"
     }
   ]
 }
