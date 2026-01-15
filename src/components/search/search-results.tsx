@@ -12,11 +12,11 @@ import { cn } from "@/lib/utils";
 const properties = [
     {
       id: 1,
-      price: 750000,
-      address: "123 Maple St, Springfield, IL",
+      price: 150000000,
+      address: "123 Banana Island, Lagos",
       beds: 4,
-      baths: 3,
-      sqft: 2400,
+      baths: 5,
+      sqft: 3500,
       lotSize: 0.25,
       agent: "Apex Realty",
       status: "New",
@@ -25,11 +25,11 @@ const properties = [
     },
     {
       id: 2,
-      price: 1250000,
-      address: "456 Oak Ave, Metropolis, NY",
+      price: 250000000,
+      address: "456 Asokoro, Abuja",
       beds: 5,
-      baths: 4.5,
-      sqft: 3800,
+      baths: 6,
+      sqft: 4200,
       lotSize: 0.5,
       agent: "Urban Dwellings",
       status: "Price Reduced",
@@ -38,11 +38,11 @@ const properties = [
     },
     {
       id: 3,
-      price: 480000,
-      address: "789 Pine Ln, Smallville, KS",
+      price: 85000000,
+      address: "789 GRA, Port Harcourt",
       beds: 3,
-      baths: 2,
-      sqft: 1800,
+      baths: 3,
+      sqft: 2800,
       lotSize: 0.3,
       agent: "Heartland Homes",
       status: "Coming Soon",
@@ -51,11 +51,11 @@ const properties = [
     },
     {
         id: 4,
-        price: 980000,
-        address: "101 Cherry Blvd, Gotham, NJ",
+        price: 180000000,
+        address: "101 Maitama, Abuja",
         beds: 4,
-        baths: 3,
-        sqft: 2900,
+        baths: 4,
+        sqft: 3800,
         lotSize: 0.4,
         agent: "Wayne Enterprises Realty",
         status: "New",
@@ -66,11 +66,11 @@ const properties = [
     },
     {
         id: 5,
-        price: 2100000,
-        address: "212 Birch Rd, Star City, CA",
+        price: 320000000,
+        address: "212 Lekki Phase 1, Lagos",
         beds: 6,
-        baths: 5,
-        sqft: 5200,
+        baths: 7,
+        sqft: 5500,
         lotSize: 1.2,
         agent: "Queen Consolidated Properties",
         status: "Foreclosure",
@@ -81,11 +81,11 @@ const properties = [
     },
     {
         id: 6,
-        price: 620000,
-        address: "333 Cedar Ct, Central City, MO",
+        price: 75000000,
+        address: "333 Bodija, Ibadan",
         beds: 3,
-        baths: 2.5,
-        sqft: 2100,
+        baths: 4,
+        sqft: 2500,
         lotSize: 0.2,
         agent: "STAR Labs Real Estate",
         status: "New",
@@ -108,7 +108,7 @@ export default function SearchResults() {
             <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 pb-8">
                 <div className="flex items-center justify-between py-4">
                     <p className="text-sm text-muted-foreground">
-                        1-30 of 5,000+ homes
+                        1-30 of 1,000+ homes
                     </p>
                     <div className="flex items-center gap-2">
                         <Button variant={viewMode === 'list' ? 'secondary': 'ghost'} size="icon" onClick={() => setViewMode('list')}>

@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 
 const agents = [
   {
-    name: "Mariana Miller",
+    name: "Amina Adebayo",
     title: "Lead Agent, Apex Realty",
     imageUrl:
       PlaceHolderImages.find((img) => img.id === "agent-1")?.imageUrl ?? "",
@@ -14,7 +14,7 @@ const agents = [
       PlaceHolderImages.find((img) => img.id === "agent-1")?.imageHint ?? "",
   },
   {
-    name: "Jonathan Smith",
+    name: "Chinedu Okoro",
     title: "Senior Partner, Urban Dwellings",
     imageUrl:
       PlaceHolderImages.find((img) => img.id === "agent-2")?.imageUrl ?? "",
@@ -41,7 +41,7 @@ export default function AgentPromotion() {
               <form className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="Enter a city or zip code"
+                  placeholder="Enter a city or area"
                   className="flex-grow"
                 />
                 <Button

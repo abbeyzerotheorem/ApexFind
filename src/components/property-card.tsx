@@ -77,7 +77,7 @@ export function PropertyCard({ property, viewMode = 'list' }: { property: Proper
       <CardContent className={cn("p-4", isGallery && "sm:w-1/2 flex flex-col justify-center")}>
         <div>
           <p className="font-headline text-2xl font-bold">
-            ${property.price.toLocaleString()}
+            ₦{property.price.toLocaleString()}
           </p>
           <p className="mt-1 text-muted-foreground">{property.address}</p>
         </div>

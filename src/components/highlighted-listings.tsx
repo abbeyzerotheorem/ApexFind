@@ -4,11 +4,11 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 const properties = [
   {
     id: 1,
-    price: 750000,
-    address: "123 Maple St, Springfield, IL",
+    price: 150000000,
+    address: "123 Banana Island, Lagos",
     beds: 4,
-    baths: 3,
-    sqft: 2400,
+    baths: 5,
+    sqft: 3500,
     imageUrl:
       PlaceHolderImages.find((img) => img.id === "property-1")?.imageUrl ?? "",
     imageHint:
@@ -16,11 +16,11 @@ const properties = [
   },
   {
     id: 2,
-    price: 1250000,
-    address: "456 Oak Ave, Metropolis, NY",
+    price: 250000000,
+    address: "456 Asokoro, Abuja",
     beds: 5,
-    baths: 4.5,
-    sqft: 3800,
+    baths: 6,
+    sqft: 4200,
     imageUrl:
       PlaceHolderImages.find((img) => img.id === "property-2")?.imageUrl ?? "",
     imageHint:
@@ -28,11 +28,11 @@ const properties = [
   },
   {
     id: 3,
-    price: 480000,
-    address: "789 Pine Ln, Smallville, KS",
+    price: 85000000,
+    address: "789 GRA, Port Harcourt",
     beds: 3,
-    baths: 2,
-    sqft: 1800,
+    baths: 3,
+    sqft: 2800,
     imageUrl:
       PlaceHolderImages.find((img) => img.id === "property-3")?.imageUrl ?? "",
     imageHint:
@@ -40,11 +40,11 @@ const properties = [
   },
   {
     id: 4,
-    price: 980000,
-    address: "101 Cherry Blvd, Gotham, NJ",
+    price: 180000000,
+    address: "101 Maitama, Abuja",
     beds: 4,
-    baths: 3,
-    sqft: 2900,
+    baths: 4,
+    sqft: 3800,
     imageUrl:
       PlaceHolderImages.find((img) => img.id === "property-4")?.imageUrl ?? "",
     imageHint:
@@ -52,11 +52,11 @@ const properties = [
   },
   {
     id: 5,
-    price: 2100000,
-    address: "212 Birch Rd, Star City, CA",
+    price: 320000000,
+    address: "212 Lekki Phase 1, Lagos",
     beds: 6,
-    baths: 5,
-    sqft: 5200,
+    baths: 7,
+    sqft: 5500,
     imageUrl:
       PlaceHolderImages.find((img) => img.id === "property-5")?.imageUrl ?? "",
     imageHint:
@@ -64,11 +64,11 @@ const properties = [
   },
   {
     id: 6,
-    price: 620000,
-    address: "333 Cedar Ct, Central City, MO",
+    price: 75000000,
+    address: "333 Bodija, Ibadan",
     beds: 3,
-    baths: 2.5,
-    sqft: 2100,
+    baths: 4,
+    sqft: 2500,
     imageUrl:
       PlaceHolderImages.find((img) => img.id === "property-6")?.imageUrl ?? "",
     imageHint:

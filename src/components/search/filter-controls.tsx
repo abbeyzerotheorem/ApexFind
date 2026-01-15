@@ -11,14 +11,14 @@ export function FilterControls() {
         <div className="space-y-6 py-4">
              <Accordion type="multiple" defaultValue={['price', 'beds-baths']}>
                 <AccordionItem value="price">
-                    <AccordionTrigger>Price</AccordionTrigger>
+                    <AccordionTrigger>Price (₦)</AccordionTrigger>
                     <AccordionContent>
                         <div className="space-y-4">
                             <div className="flex gap-2">
-                                <Input placeholder="Min" />
-                                <Input placeholder="Max" />
+                                <Input placeholder="Min" type="number" />
+                                <Input placeholder="Max" type="number" />
                             </div>
-                            <Slider defaultValue={[250000, 750000]} max={1000000} step={10000} />
+                            <Slider defaultValue={[50000000, 200000000]} max={500000000} step={1000000} />
                         </div>
                     </AccordionContent>
                 </AccordionItem>
@@ -54,9 +54,9 @@ export function FilterControls() {
                     <AccordionContent>
                         <div className="space-y-2">
                             <div className="flex items-center gap-2"><Checkbox id="ht-house"/> <Label htmlFor="ht-house">House</Label></div>
-                            <div className="flex items-center gap-2"><Checkbox id="ht-condo"/> <Label htmlFor="ht-condo">Condo</Label></div>
-                            <div className="flex items-center gap-2"><Checkbox id="ht-townhouse"/> <Label htmlFor="ht-townhouse">Townhouse</Label></div>
-                            <div className="flex items-center gap-2"><Checkbox id="ht-multifamily"/> <Label htmlFor="ht-multifamily">Multi-family</Label></div>
+                            <div className="flex items-center gap-2"><Checkbox id="ht-condo"/> <Label htmlFor="ht-condo">Apartment (Flat)</Label></div>
+                            <div className="flex items-center gap-2"><Checkbox id="ht-townhouse"/> <Label htmlFor="ht-townhouse">Duplex</Label></div>
+                            <div className="flex items-center gap-2"><Checkbox id="ht-multifamily"/> <Label htmlFor="ht-multifamily">Terrace</Label></div>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
@@ -70,9 +70,9 @@ export function FilterControls() {
                     </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="lot-size">
-                    <AccordionTrigger>Lot Size</AccordionTrigger>
+                    <AccordionTrigger>Plot Size (sqm)</AccordionTrigger>
                     <AccordionContent>
-                        <Input placeholder="e.g. 2 acres" />
+                        <Input placeholder="e.g. 1000 sqm" />
                     </AccordionContent>
                 </AccordionItem>
                  <AccordionItem value="year-built">
@@ -89,15 +89,15 @@ export function FilterControls() {
                     <AccordionContent>
                         <div className="space-y-2">
                             <div className="flex items-center gap-2"><Checkbox id="feat-pool"/> <Label htmlFor="feat-pool">Pool</Label></div>
-                            <div className="flex items-center gap-2"><Checkbox id="feat-waterfront"/> <Label htmlFor="feat-waterfront">Waterfront</Label></div>
-                             <div className="flex items-center gap-2"><Checkbox id="feat-garage"/> <Label htmlFor="feat-garage">Garage</Label></div>
+                            <div className="flex items-center gap-2"><Checkbox id="feat-waterfront"/> <Label htmlFor="feat-waterfront">Borehole</Label></div>
+                             <div className="flex items-center gap-2"><Checkbox id="feat-garage"/> <Label htmlFor="feat-garage">Generator</Label></div>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
                  <AccordionItem value="keywords">
                     <AccordionTrigger>Keywords</AccordionTrigger>
                     <AccordionContent>
-                        <Input placeholder="e.g. granite countertops" />
+                        <Input placeholder="e.g. serviced apartment" />
                     </AccordionContent>
                 </AccordionItem>
             </Accordion>

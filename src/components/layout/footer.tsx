@@ -3,10 +3,10 @@ import { Github, Linkedin, Twitter, Youtube } from "lucide-react";
 import Link from "next/link";
 
 const footerLinks = {
-  "Real Estate": ["Browse all homes", "Albuquerque real estate", "Atlanta real estate", "Austin real estate", "Baltimore real estate"],
-  "Rentals": ["Rental Buildings", "Atlanta apartments for rent", "Austin apartments for rent", "Baltimore apartments for rent", "Boston apartments for rent"],
+  "Real Estate": ["Browse all homes", "Lagos real estate", "Abuja real estate", "Port Harcourt real estate", "Ibadan real estate"],
+  "Rentals": ["Rental Buildings", "Lagos apartments for rent", "Abuja apartments for rent", "Port Harcourt apartments for rent", "Ibadan apartments for rent"],
   "Mortgage": ["Mortgage rates", "Get pre-approved", "Mortgage calculator", "Refinance calculator", "Lenders"],
-  "Browsing": ["Neighborhoods", "Cities", "States", "Zip codes", "Counties"],
+  "Browsing": ["Neighborhoods", "Cities", "States", "Areas", "Counties"],
 };
 
 export default function Footer() {

@@ -6,7 +6,6 @@ import {
   Home,
   MoreHorizontal,
   Search,
-  Wallet,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+
+const NairaPriceIcon = () => (
+    <span className="font-bold">₦</span>
+);
 
 export default function HeroSearch() {
   const heroImage = PlaceHolderImages.find((img) => img.id === "hero-background");
@@ -73,12 +76,12 @@ function SearchForm() {
         <Input
           type="search"
           name="q"
-          placeholder="Enter an address, neighborhood, city, or ZIP code"
+          placeholder="Enter an address, neighborhood, city, or area"
           className="w-full pl-10 text-base"
         />
       </div>
       <div className="flex w-full gap-2 sm:w-auto">
-        <FilterDropdown icon={Wallet} label="Price" />
+        <FilterDropdown icon={NairaPriceIcon} label="Price" />
         <FilterDropdown icon={BedDouble} label="Beds" />
         <FilterDropdown icon={Bath} label="Baths" />
         <FilterDropdown icon={Home} label="Home Type" />

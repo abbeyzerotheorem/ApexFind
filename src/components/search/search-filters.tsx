@@ -15,7 +15,7 @@ import { FilterControls } from "./filter-controls";
 
 const activeFilters = [
   { label: "3+ Beds", value: "beds_gte_3" },
-  { label: "Under $750k", value: "price_lte_750000" },
+  { label: "Under ₦150M", value: "price_lte_150000000" },
   { label: "Pool", value: "features_pool" },
 ];
 
@@ -28,7 +28,7 @@ export default function SearchFilters() {
                     <div className="flex items-center text-sm">
                         <a href="/" className="text-muted-foreground hover:text-foreground">Home</a>
                         <ChevronRight className="h-4 w-4" />
-                        <span className="font-semibold">San Francisco, CA</span>
+                        <span className="font-semibold">Lagos, NG</span>
                     </div>
 
                     <div className="flex items-center gap-2">
