@@ -12,6 +12,7 @@ const navLinks = [
   { name: "Find Agents", href: "/agents" },
   { name: "Manage Rentals", href: "/rentals" },
   { name: "Market Insights", href: "/insights" },
+  { name: "Dashboard", href: "/dashboard" },
 ];
 
 export default function Header() {
