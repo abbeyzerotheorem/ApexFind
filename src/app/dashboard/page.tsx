@@ -3,7 +3,7 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SavedHomes from "@/components/dashboard/saved-homes";
-import { Heart, Search, User, MoreVertical, Pencil, Trash2, History, X, Mail, Phone, Building, Link2 } from "lucide-react";
+import { Heart, Search, User, MoreVertical, Pencil, Trash2, History, X, Mail, Phone, Building, Link2, MessageSquare, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PlaceHolderAgents } from "@/lib/placeholder-agents";
+import { Textarea } from "@/components/ui/textarea";
 
 const viewedProperties = PlaceHolderProperties.slice(3, 6);
 const linkedAgent = PlaceHolderAgents[0];
@@ -30,7 +31,7 @@ export default function DashboardPage() {
             My Dashboard
           </h1>
           <Tabs defaultValue="saved-homes" className="mt-8">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-3xl">
               <TabsTrigger value="saved-homes">
                 <Heart className="mr-2 h-4 w-4" />
                 Saved Homes
@@ -42,6 +43,10 @@ export default function DashboardPage() {
               <TabsTrigger value="viewed-history">
                 <History className="mr-2 h-4 w-4" />
                 Viewed History
+              </TabsTrigger>
+              <TabsTrigger value="agent-messages">
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Messages
               </TabsTrigger>
               <TabsTrigger value="profile">
                 <User className="mr-2 h-4 w-4" />
@@ -156,6 +161,81 @@ export default function DashboardPage() {
                             <p className="text-muted-foreground mt-2">Properties you view will appear here.</p>
                         </div>
                     )}
+                </div>
+            </TabsContent>
+            <TabsContent value="agent-messages">
+                <div className="mt-8 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                    <Card className="md:col-span-1 lg:col-span-1">
+                        <CardHeader>
+                            <CardTitle>Conversations</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="flex flex-col">
+                                <div className="p-4 border-b bg-secondary cursor-pointer">
+                                    <div className="flex items-center gap-3">
+                                        <Avatar className="h-10 w-10">
+                                            <AvatarImage src={linkedAgent.imageUrl} />
+                                            <AvatarFallback>{linkedAgent.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <p className="font-semibold">{linkedAgent.name}</p>
+                                            <p className="text-sm text-muted-foreground truncate">Great, I'll set that up for...</p>
+                                        </div>
+                                    </div>
+                                     <p className="text-xs text-muted-foreground mt-1 text-right">2 hours ago</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card className="md:col-span-2 lg:col-span-3 flex flex-col">
+                        <CardHeader className="border-b">
+                            <div className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10">
+                                     <AvatarImage src={linkedAgent.imageUrl} />
+                                     <AvatarFallback>{linkedAgent.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <CardTitle>{linkedAgent.name}</CardTitle>
+                                    <CardDescription>{linkedAgent.title}, {linkedAgent.company}</CardDescription>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-6 flex-1 h-[500px] overflow-y-auto space-y-6">
+                            <div className="flex justify-end">
+                                <div className="bg-primary text-primary-foreground p-3 rounded-lg max-w-xs">
+                                    <p>Hi Amina, I'm very interested in the property at 123 Banana Island. Could we schedule a tour for this weekend?</p>
+                                    <p className="text-xs text-primary-foreground/70 mt-1 text-right">You • 3 hours ago</p>
+                                </div>
+                            </div>
+                             <div className="flex justify-start">
+                                <div className="bg-muted p-3 rounded-lg max-w-xs">
+                                    <p>Of course! I'd be happy to show you the property. Does Saturday at 2 PM work for you?</p>
+                                    <p className="text-xs text-muted-foreground mt-1 text-right">Amina • 3 hours ago</p>
+                                </div>
+                            </div>
+                            <div className="flex justify-end">
+                                <div className="bg-primary text-primary-foreground p-3 rounded-lg max-w-xs">
+                                    <p>Saturday at 2 PM is perfect. Thank you!</p>
+                                     <p className="text-xs text-primary-foreground/70 mt-1 text-right">You • 2 hours ago</p>
+                                </div>
+                            </div>
+                             <div className="flex justify-start">
+                                <div className="bg-muted p-3 rounded-lg max-w-xs">
+                                    <p>Great, I'll set that up and send you a calendar invitation. Looking forward to it!</p>
+                                     <p className="text-xs text-muted-foreground mt-1 text-right">Amina • 2 hours ago</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="border-t p-4">
+                             <div className="flex w-full items-center gap-2">
+                                <Textarea placeholder="Type your message..." className="flex-1 resize-none" rows={1} />
+                                <Button size="icon">
+                                    <Send className="h-4 w-4" />
+                                    <span className="sr-only">Send</span>
+                                </Button>
+                            </div>
+                        </CardFooter>
+                    </Card>
                 </div>
             </TabsContent>
              <TabsContent value="profile">
