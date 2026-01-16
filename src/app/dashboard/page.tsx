@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import { Loader2 } from "lucide-react";
+import { getCurrentUser } from "@/lib/auth";
 
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
@@ -53,19 +54,19 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const checkSessionAndLoadData = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
+        const currentUser = await getCurrentUser();
+        if (!currentUser) {
             router.push('/auth');
             return;
         } 
         
-        setUser(session.user);
+        setUser(currentUser);
         setLoading(false);
 
         const { data: savedHomesData, error } = await supabase
           .from('saved_homes')
           .select('property_data')
-          .eq('user_id', session.user.id)
+          .eq('user_id', currentUser.id)
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -417,4 +418,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

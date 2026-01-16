@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -7,6 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { updateUserPassword } from '@/lib/auth';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -18,13 +20,9 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
-        // This event is triggered when the user follows a password recovery link.
-        // We can now prompt for a new password.
         setMessage('Create a new password for your account.');
         setShowPasswordForm(true);
       } else if (event === 'SIGNED_IN') {
-        // This event covers logins after email confirmation. We should only redirect
-        // if this is NOT part of a password recovery flow.
         if (!window.location.hash.includes('type=recovery')) {
           router.push('/dashboard');
           router.refresh();
@@ -33,16 +31,13 @@ export default function AuthCallbackPage() {
     });
 
     const checkInitialSession = async () => {
-      // It's possible the user is already signed in when they land here.
       const { data } = await supabase.auth.getSession();
-      if (data.session) {
+      if (data.session && !window.location.hash.includes('type=recovery')) {
         router.push('/dashboard');
         router.refresh();
       }
     };
 
-    // If it's a password recovery flow, we don't want to check for an existing session and redirect.
-    // We want to show the password update form.
     if (!window.location.hash.includes('type=recovery')) {
         checkInitialSession();
     }
@@ -57,14 +52,15 @@ export default function AuthCallbackPage() {
     e.preventDefault();
     setIsSubmitting(true);
     setMessage('Updating password...');
-    const { error } = await supabase.auth.updateUser({ password });
     
-    setIsSubmitting(false);
-    if (error) {
-      setMessage(`Error: ${error.message}`);
-    } else {
-      setMessage('Password updated successfully! You will be redirected to sign in...');
-      setTimeout(() => router.push('/auth'), 3000);
+    try {
+        await updateUserPassword(password);
+        setMessage('Password updated successfully! You will be redirected to sign in...');
+        setTimeout(() => router.push('/auth'), 3000);
+    } catch (error: any) {
+        setMessage(`Error: ${error.message}`);
+    } finally {
+        setIsSubmitting(false);
     }
   };
 

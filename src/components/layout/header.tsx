@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from "react";
@@ -10,6 +11,7 @@ import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { getCurrentUser, signOut } from "@/lib/auth";
 
 
 const baseNavLinks = [
@@ -28,8 +30,8 @@ export default function Header() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
     };
 
     fetchUser();
@@ -44,7 +46,7 @@ export default function Header() {
   }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     router.push('/');
     router.refresh();
   };

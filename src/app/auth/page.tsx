@@ -1,7 +1,7 @@
+
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { signIn, signUp, resetPasswordForEmail } from '@/lib/auth';
 
 export default function AuthPage() {
     return (
@@ -49,17 +50,13 @@ function SignInForm() {
         e.preventDefault();
         setMessage('');
 
-        const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
-
-        if (error) {
-            setMessage(error.message);
-        } else {
+        try {
+            await signIn(email, password);
             setMessage('Signed in successfully! Redirecting...');
             router.push('/dashboard');
             router.refresh(); 
+        } catch (error: any) {
+            setMessage(error.message);
         }
     };
 
@@ -72,15 +69,13 @@ function SignInForm() {
         setIsResetting(true);
         setResetMessage('Sending password reset email...');
     
-        const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-            redirectTo: `${window.location.origin}/auth/callback`,
-        });
-    
-        setIsResetting(false);
-        if (error) {
-            setResetMessage(error.message);
-        } else {
+        try {
+            await resetPasswordForEmail(resetEmail);
             setResetMessage('Password reset email sent. Please check your inbox.');
+        } catch (error: any) {
+            setResetMessage(error.message);
+        } finally {
+            setIsResetting(false);
         }
     };
 
@@ -171,21 +166,11 @@ function SignUpForm() {
     e.preventDefault();
     setMessage('');
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: name,
-        },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    if (error) {
-      setMessage(error.message);
-    } else {
-      setMessage('Check your email for a confirmation link to complete your sign up.');
+    try {
+        await signUp(name, email, password);
+        setMessage('Check your email for a confirmation link to complete your sign up.');
+    } catch (error: any) {
+        setMessage(error.message);
     }
   };
 
