@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 export default function AuthPage() {
     return (
@@ -40,6 +41,10 @@ function SignInForm() {
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
 
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetMessage, setResetMessage] = useState('');
+    const [isResetting, setIsResetting] = useState(false);
+
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
         setMessage('');
@@ -58,21 +63,24 @@ function SignInForm() {
         }
     };
 
-    const handlePasswordReset = async () => {
-        if (!email) {
-            setMessage('Please enter your email address to reset your password.');
+    const handlePasswordReset = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!resetEmail) {
+            setResetMessage('Please enter an email address.');
             return;
         }
-        setMessage('Sending password reset email...');
+        setIsResetting(true);
+        setResetMessage('Sending password reset email...');
     
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
             redirectTo: `${window.location.origin}/auth/callback`,
         });
     
+        setIsResetting(false);
         if (error) {
-            setMessage(error.message);
+            setResetMessage(error.message);
         } else {
-            setMessage('Password reset email sent. Please check your inbox.');
+            setResetMessage('Password reset email sent. Please check your inbox.');
         }
     };
 
@@ -91,7 +99,12 @@ function SignInForm() {
                             type="email"
                             placeholder="Email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => {
+                                setEmail(e.target.value);
+                                if (!resetEmail) {
+                                    setResetEmail(e.target.value);
+                                }
+                            }}
                             required
                         />
                     </div>
@@ -110,9 +123,38 @@ function SignInForm() {
                     {message && <p className="text-sm text-center text-muted-foreground pt-2">{message}</p>}
                 </form>
                 <div className="text-center mt-4">
-                    <Button variant="link" onClick={handlePasswordReset} className="p-0 h-auto font-normal text-sm">
-                        Forgot Password?
-                    </Button>
+                    <Dialog onOpenChange={() => setResetMessage('')}>
+                        <DialogTrigger asChild>
+                            <Button variant="link" className="p-0 h-auto font-normal text-sm">
+                                Forgot Password?
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                                <DialogTitle>Reset Password</DialogTitle>
+                                <DialogDescription>
+                                    Enter your email address below. We'll send you a link to reset your password.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={handlePasswordReset} className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="reset-email" className="sr-only">Email</Label>
+                                    <Input
+                                        id="reset-email"
+                                        type="email"
+                                        placeholder="your@email.com"
+                                        value={resetEmail}
+                                        onChange={(e) => setResetEmail(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                 <Button type="submit" className="w-full" disabled={isResetting}>
+                                    {isResetting ? 'Sending...' : 'Send Reset Link'}
+                                </Button>
+                                {resetMessage && <p className="text-sm text-center text-muted-foreground pt-2">{resetMessage}</p>}
+                            </form>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </CardContent>
         </Card>
