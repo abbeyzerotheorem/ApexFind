@@ -58,6 +58,24 @@ function SignInForm() {
         }
     };
 
+    const handlePasswordReset = async () => {
+        if (!email) {
+            setMessage('Please enter your email address to reset your password.');
+            return;
+        }
+        setMessage('Sending password reset email...');
+    
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/auth/callback`,
+        });
+    
+        if (error) {
+            setMessage(error.message);
+        } else {
+            setMessage('Password reset email sent. Please check your inbox.');
+        }
+    };
+
     return (
         <Card>
             <CardHeader>
@@ -91,6 +109,11 @@ function SignInForm() {
                     <Button type="submit" className="w-full">Sign In</Button>
                     {message && <p className="text-sm text-center text-muted-foreground pt-2">{message}</p>}
                 </form>
+                <div className="text-center mt-4">
+                    <Button variant="link" onClick={handlePasswordReset} className="p-0 h-auto font-normal text-sm">
+                        Forgot Password?
+                    </Button>
+                </div>
             </CardContent>
         </Card>
     );
