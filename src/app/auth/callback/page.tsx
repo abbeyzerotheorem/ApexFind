@@ -17,14 +17,18 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
-        router.push('/dashboard');
-        router.refresh();
-      } else if (event === 'PASSWORD_RECOVERY') {
+      if (event === 'PASSWORD_RECOVERY') {
         // This event is triggered when the user follows a password recovery link.
-        // Supabase handles the session creation, and we can now prompt for a new password.
+        // We can now prompt for a new password.
         setMessage('Create a new password for your account.');
         setShowPasswordForm(true);
+      } else if (event === 'SIGNED_IN') {
+        // This event covers logins after email confirmation. We should only redirect
+        // if this is NOT part of a password recovery flow.
+        if (!window.location.hash.includes('type=recovery')) {
+          router.push('/dashboard');
+          router.refresh();
+        }
       }
     });
 
@@ -37,10 +41,8 @@ export default function AuthCallbackPage() {
       }
     };
 
-    // The PASSWORD_RECOVERY event might not fire if the page loads after the URL fragment is processed.
-    // However, Supabase client will have the session from the recovery token.
-    // If there's a session but no user details, it's likely a password recovery flow.
-    // But the onAuthStateChange is the most reliable way. We still check for an existing session for direct navigators.
+    // If it's a password recovery flow, we don't want to check for an existing session and redirect.
+    // We want to show the password update form.
     if (!window.location.hash.includes('type=recovery')) {
         checkInitialSession();
     }
@@ -61,7 +63,7 @@ export default function AuthCallbackPage() {
     if (error) {
       setMessage(`Error: ${error.message}`);
     } else {
-      setMessage('Password updated successfully! Redirecting to sign in...');
+      setMessage('Password updated successfully! You will be redirected to sign in...');
       setTimeout(() => router.push('/auth'), 3000);
     }
   };
