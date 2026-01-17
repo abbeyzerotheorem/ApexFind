@@ -1,49 +1,37 @@
-import { CheckSquare, Home, Users } from "lucide-react";
-
 const steps = [
   {
-    icon: Home,
-    title: "Find a Home",
+    step: 1,
+    title: "Search Properties",
     description:
-      "Use our powerful search tools and AI-driven recommendations to discover properties that match your unique criteria.",
+      "Use our advanced filters to find properties that match your criteria.",
   },
   {
-    icon: Users,
-    title: "Meet an Agent",
+    step: 2,
+    title: "Save & Compare",
     description:
-      "Connect with a top-rated local agent who will guide you through every step of the process with expert advice.",
+      "Create an account to save favorite homes and compare features.",
   },
   {
-    icon: CheckSquare,
-    title: "Close the Deal",
+    step: 3,
+    title: "Connect with Agents",
     description:
-      "Navigate offers, negotiations, and paperwork with confidence, and move into the home of your dreams.",
+      "Schedule tours and get professional guidance from our trusted agents.",
   },
 ];
 
 export default function HowItWorks() {
   return (
-    <section className="bg-secondary py-16 sm:py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h2 className="font-semibold text-4xl tracking-tight text-foreground sm:text-5xl">
-            Your Journey to a New Home
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            We simplify the process of finding and buying a home, making it
-            smoother and more transparent.
-          </p>
-        </div>
-        <div className="mt-16 grid grid-cols-1 gap-12 text-center md:grid-cols-3">
-          {steps.map((step, index) => (
-            <div key={index} className="flex flex-col items-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <step.icon className="h-8 w-8" />
+    <section className="py-16 bg-secondary">
+      <div className="container mx-auto px-4">
+        <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {steps.map((step) => (
+            <div key={step.step} className="text-center p-6">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold text-primary">{step.step}</span>
               </div>
-              <h3 className="mt-6 text-2xl font-semibold">
-                {step.title}
-              </h3>
-              <p className="mt-2 text-muted-foreground">{step.description}</p>
+              <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
+              <p className="text-muted-foreground">{step.description}</p>
             </div>
           ))}
         </div>

@@ -2,7 +2,6 @@
 
 'use client'
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   Bath,
@@ -23,11 +22,8 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import AutocompleteSearch from "./autocomplete-search";
 import allStatesWithLgas from "@/jsons/nigeria-states.json";
-import { Label } from "./ui/label";
 import React from "react";
 import { Slider } from "./ui/slider";
 import { useRouter } from "next/navigation";
@@ -41,45 +37,19 @@ const NairaPriceIcon = () => (
 );
 
 export default function HeroSearch() {
-  const heroImage = PlaceHolderImages.find((img) => img.id === "hero-background");
   return (
-    <section className="relative h-[600px] w-full">
-      {heroImage && (
-        <Image
-          src={heroImage.imageUrl}
-          alt={heroImage.description}
-          data-ai-hint={heroImage.imageHint}
-          fill
-          className="object-cover"
-          priority
-        />
-      )}
-      <div className="absolute inset-0 bg-black/50" />
-      <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-4 text-center sm:px-6 lg:px-8">
+    <section className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
+      <div className="container relative z-10 mx-auto flex h-full flex-col items-center justify-center px-4 text-center sm:px-6 lg:px-8">
         <h1 className="text-5xl font-bold text-white sm:text-6xl md:text-7xl">
-          Find Your Place
+          Find Your Dream Home
         </h1>
         <p className="mt-4 max-w-2xl text-lg text-gray-200">
-          Discover a place you'll love to live. The most comprehensive real
-          estate search, right at your fingertips.
+          Discover the perfect property from thousands of listings
         </p>
 
-        <Tabs defaultValue="buy" className="mt-8 w-full max-w-4xl">
-          <TabsList className="mx-auto grid w-full max-w-md grid-cols-3 bg-white/20 p-1 backdrop-blur-sm">
-            <TabsTrigger value="buy" className="text-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium">Buy</TabsTrigger>
-            <TabsTrigger value="rent" className="text-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium">Rent</TabsTrigger>
-            <TabsTrigger value="sold" className="text-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium">Sold</TabsTrigger>
-          </TabsList>
-          <TabsContent value="buy">
+        <div className="mt-8 w-full max-w-4xl">
             <SearchForm allLocations={allLocations} />
-          </TabsContent>
-          <TabsContent value="rent">
-            <SearchForm allLocations={allLocations} />
-          </TabsContent>
-          <TabsContent value="sold">
-            <SearchForm allLocations={allLocations} />
-          </TabsContent>
-        </Tabs>
+        </div>
       </div>
     </section>
   );
@@ -151,7 +121,7 @@ function PriceFilterDropdown({ minPrice, maxPrice, onPriceChange }: { minPrice: 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="hidden sm:flex font-normal">
+        <Button variant="outline" className="hidden sm:flex font-normal text-foreground">
           <NairaPriceIcon />
           <span className="ml-2">Price</span>
         </Button>
@@ -181,7 +151,7 @@ function BedsAndBathsFilterDropdown({ icon: Icon, label, value, onValueChange }:
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="hidden sm:flex font-normal">
+          <Button variant="outline" className="hidden sm:flex font-normal text-foreground">
             <Icon className="mr-2 h-4 w-4" />
             {label}
             {value !== 'any' && <span className="ml-2 rounded-full bg-primary px-2 text-xs text-primary-foreground">{value}{value.includes('+') ? '' : '+' }</span>}
@@ -214,7 +184,7 @@ function HomeTypeFilterDropdown({ selectedTypes, onSelectedTypesChange }: { sele
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="hidden sm:flex font-normal">
+                <Button variant="outline" className="hidden sm:flex font-normal text-foreground">
                     <Home className="mr-2 h-4 w-4" />
                     Home Type
                     {selectedTypes.length > 0 && <span className="ml-2 rounded-full bg-primary px-2 text-xs text-primary-foreground">{selectedTypes.length}</span>}
