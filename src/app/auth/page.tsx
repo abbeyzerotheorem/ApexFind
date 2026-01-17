@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { signIn, signUp, resetPasswordForEmail } from '@/lib/auth';
+import { signIn, signUp, resetPasswordForEmail, signInWithGoogle } from '@/lib/auth';
 import { useUser } from '@/firebase';
 
 export default function AuthPage() {
@@ -55,6 +55,18 @@ function SignInForm() {
     const [resetMessage, setResetMessage] = useState('');
     const [isResetting, setIsResetting] = useState(false);
 
+    const handleGoogleSignIn = async () => {
+        setMessage('');
+        try {
+            await signInWithGoogle();
+            setMessage('Signed in successfully! Redirecting...');
+            router.push('/dashboard');
+            router.refresh();
+        } catch (error: any) {
+            setMessage(error.message);
+        }
+    };
+
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
         setMessage('');
@@ -95,6 +107,22 @@ function SignInForm() {
                 <CardDescription>Enter your credentials to access your account.</CardDescription>
             </CardHeader>
             <CardContent>
+                <div className="grid gap-4">
+                     <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
+                        <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 21.2 173.4 58.2l-64.4 64.4C325.8 99.8 289.4 86 248 86c-82.3 0-149.3 67-149.3 149.3s67 149.3 149.3 149.3c94.9 0 132.3-62.2 135.8-94.2H248v-85.3h236.1c2.3 12.7 3.9 26.9 3.9 41.4z"></path></svg>
+                        Sign in with Google
+                    </Button>
+                </div>
+                 <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-card px-2 text-muted-foreground">
+                            Or continue with
+                        </span>
+                    </div>
+                </div>
                 <form onSubmit={handleSignIn} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="signin-email">Email</Label>
@@ -166,10 +194,23 @@ function SignInForm() {
 }
 
 function SignUpForm() {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+
+  const handleGoogleSignUp = async () => {
+    setMessage('');
+    try {
+        await signInWithGoogle();
+        setMessage('Signed in successfully! Redirecting...');
+        router.push('/dashboard');
+        router.refresh();
+    } catch (error: any) {
+        setMessage(error.message);
+    }
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,6 +231,22 @@ function SignUpForm() {
             <CardDescription>Enter your details to create a new account.</CardDescription>
         </CardHeader>
         <CardContent>
+            <div className="grid gap-4">
+                <Button variant="outline" className="w-full" onClick={handleGoogleSignUp}>
+                    <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 21.2 173.4 58.2l-64.4 64.4C325.8 99.8 289.4 86 248 86c-82.3 0-149.3 67-149.3 149.3s67 149.3 149.3 149.3c94.9 0 132.3-62.2 135.8-94.2H248v-85.3h236.1c2.3 12.7 3.9 26.9 3.9 41.4z"></path></svg>
+                    Sign up with Google
+                </Button>
+            </div>
+            <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                        Or continue with email
+                    </span>
+                </div>
+            </div>
             <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="signup-name">Full Name</Label>

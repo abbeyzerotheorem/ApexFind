@@ -9,6 +9,8 @@ import {
   updateProfile,
   sendPasswordResetEmail,
   updatePassword,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth';
 
 export async function signUp(name: string, email: string, password: string) {
@@ -21,6 +23,12 @@ export async function signUp(name: string, email: string, password: string) {
 export async function signIn(email: string, password:string ) {
     const auth = getAuth();
     return signInWithEmailAndPassword(auth, email, password);
+}
+
+export async function signInWithGoogle() {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    return signInWithPopup(auth, provider);
 }
 
 export async function signOut() {
