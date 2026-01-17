@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // By default, deny all reads and writes
+    // This is a good practice to prevent unauthorized access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Allow users to read and write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+  }
+}

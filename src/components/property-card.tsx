@@ -2,11 +2,12 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from 'next/link';
 import { Bath, Bed, Heart, Share2, Square, MapPin, Zap, Droplets, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { useUser, useFirestore } from "@/firebase";
+import { doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -14,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
-import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
+import { formatNaira } from "@/lib/naira-formatter";
 import { getFallbackImage } from "@/lib/image-utils";
 
 type Property = {
@@ -52,49 +53,45 @@ export function PropertyCard({
     viewMode?: ViewMode,
     showDashboardControls?: boolean
 }) {
-  const [isSaved, setIsSaved] = useState(showDashboardControls);
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const [isSaved, setIsSaved] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState(property.imageUrl);
   const router = useRouter();
-  const supabase = createClient();
   const isRental = property.listing_type === 'rent';
 
-  const handleToggleSave = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+  const savedHomeRef = useMemo(() => {
+      if (!user) return null;
+      return doc(firestore, `users/${user.uid}/saved_homes`, String(property.id));
+  }, [user, firestore, property.id]);
+  
+  useEffect(() => {
+    if (!savedHomeRef) {
+        setIsSaved(false);
+        return;
+    };
 
-    if (!session) {
+    const checkIsSaved = async () => {
+        const docSnap = await getDoc(savedHomeRef);
+        setIsSaved(docSnap.exists());
+    };
+    checkIsSaved();
+  }, [savedHomeRef]);
+
+
+  const handleToggleSave = async () => {
+    if (!user) {
         router.push('/auth');
         return;
     }
-
-    const userId = session.user.id;
+    if (!savedHomeRef) return;
 
     if (isSaved) {
-        // Property is currently saved, so unsave it
-        const { error } = await supabase
-            .from('saved_homes')
-            .delete()
-            .match({ user_id: userId, property_id: property.id });
-
-        if (!error) {
-            setIsSaved(false);
-        } else {
-            console.error('Error unsaving property:', error.message);
-        }
+        await deleteDoc(savedHomeRef);
+        setIsSaved(false);
     } else {
-        // Property is not saved, so save it
-        const { error } = await supabase
-            .from('saved_homes')
-            .insert({ 
-                user_id: userId,
-                property_id: property.id,
-                property_data: property 
-            });
-
-        if (!error) {
-            setIsSaved(true);
-        } else {
-            console.error('Error saving property:', error.message);
-        }
+        await setDoc(savedHomeRef, { property_data: property, saved_at: new Date() });
+        setIsSaved(true);
     }
   };
 

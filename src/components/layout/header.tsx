@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import Link from "next/link";
-import type { Session } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/lib/auth";
+import { useUser } from "@/firebase";
 
 
 const baseNavLinks = [
@@ -21,8 +21,8 @@ const baseNavLinks = [
   { name: "Market Insights", href: "/insights" },
 ];
 
-export default function Header({ session }: { session: Session | null }) {
-  const user = session?.user;
+export default function Header({ session }: { session: any | null }) {
+  const { user } = useUser();
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -32,7 +32,7 @@ export default function Header({ session }: { session: Session | null }) {
   };
 
   const navLinks = user ? [...baseNavLinks, { name: "Dashboard", href: "/dashboard" }] : baseNavLinks;
-  const userInitial = user?.user_metadata?.full_name?.[0] || user?.email?.[0] || 'A';
+  const userInitial = user?.displayName?.[0] || user?.email?.[0] || 'A';
 
 
   return (
@@ -77,7 +77,7 @@ export default function Header({ session }: { session: Session | null }) {
                     <DropdownMenuContent className="w-56" align="end" forceMount>
                         <DropdownMenuLabel className="font-normal">
                         <div className="flex flex-col space-y-1">
-                            <p className="text-sm font-medium leading-none">{user.user_metadata.full_name || 'My Account'}</p>
+                            <p className="text-sm font-medium leading-none">{user.displayName || 'My Account'}</p>
                             <p className="text-xs leading-none text-muted-foreground">
                             {user.email}
                             </p>

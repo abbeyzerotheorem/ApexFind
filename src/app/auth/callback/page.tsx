@@ -2,52 +2,42 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { updateUserPassword } from '@/lib/auth';
+import { useUser } from '@/firebase';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
+  const { user, loading } = useUser();
   const [message, setMessage] = useState('Authenticating...');
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const supabase = createClient();
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get('mode');
+
+    if (mode === 'resetPassword') {
         setMessage('Create a new password for your account.');
         setShowPasswordForm(true);
-      } else if (event === 'SIGNED_IN') {
-        if (!window.location.hash.includes('type=recovery')) {
-          router.push('/dashboard');
-          router.refresh();
+    } else if (!loading) {
+        if (user) {
+            router.push('/dashboard');
+        } else {
+            // This case can happen if the user is not logged in but hits the callback url.
+            // Or after password reset, they are redirected here but are not logged in.
+            // We can decide to show a message or redirect them to login.
+            setMessage('Redirecting to login...');
+            setTimeout(() => router.push('/auth'), 2000);
         }
-      }
-    });
-
-    const checkInitialSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session && !window.location.hash.includes('type=recovery')) {
-        router.push('/dashboard');
-        router.refresh();
-      }
-    };
-
-    if (!window.location.hash.includes('type=recovery')) {
-        checkInitialSession();
     }
+  }, [user, loading, router]);
 
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [router, supabase]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -4,6 +4,7 @@ import './globals.css';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { createClient } from '@/lib/supabase/server';
+import { FirebaseClientProvider, firebaseConfig } from '@/firebase';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -25,9 +26,11 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} font-body antialiased`}>
-        <Header session={session} />
-        <main>{children}</main>
-        <Footer />
+        <FirebaseClientProvider options={firebaseConfig}>
+          <Header session={session} />
+          <main>{children}</main>
+          <Footer />
+        </FirebaseClientProvider>
       </body>
     </html>
   );

@@ -3,10 +3,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
+import { useUser, useFirestore } from "@/firebase";
 import { Loader2 } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SavedHomes from "@/components/dashboard/saved-homes";
@@ -44,54 +43,22 @@ type Property = {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [savedProperties, setSavedProperties] = useState<Property[]>([]);
-  const [savedPropertiesLoading, setSavedPropertiesLoading] = useState(true);
-  const supabase = createClient();
-
+  const { user, loading: userLoading } = useUser();
+  const firestore = useFirestore();
 
   useEffect(() => {
-    const checkSessionAndLoadData = async () => {
-        const currentUser = await getCurrentUser();
-        if (!currentUser) {
-            router.push('/auth');
-            return;
-        } 
-        
-        setUser(currentUser);
-        setLoading(false);
+    if (!userLoading && !user) {
+      router.push('/auth');
+    }
+  }, [user, userLoading, router]);
 
-        const { data: savedHomesData, error } = await supabase
-          .from('saved_homes')
-          .select('property_data')
-          .eq('user_id', currentUser.id)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.error('Error loading saved homes:', error);
-          setSavedProperties([]);
-        } else if (savedHomesData) {
-          const properties = savedHomesData.map(item => item.property_data);
-          setSavedProperties(properties);
-        }
-        setSavedPropertiesLoading(false);
-    };
-
-    checkSessionAndLoadData();
-  }, [router, supabase]);
-
-  if (loading) {
+  if (userLoading || !user) {
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <h1 className="text-xl text-muted-foreground">Loading Dashboard...</h1>
-        </div>
+      <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <h1 className="text-xl text-muted-foreground">Loading Dashboard...</h1>
+      </div>
     );
-  }
-
-  if (!user) {
-    return null; // Should be redirected by useEffect
   }
 
   return (
@@ -100,7 +67,7 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             My Dashboard
           </h1>
-          <p className="mt-1 text-muted-foreground">Welcome back, {user.user_metadata.full_name || user.email}</p>
+          <p className="mt-1 text-muted-foreground">Welcome back, {user.displayName || user.email}</p>
           <Tabs defaultValue="saved-homes" className="mt-8">
             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-3xl">
               <TabsTrigger value="saved-homes">
@@ -125,7 +92,7 @@ export default function DashboardPage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="saved-homes">
-                <SavedHomes properties={savedProperties} loading={savedPropertiesLoading} />
+                <SavedHomes />
             </TabsContent>
             <TabsContent value="saved-searches">
                  <div className="mt-8">
@@ -320,11 +287,11 @@ export default function DashboardPage() {
                            <div className="grid sm:grid-cols-2 gap-4">
                              <div className="space-y-2">
                                 <Label htmlFor="name">Full Name</Label>
-                                <Input id="name" defaultValue={user.user_metadata.full_name || ''} />
+                                <Input id="name" defaultValue={user.displayName || ''} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
-                                <Input id="email" type="email" defaultValue={user.email} />
+                                <Input id="email" type="email" defaultValue={user.email || ''} />
                             </div>
                            </div>
                            <div className="space-y-2">

@@ -10,8 +10,21 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { signIn, signUp, resetPasswordForEmail } from '@/lib/auth';
+import { useUser } from '@/firebase';
 
 export default function AuthPage() {
+    const { user, loading } = useUser();
+    const router = useRouter();
+
+    if (loading) {
+        return <div>Loading...</div>; // Or a spinner
+    }
+
+    if(user) {
+        router.push('/dashboard');
+        return null;
+    }
+
     return (
         <div className="flex min-h-screen flex-col bg-background">
             <main className="flex-grow flex items-center justify-center py-12 sm:py-16">
@@ -164,7 +177,7 @@ function SignUpForm() {
 
     try {
         await signUp(name, email, password);
-        setMessage('Check your email for a confirmation link to complete your sign up.');
+        setMessage('Check your email for a confirmation link to complete your sign up. Note: This is a demo app, you might not receive an email.');
     } catch (error: any) {
         setMessage(error.message);
     }
