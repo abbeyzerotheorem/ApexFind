@@ -2,8 +2,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -58,97 +56,93 @@ export default function MortgagePage() {
     }, [homePrice, downPayment, loanTerm, interestRate, monthlyPayment]);
 
     return (
-        <div className="flex min-h-screen flex-col bg-background">
-            <Header />
-            <main className="flex-grow py-12 sm:py-16">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="text-center">
-                        <h1 className="text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
-                            Mortgage Calculator
-                        </h1>
-                        <p className="mt-6 max-w-2xl mx-auto text-lg text-muted-foreground">
-                            Estimate your monthly mortgage payment and see how different variables can impact your costs.
-                        </p>
-                    </div>
+        <div className="flex min-h-screen flex-col bg-background py-12 sm:py-16">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="text-center">
+                    <h1 className="text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
+                        Mortgage Calculator
+                    </h1>
+                    <p className="mt-6 max-w-2xl mx-auto text-lg text-muted-foreground">
+                        Estimate your monthly mortgage payment and see how different variables can impact your costs.
+                    </p>
+                </div>
 
-                    <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <Card className="lg:col-span-1">
+                <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <Card className="lg:col-span-1">
+                        <CardHeader>
+                            <CardTitle>Loan Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="home-price">Home Price (₦)</Label>
+                                <Input id="home-price" value={homePrice.toLocaleString()} onChange={(e) => setHomePrice(Number(e.target.value.replace(/,/g, '')))} />
+                                <Slider value={[homePrice]} onValueChange={(v) => setHomePrice(v[0])} max={100000000} step={100000} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="down-payment">Down Payment (₦)</Label>
+                                <Input id="down-payment" value={downPayment.toLocaleString()} onChange={(e) => setDownPayment(Number(e.target.value.replace(/,/g, '')))} />
+                                <Slider value={[downPayment]} onValueChange={(v) => setDownPayment(v[0])} max={homePrice} step={50000} />
+                                 <div className="text-right text-sm text-muted-foreground">{downPaymentPercentage.toFixed(1)}%</div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="loan-term">Loan Term (Years)</Label>
+                                <Input id="loan-term" value={loanTerm} onChange={(e) => setLoanTerm(Number(e.target.value))} />
+                                <Slider value={[loanTerm]} onValueChange={(v) => setLoanTerm(v[0])} max={30} step={1} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="interest-rate">Interest Rate (%)</Label>
+                                <Input id="interest-rate" value={interestRate} onChange={(e) => setInterestRate(Number(e.target.value))} />
+                                <Slider value={[interestRate]} onValueChange={(v) => setInterestRate(v[0])} max={20} step={0.1} />
+                            </div>
+                        </CardContent>
+                    </Card>
+                    
+                    <div className="lg:col-span-2 space-y-8">
+                         <Card className="text-center">
                             <CardHeader>
-                                <CardTitle>Loan Details</CardTitle>
+                                <CardTitle className="text-muted-foreground">Estimated Monthly Payment</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="home-price">Home Price (₦)</Label>
-                                    <Input id="home-price" value={homePrice.toLocaleString()} onChange={(e) => setHomePrice(Number(e.target.value.replace(/,/g, '')))} />
-                                    <Slider value={[homePrice]} onValueChange={(v) => setHomePrice(v[0])} max={100000000} step={100000} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="down-payment">Down Payment (₦)</Label>
-                                    <Input id="down-payment" value={downPayment.toLocaleString()} onChange={(e) => setDownPayment(Number(e.target.value.replace(/,/g, '')))} />
-                                    <Slider value={[downPayment]} onValueChange={(v) => setDownPayment(v[0])} max={homePrice} step={50000} />
-                                     <div className="text-right text-sm text-muted-foreground">{downPaymentPercentage.toFixed(1)}%</div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="loan-term">Loan Term (Years)</Label>
-                                    <Input id="loan-term" value={loanTerm} onChange={(e) => setLoanTerm(Number(e.target.value))} />
-                                    <Slider value={[loanTerm]} onValueChange={(v) => setLoanTerm(v[0])} max={30} step={1} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="interest-rate">Interest Rate (%)</Label>
-                                    <Input id="interest-rate" value={interestRate} onChange={(e) => setInterestRate(Number(e.target.value))} />
-                                    <Slider value={[interestRate]} onValueChange={(v) => setInterestRate(v[0])} max={20} step={0.1} />
-                                </div>
+                            <CardContent>
+                                <p className="text-5xl font-bold text-primary">₦{monthlyPayment.toLocaleString('en-NG', { maximumFractionDigits: 0 })}</p>
+                            </CardContent>
+                            <CardFooter className="flex-col items-center justify-center text-sm text-muted-foreground">
+                                <p>Principal & Interest only. Does not include taxes or insurance.</p>
+                                <Button variant="link">Get a detailed quote</Button>
+                            </CardFooter>
+                        </Card>
+
+                         <Card>
+                            <CardHeader>
+                                <CardTitle>Amortization Schedule</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <BarChart data={amortizationData}>
+                                        <XAxis dataKey="year" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₦${(value / 1000000).toFixed(0)}M`}/>
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                            formatter={(value: number, name: string) => [`₦${value.toLocaleString()}`, name.charAt(0).toUpperCase() + name.slice(1)]}
+                                        />
+                                        <Bar dataKey="principal" stackId="a" fill="hsl(var(--primary))" name="Principal"/>
+                                        <Bar dataKey="interest" stackId="a" fill="hsl(var(--accent))" name="Interest"/>
+                                    </BarChart>
+                                </ResponsiveContainer>
                             </CardContent>
                         </Card>
-                        
-                        <div className="lg:col-span-2 space-y-8">
-                             <Card className="text-center">
-                                <CardHeader>
-                                    <CardTitle className="text-muted-foreground">Estimated Monthly Payment</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-5xl font-bold text-primary">₦{monthlyPayment.toLocaleString('en-NG', { maximumFractionDigits: 0 })}</p>
-                                </CardContent>
-                                <CardFooter className="flex-col items-center justify-center text-sm text-muted-foreground">
-                                    <p>Principal & Interest only. Does not include taxes or insurance.</p>
-                                    <Button variant="link">Get a detailed quote</Button>
-                                </CardFooter>
-                            </Card>
-
-                             <Card>
-                                <CardHeader>
-                                    <CardTitle>Amortization Schedule</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <ResponsiveContainer width="100%" height={300}>
-                                        <BarChart data={amortizationData}>
-                                            <XAxis dataKey="year" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                            <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₦${(value / 1000000).toFixed(0)}M`}/>
-                                            <Tooltip
-                                                contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                                formatter={(value: number, name: string) => [`₦${value.toLocaleString()}`, name.charAt(0).toUpperCase() + name.slice(1)]}
-                                            />
-                                            <Bar dataKey="principal" stackId="a" fill="hsl(var(--primary))" name="Principal"/>
-                                            <Bar dataKey="interest" stackId="a" fill="hsl(var(--accent))" name="Interest"/>
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </div>
-                     <div className="mt-16 text-center">
-                        <h2 className="text-3xl font-bold tracking-tight text-foreground">Ready for the Next Step?</h2>
-                        <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
-                            Get pre-approved for a loan to understand your budget and strengthen your offer when you find the perfect home.
-                        </p>
-                        <div className="mt-8 flex justify-center gap-4">
-                            <Button size="lg">Get Pre-Approved</Button>
-                            <Button size="lg" variant="outline">Find a Lender</Button>
-                        </div>
                     </div>
                 </div>
-            </main>
-            <Footer />
+                 <div className="mt-16 text-center">
+                    <h2 className="text-3xl font-bold tracking-tight text-foreground">Ready for the Next Step?</h2>
+                    <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
+                        Get pre-approved for a loan to understand your budget and strengthen your offer when you find the perfect home.
+                    </p>
+                    <div className="mt-8 flex justify-center gap-4">
+                        <Button size="lg">Get Pre-Approved</Button>
+                        <Button size="lg" variant="outline">Find a Lender</Button>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

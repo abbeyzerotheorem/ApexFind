@@ -2,8 +2,6 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { PlaceHolderProperties } from '@/lib/placeholder-properties';
-import Header from '@/components/layout/header';
-import Footer from '@/components/layout/footer';
 import { BedDouble, Bath, Maximize, Calendar, Car, Home, Droplet, Wind, Heart, Share2, MapPin, CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -62,13 +60,11 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background py-8 sm:py-12">
        <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Header />
-      <main className="flex-grow py-8 sm:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
           <MediaGallery images={propertyImages} propertyAddress={property.address} />
@@ -230,8 +226,6 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                 </div>
             </div>
         </div>
-      </main>
-      <Footer />
     </div>
   );
 }

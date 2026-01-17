@@ -1,8 +1,6 @@
 
 'use client';
 import { useState } from 'react';
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import { PlaceHolderAgents, Agent } from "@/lib/placeholder-agents";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,68 +25,64 @@ export default function AgentSearchPage() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col bg-background">
-            <Header />
-            <main className="flex-grow py-8 sm:py-12">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-12">
-                        <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-                            Find a Local Real Estate Agent
-                        </h1>
-                        <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-                            Connect with trusted agents to help you with your buying and selling needs.
-                        </p>
-                    </div>
+        <div className="flex min-h-screen flex-col bg-background py-8 sm:py-12">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-12">
+                    <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+                        Find a Local Real Estate Agent
+                    </h1>
+                    <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
+                        Connect with trusted agents to help you with your buying and selling needs.
+                    </p>
+                </div>
 
-                    <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="relative md:col-span-2">
-                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                            <Input 
-                                type="text"
-                                placeholder="Search by name, company, or location"
-                                className="w-full pl-10 h-12 text-base"
-                                value={searchTerm}
-                                onChange={handleSearch}
-                            />
-                        </div>
-                        <div className="flex gap-4">
-                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-full h-12 text-base justify-between">
-                                        Languages <ChevronDown className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuCheckboxItem>English</DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem>Yoruba</DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem>Igbo</DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem>Hausa</DropdownMenuCheckboxItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-full h-12 text-base justify-between">
-                                        Services <ChevronDown className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuCheckboxItem>Luxury Homes</DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem>First-time Buyers</DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem>Commercial</DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem>Rentals</DropdownMenuCheckboxItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
+                <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="relative md:col-span-2">
+                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <Input 
+                            type="text"
+                            placeholder="Search by name, company, or location"
+                            className="w-full pl-10 h-12 text-base"
+                            value={searchTerm}
+                            onChange={handleSearch}
+                        />
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {agents.map(agent => (
-                            <AgentCard key={agent.id} agent={agent} />
-                        ))}
+                    <div className="flex gap-4">
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="w-full h-12 text-base justify-between">
+                                    Languages <ChevronDown className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuCheckboxItem>English</DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem>Yoruba</DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem>Igbo</DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem>Hausa</DropdownMenuCheckboxItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="w-full h-12 text-base justify-between">
+                                    Services <ChevronDown className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuCheckboxItem>Luxury Homes</DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem>First-time Buyers</DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem>Commercial</DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem>Rentals</DropdownMenuCheckboxItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
-            </main>
-            <Footer />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {agents.map(agent => (
+                        <AgentCard key={agent.id} agent={agent} />
+                    ))}
+                </div>
+            </div>
         </div>
     )
 }

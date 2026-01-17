@@ -7,8 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import Header from '@/components/layout/header';
-import Footer from '@/components/layout/footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { signIn, signUp, resetPasswordForEmail } from '@/lib/auth';
@@ -16,7 +14,6 @@ import { signIn, signUp, resetPasswordForEmail } from '@/lib/auth';
 export default function AuthPage() {
     return (
         <div className="flex min-h-screen flex-col bg-background">
-            <Header />
             <main className="flex-grow flex items-center justify-center py-12 sm:py-16">
                 <Tabs defaultValue="signin" className="w-full max-w-md">
                     <TabsList className="grid w-full grid-cols-2">
@@ -31,7 +28,6 @@ export default function AuthPage() {
                     </TabsContent>
                 </Tabs>
             </main>
-            <Footer />
         </div>
     )
 }

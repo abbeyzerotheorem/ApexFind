@@ -1,17 +1,14 @@
-
 'use client';
 
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { getCurrentUser, signOut } from "@/lib/auth";
+import { signOut } from "@/lib/auth";
 
 
 const baseNavLinks = [
@@ -24,27 +21,9 @@ const baseNavLinks = [
   { name: "Market Insights", href: "/insights" },
 ];
 
-export default function Header() {
-  const [user, setUser] = useState<User | null>(null);
+export default function Header({ session }: { session: Session | null }) {
+  const user = session?.user;
   const router = useRouter();
-  const supabase = createClient();
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
-    };
-
-    fetchUser();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [supabase]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -53,6 +32,8 @@ export default function Header() {
   };
 
   const navLinks = user ? [...baseNavLinks, { name: "Dashboard", href: "/dashboard" }] : baseNavLinks;
+  const userInitial = user?.user_metadata?.full_name?.[0] || user?.email?.[0] || 'A';
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -89,14 +70,14 @@ export default function Header() {
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                             <Avatar className="h-10 w-10">
-                                <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
+                                <AvatarFallback>{userInitial.toUpperCase()}</AvatarFallback>
                             </Avatar>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="end" forceMount>
                         <DropdownMenuLabel className="font-normal">
                         <div className="flex flex-col space-y-1">
-                            <p className="text-sm font-medium leading-none">My Account</p>
+                            <p className="text-sm font-medium leading-none">{user.user_metadata.full_name || 'My Account'}</p>
                             <p className="text-xs leading-none text-muted-foreground">
                             {user.email}
                             </p>

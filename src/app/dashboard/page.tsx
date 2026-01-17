@@ -8,8 +8,6 @@ import type { User } from "@supabase/supabase-js";
 import { Loader2 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SavedHomes from "@/components/dashboard/saved-homes";
 import { Heart, Search, User as UserIcon, MoreVertical, Pencil, Trash2, History, X, Mail, Phone, Building, Link2, MessageSquare, Send } from "lucide-react";
@@ -97,9 +95,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <Header />
-      <main className="flex-grow py-8 sm:py-12">
+    <div className="flex min-h-screen flex-col bg-background py-8 sm:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             My Dashboard
@@ -414,8 +410,6 @@ export default function DashboardPage() {
             </TabsContent>
           </Tabs>
         </div>
-      </main>
-      <Footer />
     </div>
   );
 }
