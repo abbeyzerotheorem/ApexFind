@@ -21,7 +21,7 @@ const baseNavLinks = [
   { name: "Market Insights", href: "/insights" },
 ];
 
-export default function Header({ session }: { session: any | null }) {
+export default function Header() {
   const { user } = useUser();
   const router = useRouter();
 
