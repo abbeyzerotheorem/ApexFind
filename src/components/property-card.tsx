@@ -15,6 +15,7 @@ import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
 import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
+import { getFallbackImage } from "@/lib/image-utils";
 
 type Property = {
     id: number;
@@ -52,6 +53,7 @@ export function PropertyCard({
     showDashboardControls?: boolean
 }) {
   const [isSaved, setIsSaved] = useState(showDashboardControls);
+  const [currentImageUrl, setCurrentImageUrl] = useState(property.imageUrl);
   const router = useRouter();
   const supabase = createClient();
   const isRental = property.listing_type === 'rent';
@@ -101,12 +103,15 @@ export function PropertyCard({
         <div className="relative h-64">
             <Link href={`/property/${property.id}`}>
                 <Image
-                src={property.imageUrl}
+                src={currentImageUrl}
                 alt={`Image of ${property.address}`}
                 data-ai-hint={property.imageHint}
                 fill
                 className="w-full object-cover transition-transform duration-300 hover:scale-105"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                onError={() => {
+                  setCurrentImageUrl(getFallbackImage(property.home_type));
+                }}
                 />
             </Link>
             <div className="absolute left-3 top-3">
