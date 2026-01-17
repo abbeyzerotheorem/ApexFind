@@ -12,6 +12,11 @@ service cloud.firestore {
     // Allow users to read and write their own data
     match /users/{userId} {
       allow read, write: if request.auth.uid == userId;
+
+      // Allow users to manage their own saved homes
+      match /saved_homes/{propertyId} {
+        allow read, write: if request.auth.uid == userId;
+      }
     }
   }
 }

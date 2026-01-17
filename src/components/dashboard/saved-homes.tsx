@@ -31,11 +31,11 @@ export default function SavedHomes() {
   const firestore = useFirestore();
 
   const savedHomesQuery = useMemo(() => {
-    if (!user) return null;
+    if (!user || !firestore) return null;
     return query(collection(firestore, `users/${user.uid}/saved_homes`));
   }, [user, firestore]);
 
-  const { data: properties, loading, error } = useCollection<{ property_data: Property }>(savedHomesQuery as any);
+  const { data: properties, loading, error } = useCollection<{ property_data: Property }>(savedHomesQuery);
 
   if (loading) {
     return (

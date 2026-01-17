@@ -1,20 +1,12 @@
 'use client';
 
-import {useEffect, useState, useRef} from 'react';
+import {useEffect, useState} from 'react';
 
 import {
-  getFirestore,
   onSnapshot,
-  collection,
-  query,
-  where,
   type DocumentData,
-  type Firestore,
-  type CollectionReference,
   type Query,
 } from 'firebase/firestore';
-
-import {useFirebase} from './provider';
 
 interface LoadingHook<T> {
   data: T | undefined;
@@ -38,72 +30,47 @@ type HookResult<T> = LoadingHook<T> | SuccessHook<T> | ErrorHook;
 
 /**
  * A hook to fetch a collection from Firestore.
- * @param path The path to the collection.
+ * @param q The query to the collection. Can be null if the query is not ready.
  * @returns The collection data, loading state, and error state.
  */
 export function useCollection<T = DocumentData>(
-  path: string
-): HookResult<Array<T & {id: string}>>;
-
-/**
- * A hook to fetch a collection from Firestore.
- * @param ref The reference to the collection.
- * @returns The collection data, loading state, and error state.
- */
-export function useCollection<T = DocumentData>(
-  ref: CollectionReference<T>
-): HookResult<Array<T & {id: string}>>;
-
-/**
- * A hook to fetch a collection from Firestore.
- * @param q The query to the collection.
- * @returns The collection data, loading state, and error state.
- */
-export function useCollection<T = DocumentData>(
-  q: Query<T>
-): HookResult<Array<T & {id: string}>>;
-
-export function useCollection<T = DocumentData>(
-  pathOrRefOrQuery: string | CollectionReference<T> | Query<T>
+  q: Query<T> | null
 ): HookResult<Array<T & {id: string}>> {
-  const {firestore} = useFirebase();
-
   const [data, setData] = useState<Array<T & {id: string}> | undefined>(
     undefined
   );
   const [error, setError] = useState<Error | undefined>(undefined);
 
-  const query =
-    typeof pathOrRefOrQuery === 'string'
-      ? collection(firestore, pathOrRefOrQuery)
-      : pathOrRefOrQuery;
-
-  const queryRef = useRef(query);
-
   useEffect(() => {
+    // If the query is not ready, for example, if we are waiting for a user to be authenticated,
+    // we can return an empty array to signify that the collection is empty.
+    if (q === null) {
+      setData([]);
+      return;
+    }
+    
     const unsubscribe = onSnapshot(
-      queryRef.current,
+      q,
       snapshot => {
-        const data: Array<T & {id: string}> = [];
-
+        const docs: Array<T & {id: string}> = [];
         snapshot.forEach(doc => {
-          data.push({
+          docs.push({
             id: doc.id,
             ...(doc.data() as T),
           });
         });
-
-        setData(data);
+        setData(docs);
+        setError(undefined);
       },
-      error => {
-        setError(error);
+      err => {
+        setError(err);
       }
     );
 
     return () => unsubscribe();
-  }, [firestore]);
+  }, [q]); // The dependency on the query object is crucial for re-fetching data when the query changes.
 
-  const loading = data === undefined;
+  const loading = data === undefined && error === undefined;
 
   return {data, loading, error} as HookResult<Array<T & {id: string}>>;
 }

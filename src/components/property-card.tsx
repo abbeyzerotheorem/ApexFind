@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Bath, Bed, Heart, Share2, Square, MapPin, Zap, Droplets, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore } from "@/firebase";
-import { doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, deleteDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -61,7 +61,7 @@ export function PropertyCard({
   const isRental = property.listing_type === 'rent';
 
   const savedHomeRef = useMemo(() => {
-      if (!user) return null;
+      if (!user || !firestore) return null;
       return doc(firestore, `users/${user.uid}/saved_homes`, String(property.id));
   }, [user, firestore, property.id]);
   
@@ -90,7 +90,7 @@ export function PropertyCard({
         await deleteDoc(savedHomeRef);
         setIsSaved(false);
     } else {
-        await setDoc(savedHomeRef, { property_data: property, saved_at: new Date() });
+        await setDoc(savedHomeRef, { property_data: property, saved_at: serverTimestamp() });
         setIsSaved(true);
     }
   };

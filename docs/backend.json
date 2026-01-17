@@ -21,6 +21,66 @@
         }
       },
       "required": ["displayName", "email"]
+    },
+    "property": {
+      "title": "Property",
+      "description": "A real estate property listing.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "description": "Unique identifier for the property."
+        },
+        "address": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number"
+        },
+        "beds": {
+          "type": "number"
+        },
+        "baths": {
+          "type": "number"
+        },
+        "sqft": {
+          "type": "number"
+        },
+        "imageUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "listing_type": {
+          "type": "string",
+          "enum": ["sale", "rent"]
+        }
+      },
+      "required": [
+        "id",
+        "address",
+        "price",
+        "beds",
+        "baths",
+        "sqft",
+        "imageUrl",
+        "listing_type"
+      ]
+    },
+    "savedHome": {
+      "title": "Saved Home",
+      "description": "A user's saved property.",
+      "type": "object",
+      "properties": {
+        "property_data": {
+          "$ref": "#/entities/property"
+        },
+        "saved_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the user saved the home."
+        }
+      },
+      "required": ["property_data", "saved_at"]
     }
   },
   "auth": {
@@ -32,6 +92,12 @@
         "$ref": "#/entities/user"
       },
       "description": "Stores user profile information."
+    },
+    "/users/{userId}/saved_homes/{propertyId}": {
+      "schema": {
+        "$ref": "#/entities/savedHome"
+      },
+      "description": "Stores a user's saved properties. The document ID is the property ID."
     }
   }
 }
