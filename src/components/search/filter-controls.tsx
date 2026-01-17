@@ -19,11 +19,25 @@ type FilterControlsProps = {
     beds: string;
     baths: string;
     homeTypes: string[];
+    features: string[];
 }
 
 const homeTypeOptions = ["House", "Apartment (Flat)", "Duplex", "Terrace"];
+const featureOptions = [
+    { id: "furnished", label: "Furnished" },
+    { id: "generator", label: "Generator" },
+    { id: "borehole", label: "Borehole" },
+    { id: "gated", label: "Gated Estate" },
+];
 
-export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, beds: initialBeds, baths: initialBaths, homeTypes: initialHomeTypes }: FilterControlsProps) {
+export function FilterControls({ 
+    minPrice: initialMin, 
+    maxPrice: initialMax, 
+    beds: initialBeds, 
+    baths: initialBaths, 
+    homeTypes: initialHomeTypes,
+    features: initialFeatures 
+}: FilterControlsProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -33,7 +47,7 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
     const [beds, setBeds] = React.useState(initialBeds);
     const [baths, setBaths] = React.useState(initialBaths);
     const [selectedHomeTypes, setSelectedHomeTypes] = React.useState<string[]>(initialHomeTypes);
-
+    const [selectedFeatures, setSelectedFeatures] = React.useState<string[]>(initialFeatures);
 
     const handlePriceChange = (value: number[]) => {
         setMinPrice(value[0]);
@@ -45,6 +59,13 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
             ? selectedHomeTypes.filter(t => t !== type)
             : [...selectedHomeTypes, type];
         setSelectedHomeTypes(newSelectedTypes);
+    }
+
+    const handleFeatureChange = (featureId: string) => {
+        const newSelectedFeatures = selectedFeatures.includes(featureId)
+            ? selectedFeatures.filter(f => f !== featureId)
+            : [...selectedFeatures, featureId];
+        setSelectedFeatures(newSelectedFeatures);
     }
     
     const applyFilters = () => {
@@ -78,6 +99,12 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
         } else {
             params.delete('homeTypes');
         }
+        
+        if (selectedFeatures.length > 0) {
+            params.set('features', selectedFeatures.join(','));
+        } else {
+            params.delete('features');
+        }
 
         router.push(`${pathname}?${params.toString()}`);
     }
@@ -89,6 +116,7 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
         params.delete('beds');
         params.delete('baths');
         params.delete('homeTypes');
+        params.delete('features');
         router.push(`${pathname}?${params.toString()}`);
     }
 
@@ -97,7 +125,7 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
 
     return (
         <div className="space-y-6 py-4">
-             <Accordion type="multiple" defaultValue={['price', 'beds-baths', 'home-type']}>
+             <Accordion type="multiple" defaultValue={['price', 'beds-baths', 'home-type', 'features']}>
                 <AccordionItem value="price">
                     <AccordionTrigger>Price</AccordionTrigger>
                     <AccordionContent>
@@ -159,6 +187,23 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
                         </div>
                     </AccordionContent>
                 </AccordionItem>
+                <AccordionItem value="features">
+                    <AccordionTrigger>Features</AccordionTrigger>
+                    <AccordionContent>
+                         <div className="space-y-2">
+                            {featureOptions.map(feature => (
+                                <div key={feature.id} className="flex items-center gap-2">
+                                    <Checkbox 
+                                        id={`feat-${feature.id}`}
+                                        checked={selectedFeatures.includes(feature.id)}
+                                        onCheckedChange={() => handleFeatureChange(feature.id)}
+                                    />
+                                    <Label htmlFor={`feat-${feature.id}`} className="font-normal">{feature.label}</Label>
+                                </div>
+                            ))}
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
                 <AccordionItem value="sqft">
                     <AccordionTrigger>Square Feet</AccordionTrigger>
                     <AccordionContent>
@@ -183,17 +228,7 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
                         </div>
                     </AccordionContent>
                 </AccordionItem>
-                <AccordionItem value="features">
-                    <AccordionTrigger>Unique Features</AccordionTrigger>
-                    <AccordionContent>
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2"><Checkbox id="feat-pool"/> <Label htmlFor="feat-pool">Pool</Label></div>
-                            <div className="flex items-center gap-2"><Checkbox id="feat-waterfront"/> <Label htmlFor="feat-waterfront">Borehole</Label></div>
-                             <div className="flex items-center gap-2"><Checkbox id="feat-garage"/> <Label htmlFor="feat-garage">Generator</Label></div>
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-                 <AccordionItem value="keywords">
+                <AccordionItem value="keywords">
                     <AccordionTrigger>Keywords</AccordionTrigger>
                     <AccordionContent>
                         <Input placeholder="e.g. serviced apartment" />

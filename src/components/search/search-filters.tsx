@@ -16,6 +16,7 @@ import { FilterControls } from "./filter-controls";
 import Link from "next/link";
 import AutocompleteSearch from "../autocomplete-search";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
 
 const activeFilters = [
   { label: "3+ Beds", value: "beds_gte_3" },
@@ -31,6 +32,7 @@ type SearchFiltersProps = {
   beds: string;
   baths: string;
   homeTypes: string[];
+  features: string[];
   propertyCount: number;
 };
 
@@ -42,12 +44,22 @@ export default function SearchFilters({
   beds,
   baths,
   homeTypes,
+  features,
   propertyCount
 }: SearchFiltersProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [sort, setSort] = React.useState("relevant");
+    const listingType = searchParams.get('type') || 'buy';
+
+    const handleTypeChange = (value: string) => {
+        if (value) {
+            const newParams = new URLSearchParams(searchParams.toString());
+            newParams.set('type', value);
+            router.push(`${pathname}?${newParams.toString()}`);
+        }
+    }
 
     const createQueryString = React.useCallback(
       (name: string, value: string) => {
@@ -75,6 +87,10 @@ export default function SearchFilters({
                     </div>
 
                     <div className="flex items-center gap-2">
+                        <ToggleGroup type="single" value={listingType} onValueChange={handleTypeChange} aria-label="Transaction Type">
+                            <ToggleGroupItem value="buy" aria-label="For Sale">Buy</ToggleGroupItem>
+                            <ToggleGroupItem value="rent" aria-label="For Rent">Rent</ToggleGroupItem>
+                        </ToggleGroup>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="sm">
@@ -99,7 +115,7 @@ export default function SearchFilters({
                               All Filters
                             </Button>
                           </SheetTrigger>
-                          <SheetContent className="w-full max-w-md sm:max-w-md">
+                          <SheetContent className="w-full max-w-md sm:max-w-md overflow-y-auto">
                             <SheetHeader>
                               <SheetTitle>All Filters</SheetTitle>
                             </SheetHeader>
@@ -109,6 +125,7 @@ export default function SearchFilters({
                                 beds={beds}
                                 baths={baths}
                                 homeTypes={homeTypes}
+                                features={features}
                             />
                           </SheetContent>
                         </Sheet>

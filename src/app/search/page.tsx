@@ -14,6 +14,7 @@ export default function SearchPage({ searchParams }: {
     baths?: string,
     homeTypes?: string,
     type?: string,
+    features?: string,
   } 
 }) {
   const searchQuery = searchParams?.q || "";
@@ -23,6 +24,7 @@ export default function SearchPage({ searchParams }: {
   const baths = searchParams?.baths;
   const homeTypes = searchParams?.homeTypes ? searchParams.homeTypes.split(',') : [];
   const listingType = searchParams?.type;
+  const features = searchParams?.features ? searchParams.features.split(',') : [];
 
   let filteredProperties = PlaceHolderProperties.filter(property => {
     let matches = true;
@@ -51,6 +53,20 @@ export default function SearchPage({ searchParams }: {
     if (homeTypes.length > 0) {
       matches = matches && homeTypes.includes(property.home_type);
     }
+    if (features.length > 0) {
+        if (features.includes('furnished') && !property.is_furnished) {
+            matches = false;
+        }
+        if (features.includes('generator') && !property.power_supply?.toLowerCase().includes('generator')) {
+            matches = false;
+        }
+        if (features.includes('borehole') && !property.water_supply?.toLowerCase().includes('borehole')) {
+            matches = false;
+        }
+        if (features.includes('gated') && !property.security_type?.includes('Gated Estate')) {
+            matches = false;
+        }
+    }
     return matches;
   });
   
@@ -65,6 +81,7 @@ export default function SearchPage({ searchParams }: {
           beds={beds || 'any'}
           baths={baths || 'any'}
           homeTypes={homeTypes}
+          features={features}
           propertyCount={filteredProperties.length}
         />
       </div>
