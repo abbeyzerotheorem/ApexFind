@@ -7,10 +7,25 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search } from 'lucide-react';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function HeroSearch() {
+  const heroImage = PlaceHolderImages.find(p => p.id === 'hero-background');
+
   return (
-    <section className="relative bg-gradient-to-r from-green-600 to-green-800 py-20 text-white">
+    <section className="relative flex h-[60vh] min-h-[400px] items-center justify-center text-white">
+      {heroImage && (
+        <Image
+          src={heroImage.imageUrl}
+          alt={heroImage.description}
+          data-ai-hint={heroImage.imageHint}
+          fill
+          className="object-cover"
+          priority
+        />
+      )}
+      <div className="absolute inset-0 bg-black/50" />
       <div className="container relative z-10 mx-auto flex h-full flex-col items-center justify-center px-4 text-center sm:px-6 lg:px-8">
         <h1 className="text-5xl font-bold text-white sm:text-6xl md:text-7xl">
           Find Your Dream Property in Nigeria
@@ -96,7 +111,7 @@ function SearchBar() {
                 <Button
                     type="submit"
                     size="lg"
-                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700"
+                    className="flex items-center justify-center gap-2"
                 >
                     <Search size={20} />
                     <span>Search</span>
