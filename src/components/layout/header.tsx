@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -27,6 +27,7 @@ const baseNavLinks = [
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -43,7 +44,7 @@ export default function Header() {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase]);
 
   const handleSignOut = async () => {
     await signOut();

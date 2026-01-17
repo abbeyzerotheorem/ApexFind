@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ export default function AuthCallbackPage() {
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const supabase = createClient();
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
@@ -46,7 +47,7 @@ export default function AuthCallbackPage() {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [router]);
+  }, [router, supabase]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();

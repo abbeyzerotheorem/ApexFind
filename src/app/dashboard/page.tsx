@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { Loader2 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -50,6 +50,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [savedProperties, setSavedProperties] = useState<Property[]>([]);
   const [savedPropertiesLoading, setSavedPropertiesLoading] = useState(true);
+  const supabase = createClient();
 
 
   useEffect(() => {
@@ -80,7 +81,7 @@ export default function DashboardPage() {
     };
 
     checkSessionAndLoadData();
-  }, [router]);
+  }, [router, supabase]);
 
   if (loading) {
     return (

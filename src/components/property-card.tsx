@@ -6,7 +6,7 @@ import { useState } from "react";
 import Link from 'next/link';
 import { Bath, BedDouble, Heart, Maximize, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -43,6 +43,7 @@ export function PropertyCard({
   const [isSaved, setIsSaved] = useState(showDashboardControls);
   const router = useRouter();
   const isGallery = viewMode === 'gallery';
+  const supabase = createClient();
 
   const handleToggleSave = async () => {
     const { data: { session } } = await supabase.auth.getSession();
