@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
+import { formatNaira } from "@/lib/naira-formatter";
 
 type Property = {
   id: number;
@@ -135,7 +136,7 @@ export function PropertyCard({
       <CardContent className={cn("p-4 flex-grow flex flex-col", isGallery && "sm:w-1/2 justify-center")}>
         <div className="flex-grow">
           <p className="text-2xl font-bold text-primary">
-            ₦{property.price.toLocaleString()}
+            {formatNaira(property.price)}
           </p>
           <Link href={`/property/${property.id}`} className="block">
             <p className="mt-1 font-semibold text-foreground hover:text-primary">{property.address}</p>

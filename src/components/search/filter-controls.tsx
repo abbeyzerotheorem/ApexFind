@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
+import { formatNairaShort } from "@/lib/naira-formatter";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -98,12 +99,12 @@ export function FilterControls({ minPrice: initialMin, maxPrice: initialMax, bed
         <div className="space-y-6 py-4">
              <Accordion type="multiple" defaultValue={['price', 'beds-baths', 'home-type']}>
                 <AccordionItem value="price">
-                    <AccordionTrigger>Price (₦)</AccordionTrigger>
+                    <AccordionTrigger>Price</AccordionTrigger>
                     <AccordionContent>
                         <div className="space-y-4">
                              <div className="flex justify-between text-sm text-muted-foreground">
-                                <span>₦{minPrice.toLocaleString()}</span>
-                                <span>₦{maxPrice.toLocaleString()}{maxPrice === 500000000 ? '+' : ''}</span>
+                                <span>{formatNairaShort(minPrice)}</span>
+                                <span>{formatNairaShort(maxPrice)}{maxPrice === 500000000 ? '+' : ''}</span>
                             </div>
                             <Slider 
                                 value={[minPrice, maxPrice]} 

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { formatNaira, formatNairaShort } from '@/lib/naira-formatter';
 
 export default function MortgagePage() {
     const [homePrice, setHomePrice] = useState(25000000);
@@ -74,24 +75,24 @@ export default function MortgagePage() {
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="space-y-2">
-                                <Label htmlFor="home-price">Home Price (₦)</Label>
-                                <Input id="home-price" value={homePrice.toLocaleString()} onChange={(e) => setHomePrice(Number(e.target.value.replace(/,/g, '')))} />
+                                <Label htmlFor="home-price">Home Price</Label>
+                                <Input id="home-price" value={formatNaira(homePrice)} onChange={(e) => setHomePrice(Number(e.target.value.replace(/[^0-9]/g, '')))} />
                                 <Slider value={[homePrice]} onValueChange={(v) => setHomePrice(v[0])} max={100000000} step={100000} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="down-payment">Down Payment (₦)</Label>
-                                <Input id="down-payment" value={downPayment.toLocaleString()} onChange={(e) => setDownPayment(Number(e.target.value.replace(/,/g, '')))} />
+                                <Label htmlFor="down-payment">Down Payment</Label>
+                                <Input id="down-payment" value={formatNaira(downPayment)} onChange={(e) => setDownPayment(Number(e.target.value.replace(/[^0-9]/g, '')))} />
                                 <Slider value={[downPayment]} onValueChange={(v) => setDownPayment(v[0])} max={homePrice} step={50000} />
                                  <div className="text-right text-sm text-muted-foreground">{downPaymentPercentage.toFixed(1)}%</div>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="loan-term">Loan Term (Years)</Label>
-                                <Input id="loan-term" value={loanTerm} onChange={(e) => setLoanTerm(Number(e.target.value))} />
+                                <Input id="loan-term" type="number" value={loanTerm} onChange={(e) => setLoanTerm(Number(e.target.value))} />
                                 <Slider value={[loanTerm]} onValueChange={(v) => setLoanTerm(v[0])} max={30} step={1} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="interest-rate">Interest Rate (%)</Label>
-                                <Input id="interest-rate" value={interestRate} onChange={(e) => setInterestRate(Number(e.target.value))} />
+                                <Input id="interest-rate" type="number" value={interestRate} onChange={(e) => setInterestRate(Number(e.target.value))} />
                                 <Slider value={[interestRate]} onValueChange={(v) => setInterestRate(v[0])} max={20} step={0.1} />
                             </div>
                         </CardContent>
@@ -103,7 +104,7 @@ export default function MortgagePage() {
                                 <CardTitle className="text-muted-foreground">Estimated Monthly Payment</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-5xl font-bold text-primary">₦{monthlyPayment.toLocaleString('en-NG', { maximumFractionDigits: 0 })}</p>
+                                <p className="text-5xl font-bold text-primary">{formatNaira(monthlyPayment)}</p>
                             </CardContent>
                             <CardFooter className="flex-col items-center justify-center text-sm text-muted-foreground">
                                 <p>Principal & Interest only. Does not include taxes or insurance.</p>
@@ -119,10 +120,10 @@ export default function MortgagePage() {
                                 <ResponsiveContainer width="100%" height={300}>
                                     <BarChart data={amortizationData}>
                                         <XAxis dataKey="year" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₦${(value / 1000000).toFixed(0)}M`}/>
+                                        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatNairaShort(value as number)}/>
                                         <Tooltip
                                             contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                            formatter={(value: number, name: string) => [`₦${value.toLocaleString()}`, name.charAt(0).toUpperCase() + name.slice(1)]}
+                                            formatter={(value: number, name: string) => [formatNaira(value), name.charAt(0).toUpperCase() + name.slice(1)]}
                                         />
                                         <Bar dataKey="principal" stackId="a" fill="hsl(var(--primary))" name="Principal"/>
                                         <Bar dataKey="interest" stackId="a" fill="hsl(var(--accent))" name="Interest"/>

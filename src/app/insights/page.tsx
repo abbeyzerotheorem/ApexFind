@@ -12,14 +12,15 @@ import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import AutocompleteSearch from "@/components/autocomplete-search";
 import allStatesWithLgas from "@/jsons/nigeria-states.json";
+import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
 
 const marketData = [
-    { month: "Jan", price: 140 },
-    { month: "Feb", price: 145 },
-    { month: "Mar", price: 150 },
-    { month: "Apr", price: 152 },
-    { month: "May", price: 155 },
-    { month: "Jun", price: 160 },
+    { month: "Jan", price: 140000000 },
+    { month: "Feb", price: 145000000 },
+    { month: "Mar", price: 150000000 },
+    { month: "Apr", price: 152000000 },
+    { month: "May", price: 155000000 },
+    { month: "Jun", price: 160000000 },
 ];
 
 const featuredProperties = PlaceHolderProperties.slice(0, 3);
@@ -58,7 +59,7 @@ export default function InsightsPage() {
                                 <CardTitle className="text-base font-medium text-muted-foreground">Median List Price</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-3xl font-bold">₦155,000,000</p>
+                                <p className="text-3xl font-bold">{formatNaira(155000000)}</p>
                                 <p className="text-sm text-green-600">+2.5% YoY</p>
                             </CardContent>
                         </Card>
@@ -67,7 +68,7 @@ export default function InsightsPage() {
                                 <CardTitle className="text-base font-medium text-muted-foreground">Median Price/Sqft</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-3xl font-bold">₦450,000</p>
+                                <p className="text-3xl font-bold">{formatNaira(450000)}</p>
                                  <p className="text-sm text-green-600">+5.1% YoY</p>
                             </CardContent>
                         </Card>
@@ -98,10 +99,10 @@ export default function InsightsPage() {
                             <ResponsiveContainer width="100%" height={300}>
                                 <BarChart data={marketData}>
                                     <XAxis dataKey="month" stroke="#888888" fontSize={12} />
-                                    <YAxis stroke="#888888" fontSize={12} tickFormatter={(value) => `₦${value}M`} />
+                                    <YAxis stroke="#888888" fontSize={12} tickFormatter={(value) => formatNairaShort(value as number)} />
                                     <Tooltip
                                         contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                        formatter={(value: number) => [`₦${value},000,000`, "Median Price"]}
+                                        formatter={(value: number) => [formatNaira(value), "Median Price"]}
                                     />
                                     <Bar dataKey="price" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                                 </BarChart>
@@ -162,7 +163,7 @@ export default function InsightsPage() {
                                 <p className="text-muted-foreground">Known for its luxury apartments, high-end boutiques, and exclusive social clubs. A prime location for affluent professionals and expatriates.</p>
                                 <div className="flex justify-between items-center mt-4 pt-4 border-t">
                                     <span className="text-sm text-muted-foreground">Median Price</span>
-                                    <span className="font-bold text-lg">₦350,000,000</span>
+                                    <span className="font-bold text-lg">{formatNaira(350000000)}</span>
                                 </div>
                             </CardContent>
                         </Card>
@@ -175,7 +176,7 @@ export default function InsightsPage() {
                                 <p className="text-muted-foreground">A sprawling, rapidly developing area popular with young professionals and families, offering a mix of modern estates and vibrant commercial centers.</p>
                                   <div className="flex justify-between items-center mt-4 pt-4 border-t">
                                     <span className="text-sm text-muted-foreground">Median Price</span>
-                                    <span className="font-bold text-lg">₦120,000,000</span>
+                                    <span className="font-bold text-lg">{formatNaira(120000000)}</span>
                                 </div>
                             </CardContent>
                         </Card>
@@ -188,7 +189,7 @@ export default function InsightsPage() {
                                 <p className="text-muted-foreground">The state capital, a bustling commercial and administrative hub with a mix of residential areas, government offices, and the city's main airport.</p>
                                   <div className="flex justify-between items-center mt-4 pt-4 border-t">
                                     <span className="text-sm text-muted-foreground">Median Price</span>
-                                    <span className="font-bold text-lg">₦85,000,000</span>
+                                    <span className="font-bold text-lg">{formatNaira(85000000)}</span>
                                 </div>
                             </CardContent>
                         </Card>

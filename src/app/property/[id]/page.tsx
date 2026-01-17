@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { PropertyCard } from '@/components/property-card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { MediaGallery } from '@/components/property/media-gallery';
+import { formatNaira } from '@/lib/naira-formatter';
 
 const similarProperties = PlaceHolderProperties.slice(1, 4);
 
@@ -78,9 +79,9 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{property.address}</h1>
                         <p className="mt-2 text-3xl font-bold text-primary sm:text-4xl">
-                            ₦{property.price.toLocaleString()}
+                            {formatNaira(property.price)}
                         </p>
-                        <p className="mt-1 text-sm text-muted-foreground">Est. Payment: ₦{(property.price / 120).toLocaleString()}/mo</p>
+                        <p className="mt-1 text-sm text-muted-foreground">Est. Payment: {formatNaira(property.price / 120)}/mo</p>
                     </div>
                     <div className="flex flex-shrink-0 gap-2">
                         <Button variant="outline" size="icon"><Heart className="h-5 w-5" /></Button>
@@ -155,8 +156,8 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                    <AccordionItem value="financial">
                     <AccordionTrigger className="text-lg font-semibold">Financial & Tax</AccordionTrigger>
                     <AccordionContent className="grid grid-cols-2 gap-4 pt-4">
-                        <div className="flex items-center gap-3"><Home className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Price/sqft</div><div className="font-medium">₦{(property.price / property.sqft).toLocaleString()}</div></div></div>
-                        <div className="flex items-center gap-3"><Calendar className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">HOA Dues</div><div className="font-medium">₦50,000/month</div></div></div>
+                        <div className="flex items-center gap-3"><Home className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Price/sqft</div><div className="font-medium">{formatNaira(property.price / property.sqft)}</div></div></div>
+                        <div className="flex items-center gap-3"><Calendar className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">HOA Dues</div><div className="font-medium">{formatNaira(50000)}/month</div></div></div>
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
