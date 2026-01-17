@@ -2,7 +2,7 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { PlaceHolderProperties } from '@/lib/placeholder-properties';
-import { BedDouble, Bath, Maximize, Calendar, Car, Home, Droplet, Wind, Heart, Share2, MapPin, CheckSquare } from 'lucide-react';
+import { BedDouble, Bath, Maximize, Calendar, Car, Home, Droplet, Wind, Heart, Share2, MapPin, CheckSquare, Zap, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ import { PropertyCard } from '@/components/property-card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { MediaGallery } from '@/components/property/media-gallery';
 import { formatNaira } from '@/lib/naira-formatter';
+import { Badge } from '@/components/ui/badge';
 
 const similarProperties = PlaceHolderProperties.slice(1, 4);
 
@@ -33,7 +34,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
     "@type": "RealEstateListing",
     "name": property.address,
     "image": propertyImages,
-    "description": `Stunning ${property.beds}-bedroom, ${property.baths}-bathroom ${property.type.toLowerCase()} in ${property.address.split(',')[1]}.`,
+    "description": `Stunning ${property.beds}-bedroom, ${property.baths}-bathroom ${property.home_type.toLowerCase()} in ${property.address.split(',')[1]}.`,
     "address": {
       "@type": "PostalAddress",
       "streetAddress": property.address.split(',')[0],
@@ -80,6 +81,9 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                         <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{property.address}</h1>
                         <p className="mt-2 text-3xl font-bold text-primary sm:text-4xl">
                             {formatNaira(property.price)}
+                            {property.listing_type === 'rent' && property.price_period && (
+                              <span className="text-xl font-medium text-muted-foreground">/{property.price_period}</span>
+                            )}
                         </p>
                         <p className="mt-1 text-sm text-muted-foreground">Est. Payment: {formatNaira(property.price / 120)}/mo</p>
                     </div>
@@ -129,14 +133,14 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
               <div className="mt-8">
                 <h2 className="text-2xl font-bold text-foreground">About this home</h2>
                 <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-                  Discover luxury living in this stunning {property.beds}-bedroom, {property.baths}-bathroom {property.type.toLowerCase()} located in the heart of {property.address.split(',')[1]}. Spanning {property.sqft.toLocaleString()} square feet, this home offers an open-concept living space perfect for both relaxation and entertaining. The gourmet kitchen features state-of-the-art appliances and custom cabinetry. The master suite is a private oasis with a spa-like ensuite bathroom. Enjoy the Nigerian sun in your private outdoor space. This property combines modern elegance with comfort, making it the perfect place to call home.
+                  Discover luxury living in this stunning {property.beds}-bedroom, {property.baths}-bathroom {property.home_type.toLowerCase()} located in the heart of {property.address.split(',')[1]}. Spanning {property.sqft.toLocaleString()} square feet, this home offers an open-concept living space perfect for both relaxation and entertaining. The gourmet kitchen features state-of-the-art appliances and custom cabinetry. The master suite is a private oasis with a spa-like ensuite bathroom. Enjoy the Nigerian sun in your private outdoor space. This property combines modern elegance with comfort, making it the perfect place to call home.
                 </p>
-                 <ul className="mt-6 grid grid-cols-2 gap-4 text-sm">
-                    <li className="flex items-center gap-2"><CheckSquare className="h-4 w-4 text-primary" /> Open Floor Plan</li>
-                    <li className="flex items-center gap-2"><CheckSquare className="h-4 w-4 text-primary" /> Gourmet Kitchen</li>
-                    <li className="flex items-center gap-2"><CheckSquare className="h-4 w-4 text-primary" /> Private Balcony</li>
-                    <li className="flex items-center gap-2"><CheckSquare className="h-4 w-4 text-primary" /> 24/7 Security</li>
-                </ul>
+                 <div className="mt-6 flex flex-wrap gap-3">
+                    {property.is_furnished && <Badge variant="secondary">Furnished</Badge>}
+                    {property.power_supply && <Badge variant="secondary" className="flex items-center gap-1.5"><Zap className="h-3 w-3" /> {property.power_supply}</Badge>}
+                    {property.water_supply && <Badge variant="secondary" className="flex items-center gap-1.5"><Droplet className="h-3 w-3" /> {property.water_supply}</Badge>}
+                    {property.security_type && property.security_type.length > 0 && <Badge variant="secondary" className="flex items-center gap-1.5"><Shield className="h-3 w-3" /> Security</Badge>}
+                </div>
               </div>
 
               {/* Detailed Facts & Features */}
@@ -146,10 +150,11 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                   <AccordionItem value="property-facts">
                     <AccordionTrigger className="text-lg font-semibold">Property Facts</AccordionTrigger>
                     <AccordionContent className="grid grid-cols-2 gap-4 pt-4">
-                        <div className="flex items-center gap-3"><Home className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Type</div><div className="font-medium">{property.type}</div></div></div>
+                        <div className="flex items-center gap-3"><Home className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Type</div><div className="font-medium">{property.home_type}</div></div></div>
                         <div className="flex items-center gap-3"><Calendar className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Year Built</div><div className="font-medium">2021</div></div></div>
                         <div className="flex items-center gap-3"><Car className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Parking</div><div className="font-medium">2-Car Garage</div></div></div>
-                        <div className="flex items-center gap-3"><Droplet className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Water</div><div className="font-medium">Borehole</div></div></div>
+                        <div className="flex items-center gap-3"><Droplet className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Water</div><div className="font-medium">{property.water_supply}</div></div></div>
+                        <div className="flex items-center gap-3"><Zap className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Power</div><div className="font-medium">{property.power_supply}</div></div></div>
                         <div className="flex items-center gap-3"><Wind className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Cooling</div><div className="font-medium">Air Conditioning</div></div></div>
                     </AccordionContent>
                   </AccordionItem>

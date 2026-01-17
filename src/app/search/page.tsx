@@ -13,6 +13,7 @@ export default function SearchPage({ searchParams }: {
     beds?: string,
     baths?: string,
     homeTypes?: string,
+    type?: string,
   } 
 }) {
   const searchQuery = searchParams?.q || "";
@@ -21,11 +22,17 @@ export default function SearchPage({ searchParams }: {
   const beds = searchParams?.beds;
   const baths = searchParams?.baths;
   const homeTypes = searchParams?.homeTypes ? searchParams.homeTypes.split(',') : [];
+  const listingType = searchParams?.type;
 
   let filteredProperties = PlaceHolderProperties.filter(property => {
     let matches = true;
+
+    if (listingType) {
+      matches = matches && property.listing_type === listingType;
+    }
+
     if (searchQuery) {
-      matches = matches && property.address.toLowerCase().includes(searchQuery.toLowerCase());
+      matches = matches && (property.address.toLowerCase().includes(searchQuery.toLowerCase()) || property.city.toLowerCase().includes(searchQuery.toLowerCase()) || property.state.toLowerCase().includes(searchQuery.toLowerCase()));
     }
     if (minPrice) {
       matches = matches && property.price >= minPrice;
@@ -42,7 +49,7 @@ export default function SearchPage({ searchParams }: {
         matches = matches && property.baths >= minBaths;
     }
     if (homeTypes.length > 0) {
-      matches = matches && homeTypes.includes(property.type);
+      matches = matches && homeTypes.includes(property.home_type);
     }
     return matches;
   });
