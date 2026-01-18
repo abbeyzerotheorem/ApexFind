@@ -1,11 +1,11 @@
 
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useUser, useFirestore } from "@/firebase";
+import { useUser, useFirestore, useDoc } from "@/firebase";
 import { Loader2 } from "lucide-react";
-import { doc, getDoc } from "firebase/firestore";
+import { doc } from "firebase/firestore";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SavedHomes from "@/components/dashboard/saved-homes";
@@ -23,6 +23,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PlaceHolderAgents } from "@/lib/placeholder-agents";
 import { Textarea } from "@/components/ui/textarea";
+import { updateUserProfile } from "@/lib/user";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const viewedProperties = PlaceHolderProperties.slice(3, 6);
 const linkedAgent = PlaceHolderAgents[0];
@@ -46,11 +48,54 @@ export default function DashboardPage() {
   const { user, loading: userLoading } = useUser();
   const firestore = useFirestore();
 
+  // Profile State
+  const [displayName, setDisplayName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+
+  const userDocRef = useMemo(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [user, firestore]);
+  
+  const { data: userProfile, loading: profileLoading } = useDoc<{phoneNumber?: string}>(userDocRef);
+
+  useEffect(() => {
+    if (user) {
+      setDisplayName(user.displayName || '');
+    }
+    // `userProfile` might be loaded after `user`
+    if (userProfile) {
+      setPhoneNumber(userProfile.phoneNumber || '');
+    }
+  }, [user, userProfile]);
+
   useEffect(() => {
     if (!userLoading && !user) {
       router.push('/auth');
     }
   }, [user, userLoading, router]);
+
+  const handleProfileSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !firestore) return;
+
+    setIsSaving(true);
+    setSaveMessage('');
+    try {
+        await updateUserProfile(firestore, user.uid, {
+            displayName: displayName,
+            phoneNumber: phoneNumber
+        });
+        setSaveMessage('Profile updated successfully!');
+    } catch (error: any) {
+        setSaveMessage(`Error: ${error.message}`);
+    } finally {
+        setIsSaving(false);
+    }
+  };
+
 
   if (userLoading || !user) {
     return (
@@ -279,33 +324,55 @@ export default function DashboardPage() {
              <TabsContent value="profile">
                  <div className="mt-8 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                     <Card className="lg:col-span-2">
-                        <CardHeader>
-                            <CardTitle>Personal Information</CardTitle>
-                            <CardDescription>Update your name, contact details, and password.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-6">
-                           <div className="grid sm:grid-cols-2 gap-4">
-                             <div className="space-y-2">
-                                <Label htmlFor="name">Full Name</Label>
-                                <Input id="name" defaultValue={user.displayName || ''} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input id="email" type="email" defaultValue={user.email || ''} />
-                            </div>
-                           </div>
-                           <div className="space-y-2">
-                                <Label htmlFor="phone">Phone Number</Label>
-                                <Input id="phone" type="tel" defaultValue="+234 801 234 5678" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="password">New Password</Label>
-                                <Input id="password" type="password" placeholder="••••••••" />
-                            </div>
-                        </CardContent>
-                        <CardFooter>
-                            <Button>Save Changes</Button>
-                        </CardFooter>
+                        <form onSubmit={handleProfileSave}>
+                            <CardHeader>
+                                <CardTitle>Personal Information</CardTitle>
+                                <CardDescription>Update your name and contact details.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid gap-6">
+                                {userLoading || profileLoading ? (
+                                    <>
+                                        <div className="grid sm:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-4 w-20" />
+                                                <Skeleton className="h-10 w-full" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-4 w-20" />
+                                                <Skeleton className="h-10 w-full" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Skeleton className="h-4 w-28" />
+                                            <Skeleton className="h-10 w-full" />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="grid sm:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="name">Full Name</Label>
+                                                <Input id="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="email">Email</Label>
+                                                <Input id="email" type="email" value={user.email || ''} readOnly disabled />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="phone">Phone Number</Label>
+                                            <Input id="phone" type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="e.g. +234 801 234 5678"/>
+                                        </div>
+                                    </>
+                                )}
+                            </CardContent>
+                            <CardFooter className="flex-col items-start gap-2">
+                                <Button type="submit" disabled={isSaving}>
+                                    {isSaving ? "Saving..." : "Save Changes"}
+                                </Button>
+                                {saveMessage && <p className="text-sm text-muted-foreground">{saveMessage}</p>}
+                            </CardFooter>
+                        </form>
                     </Card>
 
                     <Card>
