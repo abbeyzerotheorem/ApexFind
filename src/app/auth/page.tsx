@@ -13,6 +13,7 @@ import { signIn, signUp, resetPasswordForEmail, signInWithGoogle } from '@/lib/a
 import { useUser } from '@/firebase';
 import { Loader2 } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { cn } from '@/lib/utils';
 
 export default function AuthPage() {
     const { user, loading } = useUser();
@@ -58,19 +59,23 @@ function SignInForm() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
+    const [isError, setIsError] = useState(false);
 
     const [resetEmail, setResetEmail] = useState('');
     const [resetMessage, setResetMessage] = useState('');
     const [isResetting, setIsResetting] = useState(false);
+    const [isResetError, setIsResetError] = useState(false);
 
     const handleGoogleSignIn = async () => {
         setMessage('');
+        setIsError(false);
         try {
             await signInWithGoogle();
             setMessage('Signed in successfully! Redirecting...');
             router.push('/dashboard');
             router.refresh();
         } catch (error: any) {
+            setIsError(true);
             setMessage(error.message);
         }
     };
@@ -78,6 +83,7 @@ function SignInForm() {
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
         setMessage('');
+        setIsError(false);
 
         try {
             await signIn(email, password);
@@ -85,13 +91,20 @@ function SignInForm() {
             router.push('/dashboard');
             router.refresh(); 
         } catch (error: any) {
-            setMessage(error.message);
+            setIsError(true);
+            if (error.code === 'auth/invalid-credential') {
+                setMessage('Incorrect email or password. Please try again or choose forgot password.');
+            } else {
+                setMessage(error.message);
+            }
         }
     };
 
     const handlePasswordReset = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsResetError(false);
         if (!resetEmail) {
+            setIsResetError(true);
             setResetMessage('Please enter an email address.');
             return;
         }
@@ -100,8 +113,10 @@ function SignInForm() {
     
         try {
             await resetPasswordForEmail(resetEmail);
+            setIsResetError(false);
             setResetMessage('Password reset email sent. Please check your inbox.');
         } catch (error: any) {
+            setIsResetError(true);
             setResetMessage(error.message);
         } finally {
             setIsResetting(false);
@@ -160,10 +175,10 @@ function SignInForm() {
                         />
                     </div>
                     <Button type="submit" className="w-full">Sign In</Button>
-                    {message && <p className="text-sm text-center text-muted-foreground pt-2">{message}</p>}
+                    {message && <p className={cn("text-sm text-center pt-2", isError ? "text-destructive" : "text-muted-foreground")}>{message}</p>}
                 </form>
                 <div className="text-center mt-4">
-                    <Dialog onOpenChange={() => setResetMessage('')}>
+                    <Dialog onOpenChange={() => { setResetMessage(''); setIsResetError(false); }}>
                         <DialogTrigger asChild>
                             <Button variant="link" className="p-0 h-auto font-normal text-sm">
                                 Forgot Password?
@@ -191,7 +206,7 @@ function SignInForm() {
                                  <Button type="submit" className="w-full" disabled={isResetting}>
                                     {isResetting ? 'Sending...' : 'Send Reset Link'}
                                  </Button>
-                                {resetMessage && <p className="text-sm text-center text-muted-foreground pt-2">{resetMessage}</p>}
+                                {resetMessage && <p className={cn("text-sm text-center pt-2", isResetError ? "text-destructive" : "text-muted-foreground")}>{resetMessage}</p>}
                             </form>
                         </DialogContent>
                     </Dialog>
@@ -208,15 +223,18 @@ function SignUpForm() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'customer' | 'agent'>('customer');
   const [message, setMessage] = useState('');
+  const [isError, setIsError] = useState(false);
 
   const handleGoogleSignUp = async () => {
     setMessage('');
+    setIsError(false);
     try {
         await signInWithGoogle();
         setMessage('Signed in successfully! Redirecting...');
         router.push('/dashboard');
         router.refresh();
     } catch (error: any) {
+        setIsError(true);
         setMessage(error.message);
     }
   };
@@ -224,12 +242,20 @@ function SignUpForm() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage('');
+    setIsError(false);
 
     try {
         await signUp(name, email, password, role);
         setMessage('Check your email for a confirmation link to complete your sign up. Note: This is a demo app, you might not receive an email.');
     } catch (error: any) {
-        setMessage(error.message);
+        setIsError(true);
+        if (error.code === 'auth/email-already-in-use') {
+            setMessage('An account with this email address already exists.');
+        } else if (error.code === 'auth/weak-password') {
+            setMessage('Password is too weak. It should be at least 6 characters long.');
+        } else {
+            setMessage(error.message);
+        }
     }
   };
 
@@ -304,7 +330,7 @@ function SignUpForm() {
                     />
                 </div>
                 <Button type="submit" className="w-full">Sign Up</Button>
-                {message && <p className="text-sm text-center text-muted-foreground pt-2">{message}</p>}
+                {message && <p className={cn("text-sm text-center pt-2", isError ? "text-destructive" : "text-muted-foreground")}>{message}</p>}
             </form>
         </CardContent>
     </Card>
