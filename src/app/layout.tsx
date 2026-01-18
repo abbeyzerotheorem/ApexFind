@@ -3,7 +3,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
-import { FirebaseClientProvider, firebaseConfig } from '@/firebase';
+import { FirebaseClientProvider } from '@/firebase';
+import { firebaseConfig } from '@/firebase/config';
 
 const inter = Inter({ subsets: ['latin'] });
 
