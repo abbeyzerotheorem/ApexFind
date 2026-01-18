@@ -9,14 +9,12 @@ import { doc } from "firebase/firestore";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SavedHomes from "@/components/dashboard/saved-homes";
-import { Heart, Search, User as UserIcon, MoreVertical, Pencil, Trash2, History, X, Mail, Phone, Building, Link2, MessageSquare, Send } from "lucide-react";
+import { Heart, User as UserIcon, History, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import Image from "next/image";
 import { PlaceHolderProperties } from "@/lib/placeholder-properties";
-import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,7 +23,7 @@ import { PlaceHolderAgents } from "@/lib/placeholder-agents";
 import { Textarea } from "@/components/ui/textarea";
 import { updateUserProfile } from "@/lib/user";
 import { Skeleton } from "@/components/ui/skeleton";
-import SavedSearches from "@/components/dashboard/saved-searches";
+import Link from 'next/link';
 
 const viewedProperties = PlaceHolderProperties.slice(3, 6);
 const linkedAgent = PlaceHolderAgents[0];
@@ -115,14 +113,10 @@ export default function DashboardPage() {
           </h1>
           <p className="mt-1 text-muted-foreground">Welcome back, {user.displayName || user.email}</p>
           <Tabs defaultValue="saved-homes" className="mt-8">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-3xl">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
               <TabsTrigger value="saved-homes">
                 <Heart className="mr-2 h-4 w-4" />
                 Saved Homes
-              </TabsTrigger>
-              <TabsTrigger value="saved-searches">
-                <Search className="mr-2 h-4 w-4" />
-                Saved Searches
               </TabsTrigger>
               <TabsTrigger value="viewed-history">
                 <History className="mr-2 h-4 w-4" />
@@ -139,9 +133,6 @@ export default function DashboardPage() {
             </TabsList>
             <TabsContent value="saved-homes">
                 <SavedHomes />
-            </TabsContent>
-            <TabsContent value="saved-searches">
-                <SavedSearches />
             </TabsContent>
             <TabsContent value="viewed-history">
                 <div className="mt-8">
@@ -167,7 +158,6 @@ export default function DashboardPage() {
                                 </div>
                                 <div className="p-4 flex flex-col justify-between items-end">
                                     <Button variant="ghost" size="icon" className="h-8 w-8">
-                                        <X className="h-4 w-4" />
                                         <span className="sr-only">Remove from history</span>
                                     </Button>
                                     <p className="text-xs text-muted-foreground whitespace-nowrap">
@@ -252,7 +242,6 @@ export default function DashboardPage() {
                              <div className="flex w-full items-center gap-2">
                                 <Textarea placeholder="Type your message..." className="flex-1 resize-none" rows={1} />
                                 <Button size="icon">
-                                    <Send className="h-4 w-4" />
                                     <span className="sr-only">Send</span>
                                 </Button>
                             </div>

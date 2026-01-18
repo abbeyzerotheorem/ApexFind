@@ -86,46 +86,6 @@
         }
       },
       "required": ["property_data", "saved_at"]
-    },
-    "savedSearch": {
-      "title": "Saved Search",
-      "description": "A user's saved search criteria and alert preferences.",
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "A user-provided name for the search (e.g., 'Downtown Condos')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A summary of the search criteria (e.g., 'Lagos, NG • ₦150M - ₦300M • 2+ Beds')."
-        },
-        "searchParams": {
-          "type": "string",
-          "description": "The URL query string representing the search filters."
-        },
-        "alertFrequency": {
-          "type": "string",
-          "enum": ["daily", "weekly", "instant", "never"],
-          "description": "How often the user wants to receive alerts for new matches."
-        },
-        "newMatchCount": {
-          "type": "number",
-          "description": "The number of new matching properties found since the last check."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the user saved the search."
-        }
-      },
-      "required": [
-        "name",
-        "description",
-        "searchParams",
-        "alertFrequency",
-        "createdAt"
-      ]
     }
   },
   "auth": {
@@ -143,12 +103,6 @@
         "$ref": "#/entities/savedHome"
       },
       "description": "Stores a user's saved properties. The document ID is the property ID."
-    },
-    "/users/{userId}/saved_searches/{searchId}": {
-      "schema": {
-        "$ref": "#/entities/savedSearch"
-      },
-      "description": "Stores a user's saved search criteria and alert preferences."
     }
   }
 }
