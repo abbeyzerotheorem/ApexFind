@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from "react";
 import Image from "next/image";
@@ -7,21 +8,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { PropertyCard } from "@/components/property-card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-
-
-type Property = {
-    id: number;
-    price: number;
-    address: string;
-    beds: number;
-    baths: number;
-    sqft: number;
-    imageUrl: string;
-    imageHint: string;
-    lotSize?: number;
-    agent?: string;
-    status?: string;
-};
+import type { Property } from "@/types";
 
 type ViewMode = "list" | "map" | "gallery";
 

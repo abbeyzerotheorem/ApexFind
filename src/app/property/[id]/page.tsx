@@ -13,6 +13,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { MediaGallery } from '@/components/property/media-gallery';
 import { formatNaira } from '@/lib/naira-formatter';
 import { Badge } from '@/components/ui/badge';
+import { TrackView } from '@/components/property/track-view';
 
 const similarProperties = PlaceHolderProperties.slice(1, 4);
 
@@ -232,6 +233,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                 </div>
             </div>
         </div>
+        <TrackView property={property} />
     </div>
   );
 }

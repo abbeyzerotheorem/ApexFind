@@ -17,30 +17,7 @@ import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
 import { formatNaira } from "@/lib/naira-formatter";
 import { getFallbackImage } from "@/lib/image-utils";
-
-type Property = {
-    id: number;
-    price: number;
-    listing_type: 'sale' | 'rent';
-    price_period?: string;
-    address: string;
-    city: string;
-    state: string;
-    estate_name?: string;
-    beds: number;
-    baths: number;
-    sqft: number;
-    imageUrl: string;
-    imageHint: string;
-    lotSize?: number;
-    agent?: string;
-    status?: string;
-    home_type: string;
-    is_furnished?: boolean;
-    power_supply?: string;
-    water_supply?: string;
-    security_type?: string[];
-  };
+import type { Property } from "@/types";
 
 type ViewMode = "list" | "map" | "gallery";
 

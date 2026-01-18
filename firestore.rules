@@ -18,6 +18,11 @@ service cloud.firestore {
       match /saved_homes/{propertyId} {
         allow read, write: if request.auth.uid == userId;
       }
+
+      // Allow users to manage their own viewed properties
+      match /viewed_properties/{propertyId} {
+        allow read, write: if request.auth.uid == userId;
+      }
     }
   }
 }

@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import Image from "next/image";
-import { PlaceHolderProperties } from "@/lib/placeholder-properties";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,23 +23,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { updateUserProfile } from "@/lib/user";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from 'next/link';
+import ViewedHistory from "@/components/dashboard/viewed-history";
 
-const viewedProperties = PlaceHolderProperties.slice(3, 6);
 const linkedAgent = PlaceHolderAgents[0];
-
-type Property = {
-  id: number;
-  price: number;
-  address: string;
-  beds: number;
-  baths: number;
-  sqft: number;
-  imageUrl: string;
-  imageHint: string;
-  lotSize?: number;
-  agent?: string;
-  status?: string;
-};
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -135,45 +120,7 @@ export default function DashboardPage() {
                 <SavedHomes />
             </TabsContent>
             <TabsContent value="viewed-history">
-                <div className="mt-8">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-                        <div>
-                            <h2 className="text-2xl font-bold">Recently Viewed Homes</h2>
-                            <p className="text-muted-foreground">A log of properties you have recently viewed.</p>
-                        </div>
-                        <Button variant="outline">Clear History</Button>
-                    </div>
-                     <div className="space-y-4">
-                        {viewedProperties.map((property, index) => (
-                            <Card key={property.id} className="flex overflow-hidden">
-                                <Link href={`/property/${property.id}`} className="relative w-32 h-32 sm:w-48 sm:h-auto flex-shrink-0">
-                                    <Image src={property.imageUrl} alt={property.address} layout="fill" objectFit="cover" />
-                                </Link>
-                                <div className="p-4 flex-grow">
-                                    <Link href={`/property/${property.id}`}>
-                                        <p className="font-semibold hover:text-primary">{property.address}</p>
-                                    </Link>
-                                    <p className="text-lg font-bold text-primary">₦{property.price.toLocaleString()}</p>
-                                    <p className="text-sm text-muted-foreground">{property.beds} beds • {property.baths} baths • {property.sqft.toLocaleString()} sqft</p>
-                                </div>
-                                <div className="p-4 flex flex-col justify-between items-end">
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                        <span className="sr-only">Remove from history</span>
-                                    </Button>
-                                    <p className="text-xs text-muted-foreground whitespace-nowrap">
-                                        Viewed {index + 1} day{index > 0 ? 's' : ''} ago
-                                    </p>
-                                </div>
-                            </Card>
-                        ))}
-                    </div>
-                    {viewedProperties.length === 0 && (
-                        <div className="mt-8 text-center py-24 bg-secondary rounded-lg">
-                            <h2 className="text-2xl font-semibold">No Viewed History</h2>
-                            <p className="text-muted-foreground mt-2">Properties you view will appear here.</p>
-                        </div>
-                    )}
-                </div>
+                <ViewedHistory />
             </TabsContent>
             <TabsContent value="agent-messages">
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">

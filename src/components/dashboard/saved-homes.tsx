@@ -9,22 +9,7 @@ import { PropertyCard } from "@/components/property-card";
 import { Button } from "../ui/button";
 import { Mail, Phone, Share2 } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
-
-type Property = {
-  id: number;
-  price: number;
-  address: string;
-  beds: number;
-  baths: number;
-  sqft: number;
-  imageUrl: string;
-  imageHint: string;
-  lotSize?: number;
-  agent?: string;
-  status?: string;
-  listing_type: 'sale' | 'rent';
-  home_type: string;
-};
+import type { Property } from "@/types";
 
 export default function SavedHomes() {
   const { user } = useUser();

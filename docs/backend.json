@@ -86,6 +86,22 @@
         }
       },
       "required": ["property_data", "saved_at"]
+    },
+    "viewedProperty": {
+      "title": "Viewed Property",
+      "description": "A user's viewed property.",
+      "type": "object",
+      "properties": {
+        "property_data": {
+          "$ref": "#/entities/property"
+        },
+        "viewed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the user viewed the property."
+        }
+      },
+      "required": ["property_data", "viewed_at"]
     }
   },
   "auth": {
@@ -103,6 +119,12 @@
         "$ref": "#/entities/savedHome"
       },
       "description": "Stores a user's saved properties. The document ID is the property ID."
+    },
+    "/users/{userId}/viewed_properties/{propertyId}": {
+      "schema": {
+        "$ref": "#/entities/viewedProperty"
+      },
+      "description": "Stores a user's viewed properties. The document ID is the property ID."
     }
   }
 }
