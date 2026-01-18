@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCollection, useFirestore, useUser } from "@/firebase";
@@ -12,6 +11,19 @@ import { Card } from "../ui/card";
 import { Skeleton } from "../ui/skeleton";
 import type { Property } from "@/types";
 import { formatDistanceToNow } from 'date-fns';
+import { clearViewedHistory, removeViewedProperty } from "@/lib/history";
+import { Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function ViewedHistory() {
   const { user } = useUser();
@@ -27,6 +39,16 @@ export default function ViewedHistory() {
   }, [user, firestore]);
 
   const { data: properties, loading, error } = useCollection<{ property_data: Property, viewed_at: { toDate: () => Date } }>(viewedPropertiesQuery);
+
+  const handleClearHistory = async () => {
+    if (!user || !firestore) return;
+    await clearViewedHistory(firestore, user.uid);
+  }
+
+  const handleRemoveProperty = async (propertyId: string) => {
+    if (!user || !firestore) return;
+    await removeViewedProperty(firestore, user.uid, propertyId);
+  }
 
   if (loading) {
     return (
@@ -55,7 +77,23 @@ export default function ViewedHistory() {
                 <h2 className="text-2xl font-bold">Recently Viewed Homes</h2>
                 <p className="text-muted-foreground">A log of properties you have recently viewed.</p>
             </div>
-            <Button variant="outline">Clear History</Button>
+             <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="outline" disabled={viewedProperties.length === 0}>Clear History</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This will permanently delete your entire viewing history. This action cannot be undone.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearHistory}>Continue</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
         {viewedProperties.length > 0 ? (
             <div className="space-y-4">
@@ -72,7 +110,8 @@ export default function ViewedHistory() {
                         <p className="text-sm text-muted-foreground">{property.beds} beds • {property.baths} baths • {property.sqft.toLocaleString()} sqft</p>
                     </div>
                     <div className="p-4 flex flex-col justify-between items-end">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleRemoveProperty(String(property.id))}>
+                            <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Remove from history</span>
                         </Button>
                         <p className="text-xs text-muted-foreground whitespace-nowrap">
