@@ -23,9 +23,26 @@
         "phoneNumber": {
           "type": "string",
           "description": "The user's phone number."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the user, determining their permissions and dashboard view.",
+          "enum": [
+            "customer",
+            "agent"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the user account was created."
         }
       },
-      "required": ["displayName", "email"]
+      "required": [
+        "displayName",
+        "email",
+        "role"
+      ]
     },
     "property": {
       "title": "Property",
@@ -57,7 +74,10 @@
         },
         "listing_type": {
           "type": "string",
-          "enum": ["sale", "rent"]
+          "enum": [
+            "sale",
+            "rent"
+          ]
         }
       },
       "required": [
@@ -85,7 +105,10 @@
           "description": "The timestamp when the user saved the home."
         }
       },
-      "required": ["property_data", "saved_at"]
+      "required": [
+        "property_data",
+        "saved_at"
+      ]
     },
     "viewedProperty": {
       "title": "Viewed Property",
@@ -101,11 +124,18 @@
           "description": "The timestamp when the user viewed the property."
         }
       },
-      "required": ["property_data", "viewed_at"]
+      "required": [
+        "property_data",
+        "viewed_at"
+      ]
     }
   },
   "auth": {
-    "providers": ["anonymous", "google.com", "password"]
+    "providers": [
+      "anonymous",
+      "google.com",
+      "password"
+    ]
   },
   "firestore": {
     "/users/{userId}": {

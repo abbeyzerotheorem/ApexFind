@@ -43,7 +43,7 @@ export default function DashboardPage() {
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
   
-  const { data: userProfile, loading: profileLoading } = useDoc<{phoneNumber?: string}>(userDocRef);
+  const { data: userProfile, loading: profileLoading } = useDoc<{phoneNumber?: string, role?: 'customer' | 'agent'}>(userDocRef);
 
   useEffect(() => {
     if (user) {
@@ -81,7 +81,7 @@ export default function DashboardPage() {
   };
 
 
-  if (userLoading || !user) {
+  if (userLoading || profileLoading) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -90,6 +90,29 @@ export default function DashboardPage() {
     );
   }
 
+  if (!user) {
+      // This should be covered by the loader and redirect, but as a fallback.
+      return null; 
+  }
+
+  if (userProfile?.role === 'agent') {
+    return (
+        <div className="flex min-h-screen flex-col bg-background py-8 sm:py-12">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                Agent Dashboard
+              </h1>
+              <p className="mt-1 text-muted-foreground">Welcome back, Agent {user.displayName || user.email}</p>
+              <div className="mt-8 p-8 bg-secondary rounded-lg text-center">
+                <h2 className="text-2xl font-bold">Coming Soon!</h2>
+                <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">Your dedicated agent dashboard with listings management, client messages, and performance analytics is under construction.</p>
+              </div>
+            </div>
+        </div>
+    )
+  }
+
+  // Default to customer dashboard
   return (
     <div className="flex min-h-screen flex-col bg-background py-8 sm:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -205,7 +228,7 @@ export default function DashboardPage() {
                                 <CardDescription>Update your name and contact details.</CardDescription>
                             </CardHeader>
                             <CardContent className="grid gap-6">
-                                {userLoading || profileLoading ? (
+                                {profileLoading ? (
                                     <>
                                         <div className="grid sm:grid-cols-2 gap-4">
                                             <div className="space-y-2">

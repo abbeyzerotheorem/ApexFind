@@ -12,11 +12,23 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
+import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { getApp } from 'firebase/app';
 
-export async function signUp(name: string, email: string, password: string) {
+export async function signUp(name: string, email: string, password: string, role: 'customer' | 'agent') {
     const auth = getAuth();
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(userCredential.user, { displayName: name });
+
+    const db = getFirestore(getApp());
+    const userDocRef = doc(db, 'users', userCredential.user.uid);
+    await setDoc(userDocRef, {
+        displayName: name,
+        email: email,
+        role: role,
+        createdAt: serverTimestamp(),
+    });
+
     return userCredential;
 }
 
@@ -28,7 +40,24 @@ export async function signIn(email: string, password:string ) {
 export async function signInWithGoogle() {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    const db = getFirestore(getApp());
+    const userDocRef = doc(db, 'users', user.uid);
+    const docSnap = await getDoc(userDocRef);
+
+    if (!docSnap.exists()) {
+        await setDoc(userDocRef, {
+            displayName: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL,
+            role: 'customer', // Default to customer for Google sign-ins
+            createdAt: serverTimestamp(),
+        });
+    }
+
+    return result;
 }
 
 export async function signOut() {

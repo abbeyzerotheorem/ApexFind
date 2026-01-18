@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { signIn, signUp, resetPasswordForEmail, signInWithGoogle } from '@/lib/auth';
 import { useUser } from '@/firebase';
 import { Loader2 } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 export default function AuthPage() {
     const { user, loading } = useUser();
@@ -189,7 +190,7 @@ function SignInForm() {
                                 </div>
                                  <Button type="submit" className="w-full" disabled={isResetting}>
                                     {isResetting ? 'Sending...' : 'Send Reset Link'}
-                                </Button>
+                                 </Button>
                                 {resetMessage && <p className="text-sm text-center text-muted-foreground pt-2">{resetMessage}</p>}
                             </form>
                         </DialogContent>
@@ -205,6 +206,7 @@ function SignUpForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<'customer' | 'agent'>('customer');
   const [message, setMessage] = useState('');
 
   const handleGoogleSignUp = async () => {
@@ -224,7 +226,7 @@ function SignUpForm() {
     setMessage('');
 
     try {
-        await signUp(name, email, password);
+        await signUp(name, email, password, role);
         setMessage('Check your email for a confirmation link to complete your sign up. Note: This is a demo app, you might not receive an email.');
     } catch (error: any) {
         setMessage(error.message);
@@ -240,8 +242,7 @@ function SignUpForm() {
         <CardContent>
             <div className="grid gap-4">
                 <Button variant="outline" className="w-full" onClick={handleGoogleSignUp}>
-                    <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0
- 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 21.2 173.4 58.2l-64.4 64.4C325.8 99.8 289.4 86 248 86c-82.3 0-149.3 67-149.3 149.3s67 149.3 149.3 149.3c94.9 0 132.3-62.2 135.8-94.2H248v-85.3h236.1c2.3 12.7 3.9 26.9 3.9 41.4z"></path></svg>
+                    <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 21.2 173.4 58.2l-64.4 64.4C325.8 99.8 289.4 86 248 86c-82.3 0-149.3 67-149.3 149.3s67 149.3 149.3 149.3c94.9 0 132.3-62.2 135.8-94.2H248v-85.3h236.1c2.3 12.7 3.9 26.9 3.9 41.4z"></path></svg>
                     Sign up with Google
                 </Button>
             </div>
@@ -256,6 +257,19 @@ function SignUpForm() {
                 </div>
             </div>
             <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                    <Label>I am a...</Label>
+                    <RadioGroup defaultValue="customer" onValueChange={(value) => setRole(value as 'customer' | 'agent')} className="flex gap-4 pt-1">
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="customer" id="role-customer" />
+                            <Label htmlFor="role-customer" className="font-normal">Home Buyer / Renter</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="agent" id="role-agent" />
+                            <Label htmlFor="role-agent" className="font-normal">Real Estate Agent</Label>
+                        </div>
+                    </RadioGroup>
+                </div>
                 <div className="space-y-2">
                     <Label htmlFor="signup-name">Full Name</Label>
                     <Input
