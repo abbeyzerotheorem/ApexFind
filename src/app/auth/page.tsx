@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { signIn, signUp, resetPasswordForEmail, signInWithGoogle } from '@/lib/auth';
 import { useUser } from '@/firebase';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 
@@ -60,6 +59,7 @@ function SignInForm() {
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const [isError, setIsError] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const [resetEmail, setResetEmail] = useState('');
     const [resetMessage, setResetMessage] = useState('');
@@ -165,14 +165,25 @@ function SignInForm() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="signin-password">Password</Label>
-                        <Input
-                            id="signin-password"
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                        <div className="relative">
+                            <Input
+                                id="signin-password"
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                className="pr-10"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                            >
+                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
+                        </div>
                     </div>
                     <Button type="submit" className="w-full">Sign In</Button>
                     {message && <p className={cn("text-sm text-center pt-2", isError ? "text-destructive" : "text-muted-foreground")}>{message}</p>}
@@ -224,6 +235,7 @@ function SignUpForm() {
   const [role, setRole] = useState<'customer' | 'agent'>('customer');
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleGoogleSignUp = async () => {
     setMessage('');
@@ -320,14 +332,25 @@ function SignUpForm() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                        id="signup-password"
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
+                    <div className="relative">
+                        <Input
+                            id="signup-password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="pr-10"
+                        />
+                         <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
+                            aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
+                    </div>
                 </div>
                 <Button type="submit" className="w-full">Sign Up</Button>
                 {message && <p className={cn("text-sm text-center pt-2", isError ? "text-destructive" : "text-muted-foreground")}>{message}</p>}
