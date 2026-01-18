@@ -10,19 +10,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ChevronRight, SlidersHorizontal, X } from "lucide-react";
+import { ChevronRight, SlidersHorizontal, X, Bookmark } from "lucide-react";
 import React from "react";
 import { FilterControls } from "./filter-controls";
 import Link from "next/link";
 import AutocompleteSearch from "../autocomplete-search";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
-
-const activeFilters = [
-  { label: "3+ Beds", value: "beds_gte_3" },
-  { label: "Under ₦150M", value: "price_lte_150000000" },
-  { label: "Pool", value: "features_pool" },
-];
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { useUser, useFirestore } from "@/firebase";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { saveSearch } from "@/lib/searches";
 
 type SearchFiltersProps = {
   searchQuery: string;
@@ -50,8 +49,15 @@ export default function SearchFilters({
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const { user } = useUser();
+    const firestore = useFirestore();
     const [sort, setSort] = React.useState("relevant");
     const listingType = searchParams.get('type') || 'buy';
+
+    const [searchName, setSearchName] = React.useState('');
+    const [isSaving, setIsSaving] = React.useState(false);
+    const [saveMessage, setSaveMessage] = React.useState('');
+    const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
     const handleTypeChange = (value: string) => {
         if (value) {
@@ -60,6 +66,35 @@ export default function SearchFilters({
             router.push(`${pathname}?${newParams.toString()}`);
         }
     }
+
+    const handleSaveSearch = async () => {
+        if (!user || !firestore) {
+            router.push('/auth');
+            return;
+        }
+        if (!searchName.trim()) {
+            setSaveMessage("Please provide a name for your search.");
+            return;
+        }
+
+        setIsSaving(true);
+        setSaveMessage('');
+
+        try {
+            await saveSearch(firestore, user.uid, searchName, searchParams.toString());
+            setSaveMessage('Search saved successfully!');
+            setSearchName('');
+            setTimeout(() => {
+                setIsDialogOpen(false);
+                setSaveMessage('');
+            }, 1500);
+        } catch (error) {
+            setSaveMessage('Failed to save search. Please try again.');
+            console.error(error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     const createQueryString = React.useCallback(
       (name: string, value: string) => {
@@ -108,6 +143,48 @@ export default function SearchFilters({
                             </DropdownMenuContent>
                         </DropdownMenu>
 
+                        {user && (
+                            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+                                setIsDialogOpen(open);
+                                if (!open) {
+                                    setSaveMessage('');
+                                    setSearchName('');
+                                }
+                            }}>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" size="sm" className="h-9">
+                                        <Bookmark className="mr-2 h-4 w-4" />
+                                        Save Search
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Save Search</DialogTitle>
+                                        <DialogDescription>
+                                            Create a name for this search to get email alerts for new matching properties.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-4 py-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="search-name">Search Name</Label>
+                                            <Input 
+                                                id="search-name"
+                                                value={searchName}
+                                                onChange={(e) => setSearchName(e.target.value)}
+                                                placeholder="e.g. 'Lekki 3-Bed Duplexes'"
+                                            />
+                                        </div>
+                                        {saveMessage && <p className="text-sm text-muted-foreground">{saveMessage}</p>}
+                                    </div>
+                                    <DialogFooter>
+                                        <Button onClick={handleSaveSearch} disabled={isSaving}>
+                                            {isSaving ? 'Saving...' : 'Save'}
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                        )}
+
                         <Sheet>
                           <SheetTrigger asChild>
                             <Button variant="outline" size="sm" className="h-9">
@@ -130,19 +207,6 @@ export default function SearchFilters({
                           </SheetContent>
                         </Sheet>
                     </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                    {activeFilters.map((filter) => (
-                        <Button
-                            key={filter.value}
-                            variant="secondary"
-                            size="sm"
-                            className="h-auto rounded-full py-1 pl-3 pr-2 text-sm"
-                        >
-                            {filter.label}
-                            <X className="ml-1 h-4 w-4" />
-                        </Button>
-                    ))}
                 </div>
             </div>
         </div>
