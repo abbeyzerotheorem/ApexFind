@@ -13,22 +13,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Property } from '@/types';
 import { useState } from 'react';
+import { useFirestore, useUser } from '@/firebase';
+import { addListing, updateListing } from '@/lib/listings';
 
 const propertySchema = z.object({
   address: z.string().min(1, 'Address is required'),
   city: z.string().min(1, 'City is required'),
   state: z.string().min(1, 'State is required'),
-  price: z.preprocess((a) => parseInt(z.string().parse(a), 10), z.number().positive('Price must be positive')),
-  beds: z.preprocess((a) => parseInt(z.string().parse(a), 10), z.number().positive('Beds must be positive')),
-  baths: z.preprocess((a) => parseInt(z.string().parse(a), 10), z.number().positive('Baths must be positive')),
-  sqft: z.preprocess((a) => parseInt(z.string().parse(a), 10), z.number().positive('Sqft must be positive')),
+  price: z.preprocess((a) => parseInt(z.string().parse(a || '0'), 10), z.number().positive('Price must be positive')),
+  beds: z.preprocess((a) => parseInt(z.string().parse(a || '0'), 10), z.number().min(0, 'Cannot be negative')),
+  baths: z.preprocess((a) => parseInt(z.string().parse(a || '0'), 10), z.number().min(0, 'Cannot be negative')),
+  sqft: z.preprocess((a) => parseInt(z.string().parse(a || '0'), 10), z.number().positive('Sqft must be positive')),
   listing_type: z.enum(['sale', 'rent']),
   home_type: z.string().min(1, 'Home type is required'),
   imageUrl: z.string().url('Must be a valid image URL'),
+  description: z.string().optional(),
   is_furnished: z.boolean().default(false),
   power_supply: z.string().optional(),
   water_supply: z.string().optional(),
-  description: z.string().optional(),
 });
 
 type PropertyFormValues = z.infer<typeof propertySchema>;
@@ -39,6 +41,8 @@ interface ListingFormProps {
 
 export default function ListingForm({ property }: ListingFormProps) {
   const router = useRouter();
+  const { user } = useUser();
+  const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register, handleSubmit, control, formState: { errors } } = useForm<PropertyFormValues>({
     resolver: zodResolver(propertySchema),
@@ -46,32 +50,42 @@ export default function ListingForm({ property }: ListingFormProps) {
       address: property?.address || '',
       city: property?.city || '',
       state: property?.state || '',
-      price: property?.price || 0,
-      beds: property?.beds || 0,
-      baths: property?.baths || 0,
-      sqft: property?.sqft || 0,
+      price: property?.price || undefined,
+      beds: property?.beds || undefined,
+      baths: property?.baths || undefined,
+      sqft: property?.sqft || undefined,
       listing_type: property?.listing_type || 'sale',
       home_type: property?.home_type || '',
       imageUrl: property?.imageUrl || '',
       is_furnished: property?.is_furnished || false,
       power_supply: property?.power_supply || '',
       water_supply: property?.water_supply || '',
-      description: '', // No description in property type yet
+      description: property?.description || '',
     },
   });
 
   const onSubmit = async (data: PropertyFormValues) => {
+    if (!user || !firestore) {
+        console.error("User or firestore not available");
+        // Optionally: show an error toast to the user
+        return;
+    }
     setIsSubmitting(true);
-    // Here you would typically call an API or server action
-    console.log('Form data:', data);
-
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // For now, just navigate back to the dashboard
-    router.push('/dashboard');
-    router.refresh(); // To see the new (mock) data if we were using a real DB
-    setIsSubmitting(false);
+    try {
+        if (property?.id) {
+            await updateListing(firestore, property.id, data);
+        } else {
+            await addListing(firestore, user.uid, data);
+        }
+        router.push('/dashboard');
+        router.refresh(); // Important to reflect changes
+    } catch (error) {
+        console.error("Failed to save listing:", error);
+        // Optionally: show an error toast to the user
+    } finally {
+        setIsSubmitting(false);
+    }
   };
   
   const homeTypeOptions = ["House", "Apartment (Flat)", "Duplex", "Terrace", "Bungalow", "Commercial"];

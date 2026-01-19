@@ -1,6 +1,7 @@
 
 export type Property = {
-    id: number;
+    id: string; // Firestore ID is a string
+    agentId: string;
     price: number;
     listing_type: 'sale' | 'rent';
     price_period?: string;
@@ -12,15 +13,18 @@ export type Property = {
     baths: number;
     sqft: number;
     imageUrl: string;
-    imageHint: string;
+    imageHint?: string;
+    description?: string;
     lotSize?: number;
-    agent?: string;
+    agent?: string; // This might be redundant if we fetch agent info separately via agentId
     status?: string;
     home_type: string;
     is_furnished?: boolean;
     power_supply?: string;
     water_supply?: string;
     security_type?: string[];
+    createdAt?: any; // Firestore Timestamp
+    updatedAt?: any; // Firestore Timestamp
 };
 
 export type Agent = {

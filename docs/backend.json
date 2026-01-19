@@ -49,15 +49,36 @@
       "description": "A real estate property listing.",
       "type": "object",
       "properties": {
-        "id": {
-          "type": "number",
-          "description": "Unique identifier for the property."
+        "agentId": {
+          "type": "string",
+          "description": "The UID of the agent who created the listing."
         },
         "address": {
           "type": "string"
         },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
         "price": {
           "type": "number"
+        },
+        "listing_type": {
+          "type": "string",
+          "enum": [
+            "sale",
+            "rent"
+          ]
+        },
+        "price_period": {
+          "type": "string",
+          "enum": [
+            "yearly",
+            "monthly",
+            "quarterly"
+          ]
         },
         "beds": {
           "type": "number"
@@ -68,27 +89,58 @@
         "sqft": {
           "type": "number"
         },
+        "home_type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
         "imageUrl": {
           "type": "string",
           "format": "uri"
         },
-        "listing_type": {
+        "imageHint": {
+          "type": "string"
+        },
+        "is_furnished": {
+          "type": "boolean"
+        },
+        "power_supply": {
+          "type": "string"
+        },
+        "water_supply": {
+          "type": "string"
+        },
+        "security_type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string"
+        },
+        "createdAt": {
           "type": "string",
-          "enum": [
-            "sale",
-            "rent"
-          ]
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
         }
       },
       "required": [
-        "id",
+        "agentId",
         "address",
+        "city",
+        "state",
         "price",
+        "listing_type",
         "beds",
         "baths",
         "sqft",
-        "imageUrl",
-        "listing_type"
+        "home_type",
+        "imageUrl"
       ]
     },
     "savedHome": {
@@ -155,6 +207,12 @@
         "$ref": "#/entities/viewedProperty"
       },
       "description": "Stores a user's viewed properties. The document ID is the property ID."
+    },
+    "/properties/{propertyId}": {
+      "schema": {
+        "$ref": "#/entities/property"
+      },
+      "description": "Stores all property listings."
     }
   }
 }

@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useUser, useFirestore, useDoc } from "@/firebase";
+import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
 import { Loader2, Heart, User as UserIcon, History, MessageSquare, Home as HomeIcon, BarChart2, MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
-import { doc } from "firebase/firestore";
+import { doc, collection, query, where, orderBy } from "firebase/firestore";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SavedHomes from "@/components/dashboard/saved-homes";
@@ -50,10 +50,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-import { PlaceHolderProperties } from "@/lib/placeholder-properties";
 import { formatNaira } from "@/lib/naira-formatter";
 import { Badge } from "@/components/ui/badge";
 import type { Property } from "@/types";
+import { deleteListing } from "@/lib/listings";
 
 const linkedAgent = PlaceHolderAgents[0];
 
@@ -68,15 +68,20 @@ export default function DashboardPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
-  // Agent Listings State
-  const [agentListings, setAgentListings] = useState<Property[]>(PlaceHolderProperties.slice(0, 4));
-
   const userDocRef = useMemo(() => {
     if (!user || !firestore) return null;
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
   
   const { data: userProfile, loading: profileLoading } = useDoc<{phoneNumber?: string, role?: 'customer' | 'agent'}>(userDocRef);
+
+  // Agent listings state
+  const propertiesQuery = useMemo(() => {
+    if (!firestore || !user || userProfile?.role !== 'agent') return null;
+    return query(collection(firestore, 'properties'), where('agentId', '==', user.uid), orderBy('createdAt', 'desc'));
+  }, [firestore, user, userProfile]);
+
+  const { data: agentListings, loading: listingsLoading } = useCollection<Property>(propertiesQuery);
 
   useEffect(() => {
     if (user) {
@@ -113,14 +118,18 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDeleteListing = (id: number) => {
-    // In a real app, you would make an API call to delete the listing from the database.
-    // For now, we just filter it out from the local state.
-    setAgentListings(prevListings => prevListings.filter(p => p.id !== id));
+  const handleDeleteListing = async (id: string) => {
+    if (!firestore) return;
+    try {
+      await deleteListing(firestore, id);
+    } catch (error) {
+      console.error("Failed to delete listing", error);
+      // In a real app, you'd show a toast notification here
+    }
   }
 
 
-  if (userLoading || profileLoading) {
+  if (userLoading || profileLoading || listingsLoading) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -155,7 +164,7 @@ export default function DashboardPage() {
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div>
                                         <CardTitle>My Property Listings</CardTitle>
-                                        <CardDescription>You have {agentListings.length} active listings.</CardDescription>
+                                        <CardDescription>You have {agentListings?.length || 0} active listings.</CardDescription>
                                     </div>
                                     <Button asChild>
                                         <Link href="/dashboard/listings/new">+ Add New Listing</Link>
@@ -174,7 +183,7 @@ export default function DashboardPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {agentListings.map(property => (
+                                        {agentListings?.map(property => (
                                             <TableRow key={property.id}>
                                                 <TableCell className="hidden sm:table-cell">
                                                     <Image src={property.imageUrl} alt={property.address} width={100} height={60} className="rounded-md object-cover" />
@@ -234,7 +243,7 @@ export default function DashboardPage() {
                                         ))}
                                     </TableBody>
                                 </Table>
-                                {agentListings.length === 0 && (
+                                {(!agentListings || agentListings.length === 0) && (
                                   <div className="text-center p-8">
                                     <h3 className="text-xl font-semibold">No listings yet.</h3>
                                     <p className="text-muted-foreground mt-2">Get started by adding your first property.</p>
