@@ -1,15 +1,13 @@
-
 'use client';
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore, useDoc } from "@/firebase";
-import { Loader2 } from "lucide-react";
+import { Loader2, Heart, User as UserIcon, History, MessageSquare, Home as HomeIcon, BarChart2, MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
 import { doc } from "firebase/firestore";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SavedHomes from "@/components/dashboard/saved-homes";
-import { Heart, User as UserIcon, History, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -24,8 +22,30 @@ import { updateUserProfile } from "@/lib/user";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from 'next/link';
 import ViewedHistory from "@/components/dashboard/viewed-history";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { PlaceHolderProperties } from "@/lib/placeholder-properties";
+import { formatNaira } from "@/lib/naira-formatter";
+import { Badge } from "@/components/ui/badge";
 
 const linkedAgent = PlaceHolderAgents[0];
+
+// The agent's listings (placeholder)
+const agentListings = PlaceHolderProperties.slice(0, 4);
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -103,10 +123,100 @@ export default function DashboardPage() {
                 Agent Dashboard
               </h1>
               <p className="mt-1 text-muted-foreground">Welcome back, Agent {user.displayName || user.email}</p>
-              <div className="mt-8 p-8 bg-secondary rounded-lg text-center">
-                <h2 className="text-2xl font-bold">Coming Soon!</h2>
-                <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">Your dedicated agent dashboard with listings management, client messages, and performance analytics is under construction.</p>
-              </div>
+                <Tabs defaultValue="my-listings" className="mt-8">
+                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
+                        <TabsTrigger value="my-listings"><HomeIcon className="mr-2 h-4 w-4"/> My Listings</TabsTrigger>
+                        <TabsTrigger value="messages"><MessageSquare className="mr-2 h-4 w-4"/> Messages</TabsTrigger>
+                        <TabsTrigger value="profile"><UserIcon className="mr-2 h-4 w-4"/> Profile</TabsTrigger>
+                        <TabsTrigger value="performance"><BarChart2 className="mr-2 h-4 w-4"/> Performance</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="my-listings">
+                        <Card className="mt-8">
+                            <CardHeader>
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div>
+                                        <CardTitle>My Property Listings</CardTitle>
+                                        <CardDescription>You have {agentListings.length} active listings.</CardDescription>
+                                    </div>
+                                    <Button>+ Add New Listing</Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="hidden sm:table-cell">Image</TableHead>
+                                            <TableHead>Property</TableHead>
+                                            <TableHead>Price</TableHead>
+                                            <TableHead className="hidden md:table-cell">Status</TableHead>
+                                            <TableHead>Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {agentListings.map(property => (
+                                            <TableRow key={property.id}>
+                                                <TableCell className="hidden sm:table-cell">
+                                                    <Image src={property.imageUrl} alt={property.address} width={100} height={60} className="rounded-md object-cover" />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="font-medium">{property.address}</div>
+                                                    <div className="text-sm text-muted-foreground">{property.beds} beds • {property.baths} baths</div>
+                                                </TableCell>
+                                                <TableCell>{formatNaira(property.price)}</TableCell>
+                                                <TableCell className="hidden md:table-cell">
+                                                    <Badge variant={property.status === 'New' ? 'default' : 'secondary'}>{property.status || 'Active'}</Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                  <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                      <Button variant="ghost" className="h-8 w-8 p-0">
+                                                        <span className="sr-only">Open menu</span>
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                      </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                        <DropdownMenuItem>
+                                                            <Pencil className="mr-2 h-4 w-4" /> Edit Listing
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={`/property/${property.id}`} className="flex items-center w-full">
+                                                                <Eye className="mr-2 h-4 w-4" /> View Details
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem className="text-destructive">
+                                                            <Trash2 className="mr-2 h-4 w-4" /> Delete Listing
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                  </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                    <TabsContent value="messages">
+                        <div className="mt-8 p-8 bg-secondary rounded-lg text-center">
+                            <h2 className="text-2xl font-bold">Client Messages Coming Soon!</h2>
+                            <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">This section will house all your conversations with potential buyers and renters.</p>
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="profile">
+                         <div className="mt-8 p-8 bg-secondary rounded-lg text-center">
+                            <h2 className="text-2xl font-bold">Agent Profile Management Coming Soon!</h2>
+                            <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">Soon you'll be able to edit your public agent profile, upload a professional photo, and manage your specialties.</p>
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="performance">
+                         <div className="mt-8 p-8 bg-secondary rounded-lg text-center">
+                            <h2 className="text-2xl font-bold">Performance Analytics Coming Soon!</h2>
+                            <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">Track your listing views, leads, and sales performance with detailed charts and reports.</p>
+                        </div>
+                    </TabsContent>
+                </Tabs>
             </div>
         </div>
     )
