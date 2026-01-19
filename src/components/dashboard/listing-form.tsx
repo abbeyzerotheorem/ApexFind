@@ -12,14 +12,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Property } from '@/types';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useFirestore, useUser } from '@/firebase';
-import { addListing, updateListing, uploadPropertyImage } from '@/lib/listings';
-import Image from 'next/image';
-import { Progress } from '../ui/progress';
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+import { addListing, updateListing } from '@/lib/listings';
 
 const propertySchema = z.object({
   address: z.string().min(1, 'Address is required'),
@@ -31,25 +26,11 @@ const propertySchema = z.object({
   sqft: z.preprocess((a) => parseInt(z.string().parse(a || '0'), 10), z.number().positive('Sqft must be positive')),
   listing_type: z.enum(['sale', 'rent']),
   home_type: z.string().min(1, 'Home type is required'),
-  imageUrl: z.string().optional(),
-  imageFile: z
-    .any()
-    .optional()
-    .refine(
-        (files) => !files || files?.[0]?.size <= MAX_FILE_SIZE,
-        `Max image size is 5MB.`
-    )
-    .refine(
-        (files) => !files || ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
-        'Only .jpg, .jpeg, .png and .webp formats are supported.'
-    ),
+  imageUrl: z.string().url('Please enter a valid image URL'),
   description: z.string().optional(),
   is_furnished: z.boolean().default(false),
   power_supply: z.string().optional(),
   water_supply: z.string().optional(),
-}).refine(data => !!data.imageUrl || (data.imageFile && data.imageFile.length > 0), {
-    message: "A property image is required.",
-    path: ["imageFile"],
 });
 
 
@@ -64,10 +45,8 @@ export default function ListingForm({ property }: ListingFormProps) {
   const { user } = useUser();
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(property?.imageUrl || null);
   
-  const { register, handleSubmit, control, formState: { errors }, watch } = useForm<PropertyFormValues>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<PropertyFormValues>({
     resolver: zodResolver(propertySchema),
     defaultValues: {
       address: property?.address || '',
@@ -87,47 +66,18 @@ export default function ListingForm({ property }: ListingFormProps) {
     },
   });
 
-  const imageFile = watch("imageFile");
-
-  useEffect(() => {
-    if (imageFile && imageFile.length > 0) {
-        const file = imageFile[0];
-        const previewUrl = URL.createObjectURL(file);
-        setImagePreview(previewUrl);
-
-        return () => URL.revokeObjectURL(previewUrl);
-    }
-  }, [imageFile]);
-
-
   const onSubmit = async (data: PropertyFormValues) => {
     if (!user || !firestore) {
         console.error("User or firestore not available");
         return;
     }
     setIsSubmitting(true);
-    setUploadProgress(null);
-
-    let finalImageUrl = property?.imageUrl || '';
 
     try {
-        if (data.imageFile && data.imageFile.length > 0) {
-            const file = data.imageFile[0];
-            finalImageUrl = await uploadPropertyImage(file, user.uid, setUploadProgress);
-        }
-
-        if (!finalImageUrl) {
-            throw new Error("Image URL is missing and no new image was uploaded.");
-        }
-
-        const listingData = { ...data, imageUrl: finalImageUrl };
-        // @ts-ignore
-        delete listingData.imageFile;
-
         if (property?.id) {
-            await updateListing(firestore, property.id, listingData);
+            await updateListing(firestore, property.id, data);
         } else {
-            await addListing(firestore, user.uid, listingData);
+            await addListing(firestore, user.uid, data);
         }
         router.push('/dashboard');
         router.refresh(); 
@@ -135,7 +85,6 @@ export default function ListingForm({ property }: ListingFormProps) {
         console.error("Failed to save listing:", error);
     } finally {
         setIsSubmitting(false);
-        setUploadProgress(null);
     }
   };
   
@@ -233,15 +182,9 @@ export default function ListingForm({ property }: ListingFormProps) {
           </div>
 
             <div className="space-y-2">
-              <Label htmlFor="imageFile">Property Image</Label>
-              {imagePreview && (
-                <div className="mt-2 w-full max-w-sm relative aspect-video">
-                    <Image src={imagePreview} alt="Image preview" fill className="rounded-md object-cover" />
-                </div>
-              )}
-              <Input id="imageFile" type="file" accept="image/*" {...register('imageFile')} />
-              {errors.imageFile && <p className="text-sm text-destructive">{String(errors.imageFile.message)}</p>}
-              {uploadProgress !== null && <Progress value={uploadProgress} className="w-full mt-2" />}
+              <Label htmlFor="imageUrl">Property Image URL</Label>
+              <Input id="imageUrl" placeholder="https://..." {...register('imageUrl')} />
+              {errors.imageUrl && <p className="text-sm text-destructive">{errors.imageUrl.message}</p>}
             </div>
 
 
@@ -275,7 +218,7 @@ export default function ListingForm({ property }: ListingFormProps) {
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => router.back()}>Cancel</Button>
             <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (uploadProgress !== null ? `Uploading: ${uploadProgress.toFixed(0)}%` : 'Saving...') : (property ? 'Save Changes' : 'Add Listing')}
+                {isSubmitting ? 'Saving...' : (property ? 'Save Changes' : 'Add Listing')}
             </Button>
           </div>
         </form>
