@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -111,22 +111,30 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent side="left">
                 <nav className="grid gap-6 text-lg font-medium">
-                <Link href="#" className="flex items-center gap-2 text-lg font-semibold">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6 text-primary"><path d="M11.47 3.841a.75.75 0 0 1 1.06 0l8.69 8.69a.75.75 0 1 0 1.06-1.061l-8.689-8.69a2.25 2.25 0 0 0-3.182 0l-8.69 8.69a.75.75 0 1 0 1.061 1.06l8.69-8.69Z" /><path d="m12 5.432 8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75V21a.75.75 0 0 1-.75.75H5.625a1.875 1.875 0 0 1-1.875-1.875v-6.198a2.29 2.29 0 0 0 .091-.086L12 5.432Z" /></svg>
-                    <span className="text-xl font-bold">ApexFind</span>
-                </Link>
-                {navLinks.map(link => (
-                    <Link key={link.name} href={link.href} className="text-muted-foreground hover:text-foreground">
-                    {link.name}
+                  <SheetClose asChild>
+                    <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6 text-primary"><path d="M11.47 3.841a.75.75 0 0 1 1.06 0l8.69 8.69a.75.75 0 1 0 1.06-1.061l-8.689-8.69a2.25 2.25 0 0 0-3.182 0l-8.69 8.69a.75.75 0 1 0 1.061 1.06l8.69-8.69Z" /><path d="m12 5.432 8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75V21a.75.75 0 0 1-.75.75H5.625a1.875 1.875 0 0 1-1.875-1.875v-6.198a2.29 2.29 0 0 0 .091-.086L12 5.432Z" /></svg>
+                        <span className="text-xl font-bold">ApexFind</span>
                     </Link>
-                ))}
-                {user ? (
-                    <Button onClick={handleSignOut} variant="outline">Sign Out</Button>
-                ) : (
-                    <Button asChild>
-                    <Link href="/auth">Sign In</Link>
-                    </Button>
-                )}
+                  </SheetClose>
+                  {navLinks.map(link => (
+                      <SheetClose asChild key={link.name}>
+                        <Link href={link.href} className="text-muted-foreground hover:text-foreground">
+                          {link.name}
+                        </Link>
+                      </SheetClose>
+                  ))}
+                  {user ? (
+                      <SheetClose asChild>
+                        <Button onClick={handleSignOut} variant="outline">Sign Out</Button>
+                      </SheetClose>
+                  ) : (
+                    <SheetClose asChild>
+                      <Button asChild>
+                        <Link href="/auth">Sign In</Link>
+                      </Button>
+                    </SheetClose>
+                  )}
                 </nav>
             </SheetContent>
             </Sheet>
