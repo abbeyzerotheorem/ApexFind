@@ -1,8 +1,9 @@
+'use client';
 
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { PlaceHolderProperties } from '@/lib/placeholder-properties';
-import { BedDouble, Bath, Maximize, Calendar, Car, Home, Droplet, Wind, Heart, Share2, MapPin, CheckSquare, Zap, Shield } from 'lucide-react';
+import { BedDouble, Bath, Maximize, Calendar, Car, Home, Droplet, Wind, Heart, Share2, MapPin, CheckSquare, Zap, Shield, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
@@ -14,12 +15,31 @@ import { MediaGallery } from '@/components/property/media-gallery';
 import { formatNaira } from '@/lib/naira-formatter';
 import { Badge } from '@/components/ui/badge';
 import { TrackView } from '@/components/property/track-view';
+import { useDoc, useFirestore } from '@/firebase';
+import { useMemo } from 'react';
+import { doc } from 'firebase/firestore';
 
 const similarProperties = PlaceHolderProperties.slice(1, 4);
 
 export default function PropertyDetailsPage({ params }: { params: { id: string } }) {
-  const property = PlaceHolderProperties.find(p => p.id.toString() === params.id);
+  const firestore = useFirestore();
   const mapImage = PlaceHolderImages.find((img) => img.id === "market-map");
+
+  const propertyRef = useMemo(() => {
+      if (!firestore) return null;
+      return doc(firestore, 'properties', params.id);
+  }, [firestore, params.id]);
+
+  const { data: property, loading } = useDoc(propertyRef);
+
+  if (loading) {
+    return (
+        <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <h1 className="text-xl text-muted-foreground">Loading Property Details...</h1>
+        </div>
+    );
+  }
 
   if (!property) {
     notFound();
