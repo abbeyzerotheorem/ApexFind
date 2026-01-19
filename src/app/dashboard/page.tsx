@@ -38,14 +38,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 import { PlaceHolderProperties } from "@/lib/placeholder-properties";
 import { formatNaira } from "@/lib/naira-formatter";
 import { Badge } from "@/components/ui/badge";
+import type { Property } from "@/types";
 
 const linkedAgent = PlaceHolderAgents[0];
-
-// The agent's listings (placeholder)
-const agentListings = PlaceHolderProperties.slice(0, 4);
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -57,6 +67,9 @@ export default function DashboardPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+
+  // Agent Listings State
+  const [agentListings, setAgentListings] = useState<Property[]>(PlaceHolderProperties.slice(0, 4));
 
   const userDocRef = useMemo(() => {
     if (!user || !firestore) return null;
@@ -100,6 +113,12 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDeleteListing = (id: number) => {
+    // In a real app, you would make an API call to delete the listing from the database.
+    // For now, we just filter it out from the local state.
+    setAgentListings(prevListings => prevListings.filter(p => p.id !== id));
+  }
+
 
   if (userLoading || profileLoading) {
     return (
@@ -138,7 +157,9 @@ export default function DashboardPage() {
                                         <CardTitle>My Property Listings</CardTitle>
                                         <CardDescription>You have {agentListings.length} active listings.</CardDescription>
                                     </div>
-                                    <Button>+ Add New Listing</Button>
+                                    <Button asChild>
+                                        <Link href="/dashboard/listings/new">+ Add New Listing</Link>
+                                    </Button>
                                 </div>
                             </CardHeader>
                             <CardContent>
@@ -176,8 +197,10 @@ export default function DashboardPage() {
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem>
-                                                            <Pencil className="mr-2 h-4 w-4" /> Edit Listing
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={`/dashboard/listings/${property.id}/edit`} className="w-full">
+                                                                <Pencil className="mr-2 h-4 w-4" /> Edit Listing
+                                                            </Link>
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem asChild>
                                                             <Link href={`/property/${property.id}`} className="flex items-center w-full">
@@ -185,9 +208,25 @@ export default function DashboardPage() {
                                                             </Link>
                                                         </DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-destructive">
-                                                            <Trash2 className="mr-2 h-4 w-4" /> Delete Listing
-                                                        </DropdownMenuItem>
+                                                         <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete Listing
+                                                                </DropdownMenuItem>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    This action cannot be undone. This will permanently delete the listing for "{property.address}".
+                                                                </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDeleteListing(property.id)}>Delete</AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
                                                     </DropdownMenuContent>
                                                   </DropdownMenu>
                                                 </TableCell>
@@ -195,6 +234,15 @@ export default function DashboardPage() {
                                         ))}
                                     </TableBody>
                                 </Table>
+                                {agentListings.length === 0 && (
+                                  <div className="text-center p-8">
+                                    <h3 className="text-xl font-semibold">No listings yet.</h3>
+                                    <p className="text-muted-foreground mt-2">Get started by adding your first property.</p>
+                                    <Button asChild className="mt-4">
+                                       <Link href="/dashboard/listings/new">+ Add New Listing</Link>
+                                    </Button>
+                                  </div>
+                                )}
                             </CardContent>
                         </Card>
                     </TabsContent>
