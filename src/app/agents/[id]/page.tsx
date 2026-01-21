@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import { notFound } from 'next/navigation';
 import { useDoc, useCollection, useFirestore } from '@/firebase';
 import { doc, collection, query, where, orderBy } from 'firebase/firestore';
@@ -24,22 +23,14 @@ export default function AgentProfilePage({ params }: { params: { id: string } })
     const firestore = useFirestore();
     const { id } = params;
 
-    const agentRef = useMemo(() => {
-        if (!firestore) return null;
-        return doc(firestore, 'users', id);
-    }, [firestore, id]);
-
+    const agentRef = firestore ? doc(firestore, 'users', id) : null;
     const { data: agent, loading: agentLoading } = useDoc<AgentProfileUser>(agentRef);
 
-    const propertiesQuery = useMemo(() => {
-        if (!firestore || !id) return null;
-        return query(
-            collection(firestore, 'properties'), 
-            where('agentId', '==', id),
-            orderBy('createdAt', 'desc')
-        );
-    }, [firestore, id]);
-
+    const propertiesQuery = firestore ? query(
+        collection(firestore, 'properties'), 
+        where('agentId', '==', id),
+        orderBy('createdAt', 'desc')
+    ) : null;
     const { data: properties, loading: propertiesLoading } = useCollection<Property>(propertiesQuery);
 
     if (agentLoading) {
