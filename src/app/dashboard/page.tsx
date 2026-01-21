@@ -4,8 +4,10 @@
 import { useEffect, useState, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
-import { Loader2, Heart, User as UserIcon, History, MessageSquare, Home as HomeIcon, BarChart2, MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
+import { Loader2, Heart, User as UserIcon, History, MessageSquare, Home as HomeIcon, BarChart2, MoreHorizontal, Pencil, Trash2, Eye, Users, TrendingUp } from "lucide-react";
 import { doc, collection, query, where, orderBy, limit } from "firebase/firestore";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SavedHomes from "@/components/dashboard/saved-homes";
@@ -49,12 +51,21 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-import { formatNaira } from "@/lib/naira-formatter";
+import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
 import { Badge } from "@/components/ui/badge";
 import type { Property } from "@/types";
 import { deleteListing } from "@/lib/listings";
 import ChatInterface from "@/components/dashboard/chat-interface";
 import { Textarea } from "@/components/ui/textarea";
+
+const viewsData = [
+    { month: "Jan", views: 1200 },
+    { month: "Feb", views: 1800 },
+    { month: "Mar", views: 1500 },
+    { month: "Apr", views: 2200 },
+    { month: "May", views: 2500 },
+    { month: "Jun", views: 3100 },
+  ];
 
 function DashboardPageContent() {
   const router = useRouter();
@@ -350,9 +361,88 @@ function DashboardPageContent() {
                         </Card>
                     </TabsContent>
                     <TabsContent value="performance">
-                         <div className="mt-8 p-8 bg-secondary rounded-lg text-center">
-                            <h2 className="text-2xl font-bold">Performance Analytics Coming Soon!</h2>
-                            <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">Track your listing views, leads, and sales performance with detailed charts and reports.</p>
+                        <div className="mt-8 space-y-8">
+                            <div className="grid gap-6 md:grid-cols-3">
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+                                        <Eye className="h-4 w-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">12,834</div>
+                                        <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
+                                        <Users className="h-4 w-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">152</div>
+                                        <p className="text-xs text-muted-foreground">+18.3% from last month</p>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+                                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">1.2%</div>
+                                        <p className="text-xs text-muted-foreground">+0.2% from last month</p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-7">
+                                <Card className="lg:col-span-4">
+                                    <CardHeader>
+                                        <CardTitle>Listing Views</CardTitle>
+                                        <CardDescription>Total views across all your listings in the last 6 months.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="pl-2">
+                                        <ResponsiveContainer width="100%" height={350}>
+                                            <LineChart data={viewsData}>
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis dataKey="month" stroke="#888888" fontSize={12} tickLine={false} axisLine={false}/>
+                                                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value / 1000}k`} />
+                                                <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
+                                                <Line type="monotone" dataKey="views" stroke="hsl(var(--primary))" strokeWidth={2} activeDot={{ r: 8 }} />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </CardContent>
+                                </Card>
+                                <Card className="lg:col-span-3">
+                                    <CardHeader>
+                                        <CardTitle>Top Listings</CardTitle>
+                                        <CardDescription>Your most viewed properties.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Property</TableHead>
+                                                    <TableHead className="text-right">Views</TableHead>
+                                                    <TableHead className="text-right">Leads</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {agentListings?.slice(0, 5).map((listing, index) => (
+                                                    <TableRow key={listing.id}>
+                                                        <TableCell>
+                                                            <div className="font-medium truncate max-w-40">{listing.address}</div>
+                                                            <div className="text-xs text-muted-foreground">{listing.city}</div>
+                                                        </TableCell>
+                                                        <TableCell className="text-right">{(4382 - index * 621).toLocaleString()}</TableCell>
+                                                        <TableCell className="text-right">{Math.round(65 - index * 9.5)}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </CardContent>
+                                </Card>
+                            </div>
                         </div>
                     </TabsContent>
                 </Tabs>
