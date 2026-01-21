@@ -45,9 +45,9 @@ export function useDoc<T = DocumentData>(
     setData(undefined);
     setError(undefined);
 
-    // If the reference is not ready, we can't fetch the document.
-    // Consider it "loaded" with null data.
     if (ref === null) {
+      // If the reference is not ready, we can't fetch the document.
+      // This is a valid "loaded but no data" state.
       setData(null);
       return;
     }
@@ -72,7 +72,7 @@ export function useDoc<T = DocumentData>(
     );
 
     return () => unsubscribe();
-  }, [ref]); // The dependency on the ref object is crucial for re-fetching data when the reference changes.
+  }, [ref?.path]); // Depend on the path string which is stable, not the object reference.
 
   const loading = data === undefined && error === undefined;
 
