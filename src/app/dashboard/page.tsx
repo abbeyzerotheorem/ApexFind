@@ -257,10 +257,7 @@ export default function DashboardPage() {
                         </Card>
                     </TabsContent>
                     <TabsContent value="messages">
-                        <div className="mt-8 p-8 bg-secondary rounded-lg text-center">
-                            <h2 className="text-2xl font-bold">Client Messages Coming Soon!</h2>
-                            <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">This section will house all your conversations with potential buyers and renters.</p>
-                        </div>
+                        <ChatInterface />
                     </TabsContent>
                     <TabsContent value="profile">
                          <div className="mt-8 p-8 bg-secondary rounded-lg text-center">
