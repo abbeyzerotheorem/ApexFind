@@ -21,14 +21,24 @@ export default function ChatInterface() {
     // Get all conversations for the current user
     const conversationsQuery = useMemo(() => {
         if (!user || !firestore) return null;
+        // The orderBy was removed to prevent a missing-index error. Sorting is now done on the client.
         return query(
             collection(firestore, 'conversations'),
-            where('participants', 'array-contains', user.uid),
-            orderBy('lastMessageAt', 'desc')
+            where('participants', 'array-contains', user.uid)
         );
     }, [user, firestore]);
 
-    const { data: conversations, loading: conversationsLoading } = useCollection<Conversation>(conversationsQuery);
+    const { data: rawConversations, loading: conversationsLoading } = useCollection<Conversation>(conversationsQuery);
+    
+    const conversations = useMemo(() => {
+        if (!rawConversations) return undefined;
+        // Sort conversations by lastMessageAt descending
+        return [...rawConversations].sort((a, b) => {
+            const timeA = a.lastMessageAt?.toDate()?.getTime() || 0;
+            const timeB = b.lastMessageAt?.toDate()?.getTime() || 0;
+            return timeB - timeA;
+        });
+    }, [rawConversations]);
 
     useEffect(() => {
         if (!activeConversationId && conversations && conversations.length > 0) {
