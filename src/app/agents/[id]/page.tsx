@@ -1,7 +1,7 @@
 'use client';
 
-import { notFound } from 'next/navigation';
-import { useDoc, useCollection, useFirestore } from '@/firebase';
+import { notFound, useRouter } from 'next/navigation';
+import { useDoc, useCollection, useFirestore, useUser } from '@/firebase';
 import { doc, collection, query, where, orderBy } from 'firebase/firestore';
 import { Loader2, Mail, Phone, Star } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PropertyCard } from '@/components/property-card';
 import type { Property } from '@/types';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { getOrCreateConversation } from '@/lib/chat';
 
 type AgentProfileUser = {
     id: string;
@@ -20,8 +21,12 @@ type AgentProfileUser = {
 };
 
 
-export default function AgentProfilePage({ params: { id } }: { params: { id: string } }) {
+export default function AgentProfilePage({ params }: { params: { id: string } }) {
     const firestore = useFirestore();
+    const router = useRouter();
+    const { user } = useUser();
+    const [isContacting, setIsContacting] = useState(false);
+    const { id } = params;
 
     const agentRef = useMemo(() => {
         if (!firestore) return null;
@@ -40,6 +45,30 @@ export default function AgentProfilePage({ params: { id } }: { params: { id: str
     }, [firestore, id]);
 
     const { data: properties, loading: propertiesLoading } = useCollection<Property>(propertiesQuery);
+    
+    const handleContactAgent = async () => {
+        if (!user || !firestore) {
+            router.push('/auth');
+            return;
+        }
+        if (!agent) return;
+
+        setIsContacting(true);
+        try {
+            await getOrCreateConversation(
+                firestore,
+                { uid: user.uid, displayName: user.displayName, photoURL: user.photoURL },
+                { uid: agent.id, displayName: agent.displayName, photoURL: agent.photoURL }
+            );
+            router.push('/dashboard?tab=agent-messages');
+        } catch (error) {
+            console.error("Failed to create conversation", error);
+            // In a real app, show a toast notification
+        } finally {
+            setIsContacting(false);
+        }
+    }
+
 
     if (agentLoading) {
         return (
@@ -85,8 +114,9 @@ export default function AgentProfilePage({ params: { id } }: { params: { id: str
                                 </div>
                                 
                                 <div className="mt-6 flex flex-col gap-3">
-                                    <Button size="lg">
-                                        <Phone className="mr-2 h-4 w-4"/> Contact Agent
+                                    <Button size="lg" onClick={handleContactAgent} disabled={isContacting}>
+                                        {isContacting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Phone className="mr-2 h-4 w-4"/>}
+                                        {isContacting ? 'Contacting...' : 'Contact Agent'}
                                     </Button>
                                     <Button size="lg" variant="outline">
                                         <Mail className="mr-2 h-4 w-4"/> {agent.email}

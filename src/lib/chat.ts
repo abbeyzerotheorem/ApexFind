@@ -66,6 +66,7 @@ export async function getOrCreateConversation(
         return docSnap.id;
     }
 
+    const now = serverTimestamp();
     // No existing conversation, so create a new one
     await setDoc(conversationRef, {
         participants: participants,
@@ -73,7 +74,8 @@ export async function getOrCreateConversation(
             { uid: currentUser.uid, displayName: currentUser.displayName, photoURL: currentUser.photoURL },
             { uid: otherUser.uid, displayName: otherUser.displayName, photoURL: otherUser.photoURL }
         ],
-        createdAt: serverTimestamp(),
+        createdAt: now,
+        lastMessageAt: now,
     });
 
     return conversationId;

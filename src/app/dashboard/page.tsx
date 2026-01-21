@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useMemo, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
 import { Loader2, Heart, User as UserIcon, History, MessageSquare, Home as HomeIcon, BarChart2, MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
 import { doc, collection, query, where, orderBy, limit } from "firebase/firestore";
@@ -54,9 +54,9 @@ import type { Property } from "@/types";
 import { deleteListing } from "@/lib/listings";
 import ChatInterface from "@/components/dashboard/chat-interface";
 
-
-export default function DashboardPage() {
+function DashboardPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading: userLoading } = useUser();
   const firestore = useFirestore();
 
@@ -150,6 +150,8 @@ export default function DashboardPage() {
       return null; 
   }
 
+  const initialTab = searchParams.get('tab') || (userProfile?.role === 'agent' ? 'my-listings' : 'saved-homes');
+
   if (userProfile?.role === 'agent') {
     return (
         <div className="flex min-h-screen flex-col bg-background py-8 sm:py-12">
@@ -158,7 +160,7 @@ export default function DashboardPage() {
                 Agent Dashboard
               </h1>
               <p className="mt-1 text-muted-foreground">Welcome back, Agent {user.displayName || user.email}</p>
-                <Tabs defaultValue="my-listings" className="mt-8">
+                <Tabs defaultValue={initialTab} className="mt-8">
                     <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
                         <TabsTrigger value="my-listings"><HomeIcon className="mr-2 h-4 w-4"/> My Listings</TabsTrigger>
                         <TabsTrigger value="messages"><MessageSquare className="mr-2 h-4 w-4"/> Messages</TabsTrigger>
@@ -291,7 +293,7 @@ export default function DashboardPage() {
             My Dashboard
           </h1>
           <p className="mt-1 text-muted-foreground">Welcome back, {user.displayName || user.email}</p>
-          <Tabs defaultValue="saved-homes" className="mt-8">
+          <Tabs defaultValue={initialTab} className="mt-8">
             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
               <TabsTrigger value="saved-homes">
                 <Heart className="mr-2 h-4 w-4" />
@@ -444,5 +446,19 @@ export default function DashboardPage() {
           </Tabs>
         </div>
     </div>
+  );
+}
+
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <h1 className="text-xl text-muted-foreground">Loading Dashboard...</h1>
+      </div>
+    }>
+      <DashboardPageContent />
+    </Suspense>
   );
 }
