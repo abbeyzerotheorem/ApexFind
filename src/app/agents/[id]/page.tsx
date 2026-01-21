@@ -22,22 +22,23 @@ type AgentProfileUser = {
 
 export default function AgentProfilePage({ params }: { params: { id: string } }) {
     const firestore = useFirestore();
+    const { id } = params;
 
     const agentRef = useMemo(() => {
         if (!firestore) return null;
-        return doc(firestore, 'users', params.id);
-    }, [firestore, params.id]);
+        return doc(firestore, 'users', id);
+    }, [firestore, id]);
 
     const { data: agent, loading: agentLoading } = useDoc<AgentProfileUser>(agentRef);
 
     const propertiesQuery = useMemo(() => {
-        if (!firestore || !params.id) return null;
+        if (!firestore || !id) return null;
         return query(
             collection(firestore, 'properties'), 
-            where('agentId', '==', params.id),
+            where('agentId', '==', id),
             orderBy('createdAt', 'desc')
         );
-    }, [firestore, params.id]);
+    }, [firestore, id]);
 
     const { data: properties, loading: propertiesLoading } = useCollection<Property>(propertiesQuery);
 
