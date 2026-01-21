@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from 'next/link';
 
 type AgentUser = {
-    uid: string;
+    id: string;
     displayName?: string | null;
     photoURL?: string | null;
     role?: 'agent' | 'customer';
@@ -26,7 +26,7 @@ export default function AgentSearchPage() {
         return query(collection(firestore, 'users'), where('role', '==', 'agent'));
     }, [firestore]);
 
-    const { data: allAgents, loading } = useCollection<AgentUser>(agentsQuery);
+    const { data: allAgents, loading } = useCollection<Omit<AgentUser, 'id'>>(agentsQuery);
 
     const filteredAgents = useMemo(() => {
         if (!allAgents) return [];
@@ -99,7 +99,7 @@ export default function AgentSearchPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {loading && <div className="col-span-full flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin" /></div>}
                     {!loading && filteredAgents?.map(agent => (
-                        <AgentCard key={agent.uid} agent={agent} />
+                        <AgentCard key={agent.id} agent={agent} />
                     ))}
                     {!loading && (!filteredAgents || filteredAgents.length === 0) && (
                         <div className="col-span-full text-center py-12">
@@ -116,7 +116,7 @@ export default function AgentSearchPage() {
 function AgentCard({ agent }: { agent: AgentUser }) {
     
     const agentProfile = {
-        id: agent.uid,
+        id: agent.id,
         name: agent.displayName || 'Unnamed Agent',
         title: 'Real Estate Agent',
         company: 'ApexFind',
