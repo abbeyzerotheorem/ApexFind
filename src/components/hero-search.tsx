@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -14,7 +15,7 @@ export default function HeroSearch() {
   const heroImage = PlaceHolderImages.find(p => p.id === 'hero-background');
 
   return (
-    <section className="relative flex h-[60vh] min-h-[400px] items-center justify-center text-white">
+    <section className="relative flex h-[60vh] min-h-[400px] items-center justify-center pt-20 text-white">
       {heroImage && (
         <Image
           src={heroImage.imageUrl}
