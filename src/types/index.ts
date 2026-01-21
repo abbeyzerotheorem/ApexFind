@@ -1,4 +1,6 @@
 
+import type { User as FirebaseUser } from 'firebase/auth';
+
 export type Property = {
     id: string; // Firestore ID is a string
     agentId: string;
@@ -41,4 +43,28 @@ export type Agent = {
     location: string;
     languages: string[];
     specialties: string[];
+};
+
+export type User = FirebaseUser;
+
+export type Message = {
+    id: string;
+    senderId: string;
+    text: string;
+    createdAt: any; // Firestore Timestamp
+};
+
+export type ConversationParticipant = {
+    uid: string;
+    displayName: string | null;
+    photoURL: string | null;
+};
+
+export type Conversation = {
+    id: string;
+    participants: string[];
+    participantDetails: ConversationParticipant[];
+    lastMessageText?: string;
+    lastMessageAt?: any; // Firestore Timestamp
+    lastMessageSenderId?: string;
 };

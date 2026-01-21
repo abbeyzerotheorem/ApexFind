@@ -180,6 +180,80 @@
         "property_data",
         "viewed_at"
       ]
+    },
+    "message": {
+      "title": "Message",
+      "description": "A single message within a conversation.",
+      "type": "object",
+      "properties": {
+        "senderId": {
+          "type": "string",
+          "description": "The UID of the message sender."
+        },
+        "text": {
+          "type": "string",
+          "description": "The content of the message."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the message was sent."
+        }
+      },
+      "required": [
+        "senderId",
+        "text",
+        "createdAt"
+      ]
+    },
+    "conversation": {
+      "title": "Conversation",
+      "description": "A chat conversation between users.",
+      "type": "object",
+      "properties": {
+        "participants": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "An array of user UIDs participating in the conversation."
+        },
+        "participantDetails": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "uid": {
+                "type": "string"
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "photoURL": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "Details of the participants for easy display."
+        },
+        "lastMessageText": {
+          "type": "string",
+          "description": "A snippet of the last message sent."
+        },
+        "lastMessageAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the last message."
+        },
+        "lastMessageSenderId": {
+          "type": "string",
+          "description": "The UID of the sender of the last message."
+        }
+      },
+      "required": [
+        "participants",
+        "participantDetails"
+      ]
     }
   },
   "auth": {
@@ -213,6 +287,18 @@
         "$ref": "#/entities/property"
       },
       "description": "Stores all property listings."
+    },
+    "/conversations/{conversationId}": {
+      "schema": {
+        "$ref": "#/entities/conversation"
+      },
+      "description": "Stores metadata for each conversation."
+    },
+    "/conversations/{conversationId}/messages/{messageId}": {
+      "schema": {
+        "$ref": "#/entities/message"
+      },
+      "description": "Stores all messages for a specific conversation."
     }
   }
 }

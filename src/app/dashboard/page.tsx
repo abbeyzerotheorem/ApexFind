@@ -16,8 +16,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { PlaceHolderAgents } from "@/lib/placeholder-agents";
-import { Textarea } from "@/components/ui/textarea";
 import { updateUserProfile } from "@/lib/user";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from 'next/link';
@@ -54,6 +52,9 @@ import { formatNaira } from "@/lib/naira-formatter";
 import { Badge } from "@/components/ui/badge";
 import type { Property } from "@/types";
 import { deleteListing } from "@/lib/listings";
+import ChatInterface from "@/components/dashboard/chat-interface";
+import { PlaceHolderAgents } from "@/lib/placeholder-agents";
+
 
 const linkedAgent = PlaceHolderAgents[0];
 
@@ -129,7 +130,7 @@ export default function DashboardPage() {
   }
 
 
-  if (userLoading || profileLoading || listingsLoading) {
+  if (userLoading || profileLoading || (userProfile?.role === 'agent' && listingsLoading)) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -313,78 +314,7 @@ export default function DashboardPage() {
                 <ViewedHistory />
             </TabsContent>
             <TabsContent value="agent-messages">
-                <div className="mt-8 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                    <Card className="md:col-span-1 lg:col-span-1">
-                        <CardHeader>
-                            <CardTitle>Conversations</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            <div className="flex flex-col">
-                                <div className="p-4 border-b bg-secondary cursor-pointer">
-                                    <div className="flex items-center gap-3">
-                                        <Avatar className="h-10 w-10">
-                                            <AvatarImage src={linkedAgent.imageUrl} />
-                                            <AvatarFallback>{linkedAgent.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="font-semibold">{linkedAgent.name}</p>
-                                            <p className="text-sm text-muted-foreground truncate">Great, I'll set that up for...</p>
-                                        </div>
-                                    </div>
-                                     <p className="text-xs text-muted-foreground mt-1 text-right">2 hours ago</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="md:col-span-2 lg:col-span-3 flex flex-col">
-                        <CardHeader className="border-b">
-                            <div className="flex items-center gap-3">
-                                <Avatar className="h-10 w-10">
-                                     <AvatarImage src={linkedAgent.imageUrl} />
-                                     <AvatarFallback>{linkedAgent.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <CardTitle>{linkedAgent.name}</CardTitle>
-                                    <CardDescription>{linkedAgent.title}, {linkedAgent.company}</CardDescription>
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="p-6 flex-1 h-[500px] overflow-y-auto space-y-6">
-                            <div className="flex justify-end">
-                                <div className="bg-primary text-primary-foreground p-3 rounded-lg max-w-xs">
-                                    <p>Hi Amina, I'm very interested in the property at 123 Banana Island. Could we schedule a tour for this weekend?</p>
-                                    <p className="text-xs text-primary-foreground/70 mt-1 text-right">You • 3 hours ago</p>
-                                </div>
-                            </div>
-                             <div className="flex justify-start">
-                                <div className="bg-muted p-3 rounded-lg max-w-xs">
-                                    <p>Of course! I'd be happy to show you the property. Does Saturday at 2 PM work for you?</p>
-                                    <p className="text-xs text-muted-foreground mt-1 text-right">Amina • 3 hours ago</p>
-                                </div>
-                            </div>
-                            <div className="flex justify-end">
-                                <div className="bg-primary text-primary-foreground p-3 rounded-lg max-w-xs">
-                                    <p>Saturday at 2 PM is perfect. Thank you!</p>
-                                     <p className="text-xs text-primary-foreground/70 mt-1 text-right">You • 2 hours ago</p>
-                                </div>
-                            </div>
-                             <div className="flex justify-start">
-                                <div className="bg-muted p-3 rounded-lg max-w-xs">
-                                    <p>Great, I'll set that up and send you a calendar invitation. Looking forward to it!</p>
-                                     <p className="text-xs text-muted-foreground mt-1 text-right">Amina • 2 hours ago</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                        <CardFooter className="border-t p-4">
-                             <div className="flex w-full items-center gap-2">
-                                <Textarea placeholder="Type your message..." className="flex-1 resize-none" rows={1} />
-                                <Button size="icon">
-                                    <span className="sr-only">Send</span>
-                                </Button>
-                            </div>
-                        </CardFooter>
-                    </Card>
-                </div>
+                <ChatInterface />
             </TabsContent>
              <TabsContent value="profile">
                  <div className="mt-8 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
