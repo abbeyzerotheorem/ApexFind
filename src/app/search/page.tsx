@@ -1,17 +1,18 @@
 'use client';
 
+import { Suspense, useMemo } from 'react';
+import { useSearchParams } from "next/navigation";
 import SearchResults from "@/components/search/search-results";
 import SearchFilters from "@/components/search/search-filters";
 import allStatesWithLgas from "@/jsons/nigeria-states.json";
 import { useCollection, useFirestore } from "@/firebase";
 import { collection, query } from "firebase/firestore";
-import { useMemo } from "react";
 import type { Property } from "@/types";
-import { useSearchParams } from "next/navigation";
+import { Loader2 } from 'lucide-react';
 
 const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lgas]);
 
-export default function SearchPage() {
+function SearchPageComponent() {
   const searchParams = useSearchParams();
   const firestore = useFirestore();
 
@@ -96,5 +97,22 @@ export default function SearchPage() {
       </div>
       <SearchResults properties={loading ? [] : filteredProperties} />
     </>
+  );
+}
+
+
+function SearchLoadingFallback() {
+    return (
+        <div className="flex h-[calc(100vh-148px)] w-full items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+    );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchLoadingFallback />}>
+      <SearchPageComponent />
+    </Suspense>
   );
 }
