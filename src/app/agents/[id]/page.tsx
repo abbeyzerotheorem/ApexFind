@@ -57,7 +57,7 @@ export default function AgentProfilePage({ params: { id } }: { params: { id: str
             await getOrCreateConversation(
                 firestore,
                 { uid: user.uid, displayName: user.displayName, photoURL: user.photoURL },
-                { uid: agent.id, displayName: agent.displayName, photoURL: agent.photoURL }
+                { uid: agent.id, displayName: agent.displayName || null, photoURL: agent.photoURL || null }
             );
             router.push('/dashboard?tab=agent-messages');
         } catch (error) {
