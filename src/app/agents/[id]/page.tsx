@@ -21,12 +21,11 @@ type AgentProfileUser = {
 };
 
 
-export default function AgentProfilePage({ params }: { params: { id: string } }) {
+export default function AgentProfilePage({ params: { id } }: { params: { id: string } }) {
     const firestore = useFirestore();
     const router = useRouter();
     const { user } = useUser();
     const [isContacting, setIsContacting] = useState(false);
-    const { id } = params;
 
     const agentRef = useMemo(() => {
         if (!firestore) return null;
