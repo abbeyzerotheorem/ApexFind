@@ -1,7 +1,7 @@
 'use client';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useUser, useFirestore, useCollection } from '@/firebase';
-import { collection, query, where, orderBy, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, orderBy, doc, getDoc, onSnapshot } from 'firebase/firestore';
 import type { Conversation, Message, User } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,6 @@ import { getOrCreateConversation, sendMessage } from '@/lib/chat';
 import { Loader2, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from '../ui/scroll-area';
-import { PlaceHolderAgents } from '@/lib/placeholder-agents'; 
 
 // Main component
 export default function ChatInterface() {
@@ -31,26 +30,11 @@ export default function ChatInterface() {
 
     const { data: conversations, loading: conversationsLoading } = useCollection<Conversation>(conversationsQuery);
 
-    // This is temporary logic to seed a conversation
     useEffect(() => {
-        if (user && firestore && !conversationsLoading && (!conversations || conversations.length === 0)) {
-            // If user has no conversations, create one with the first placeholder agent
-            const agent = PlaceHolderAgents[0];
-            const mockAgentUser = {
-                uid: `agent_${agent.id}`, // Create a fake UID
-                displayName: agent.name,
-                photoURL: agent.imageUrl
-            };
-
-            const createInitialConvo = async () => {
-                const convoId = await getOrCreateConversation(firestore, user, mockAgentUser);
-                setActiveConversationId(convoId);
-            };
-            createInitialConvo();
-        } else if (!activeConversationId && conversations && conversations.length > 0) {
+        if (!activeConversationId && conversations && conversations.length > 0) {
             setActiveConversationId(conversations[0].id);
         }
-    }, [user, firestore, conversations, conversationsLoading, activeConversationId]);
+    }, [conversations, activeConversationId]);
     
     if (userLoading || (conversationsLoading && !conversations)) {
         return <div className="flex items-center justify-center p-8 mt-8"><Loader2 className="animate-spin h-8 w-8" /></div>;

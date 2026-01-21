@@ -1,27 +1,46 @@
-
 'use client';
-import { useState } from 'react';
-import { PlaceHolderAgents, Agent } from "@/lib/placeholder-agents";
+import { useState, useMemo } from 'react';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
-import { Search, ChevronDown, Star } from "lucide-react";
+import { Search, ChevronDown, Star, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from 'next/link';
 
+type AgentUser = {
+    uid: string;
+    displayName?: string | null;
+    photoURL?: string | null;
+    role?: 'agent' | 'customer';
+};
+
+
 export default function AgentSearchPage() {
+    const firestore = useFirestore();
     const [searchTerm, setSearchTerm] = useState('');
-    const [agents, setAgents] = useState(PlaceHolderAgents);
+    
+    const agentsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'users'), where('role', '==', 'agent'));
+    }, [firestore]);
+
+    const { data: allAgents, loading } = useCollection<AgentUser>(agentsQuery);
+
+    const filteredAgents = useMemo(() => {
+        if (!allAgents) return [];
+        if (!searchTerm) return allAgents;
+
+        const term = searchTerm.toLowerCase();
+        return allAgents.filter(agent => 
+            agent.displayName?.toLowerCase().includes(term)
+        );
+    }, [allAgents, searchTerm]);
+
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const term = e.target.value.toLowerCase();
-        setSearchTerm(term);
-        const filteredAgents = PlaceHolderAgents.filter(agent => 
-            agent.name.toLowerCase().includes(term) ||
-            agent.company.toLowerCase().includes(term) ||
-            agent.location.toLowerCase().includes(term)
-        );
-        setAgents(filteredAgents);
+        setSearchTerm(e.target.value);
     };
 
     return (
@@ -41,7 +60,7 @@ export default function AgentSearchPage() {
                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                         <Input 
                             type="text"
-                            placeholder="Search by name, company, or location"
+                            placeholder="Search by name"
                             className="w-full pl-10 h-12 text-base"
                             value={searchTerm}
                             onChange={handleSearch}
@@ -78,40 +97,61 @@ export default function AgentSearchPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {agents.map(agent => (
-                        <AgentCard key={agent.id} agent={agent} />
+                    {loading && <div className="col-span-full flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin" /></div>}
+                    {!loading && filteredAgents?.map(agent => (
+                        <AgentCard key={agent.uid} agent={agent} />
                     ))}
+                    {!loading && (!filteredAgents || filteredAgents.length === 0) && (
+                        <div className="col-span-full text-center py-12">
+                            <h3 className="text-xl font-semibold">No Agents Found</h3>
+                            <p className="text-muted-foreground mt-2">Try adjusting your search or check back later.</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     )
 }
 
-function AgentCard({ agent }: { agent: Agent }) {
+function AgentCard({ agent }: { agent: AgentUser }) {
+    
+    const agentProfile = {
+        id: agent.uid,
+        name: agent.displayName || 'Unnamed Agent',
+        title: 'Real Estate Agent',
+        company: 'ApexFind',
+        imageUrl: agent.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${agent.displayName || 'A'}`,
+        imageHint: "agent portrait",
+        experience: 5,
+        sales: 32,
+        rating: 4.8,
+        reviewCount: 55,
+    };
+
     return (
         <div className="rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-lg">
             <div className="p-6 text-center">
-                 <Link href={`/agents/${agent.id}`}>
+                 <Link href={`/agents/${agentProfile.id}`}>
                     <Avatar className="h-24 w-24 mx-auto mb-4">
-                        <AvatarImage src={agent.imageUrl} alt={agent.name} data-ai-hint={agent.imageHint} />
-                        <AvatarFallback>{agent.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
+                        <AvatarImage src={agentProfile.imageUrl} alt={agentProfile.name} data-ai-hint={agentProfile.imageHint} />
+                        <AvatarFallback>{agentProfile.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
                     </Avatar>
-                    <h3 className="text-xl font-bold">{agent.name}</h3>
+                    <h3 className="text-xl font-bold">{agentProfile.name}</h3>
                 </Link>
-                <p className="text-muted-foreground">{agent.title}, {agent.company}</p>
+                <p className="text-muted-foreground">{agentProfile.title}, {agentProfile.company}</p>
                 <div className="mt-2 flex items-center justify-center gap-1">
                     <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                    <span className="font-bold">{agent.rating.toFixed(1)}</span>
-                    <span className="text-muted-foreground">({agent.reviewCount} reviews)</span>
+                    <span className="font-bold">{agentProfile.rating.toFixed(1)}</span>
+                    <span className="text-muted-foreground">({agentProfile.reviewCount} reviews)</span>
                 </div>
             </div>
             <div className="grid grid-cols-2 border-t text-center">
                 <div className="p-4 border-r">
-                    <p className="text-2xl font-bold">{agent.experience} yrs</p>
+                    <p className="text-2xl font-bold">{agentProfile.experience} yrs</p>
                     <p className="text-sm text-muted-foreground">Experience</p>
                 </div>
                 <div className="p-4">
-                    <p className="text-2xl font-bold">{agent.sales}</p>
+                    <p className="text-2xl font-bold">{agentProfile.sales}</p>
                     <p className="text-sm text-muted-foreground">Sales (24 mo)</p>
                 </div>
             </div>

@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
 import { Loader2, Heart, User as UserIcon, History, MessageSquare, Home as HomeIcon, BarChart2, MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
-import { doc, collection, query, where, orderBy } from "firebase/firestore";
+import { doc, collection, query, where, orderBy, limit } from "firebase/firestore";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SavedHomes from "@/components/dashboard/saved-homes";
@@ -53,10 +53,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Property } from "@/types";
 import { deleteListing } from "@/lib/listings";
 import ChatInterface from "@/components/dashboard/chat-interface";
-import { PlaceHolderAgents } from "@/lib/placeholder-agents";
 
-
-const linkedAgent = PlaceHolderAgents[0];
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -74,7 +71,7 @@ export default function DashboardPage() {
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
   
-  const { data: userProfile, loading: profileLoading } = useDoc<{phoneNumber?: string, role?: 'customer' | 'agent'}>(userDocRef);
+  const { data: userProfile, loading: profileLoading } = useDoc<{phoneNumber?: string, role?: 'customer' | 'agent', displayName?: string, photoURL?: string}>(userDocRef);
 
   // Agent listings state
   const propertiesQuery = useMemo(() => {
@@ -83,6 +80,15 @@ export default function DashboardPage() {
   }, [firestore, user, userProfile]);
 
   const { data: agentListings, loading: listingsLoading } = useCollection<Property>(propertiesQuery);
+
+  // Fetch one agent to show in customer dashboard
+  const firstAgentQuery = useMemo(() => {
+      if (!firestore) return null;
+      return query(collection(firestore, 'users'), where('role', '==', 'agent'), limit(1));
+  }, [firestore]);
+
+  const { data: firstAgentArr } = useCollection(firstAgentQuery);
+  const linkedAgent = firstAgentArr?.[0];
 
   useEffect(() => {
     if (user) {
@@ -376,18 +382,19 @@ export default function DashboardPage() {
                             {linkedAgent ? (
                                 <div className="flex items-center gap-4">
                                      <Avatar className="h-16 w-16">
-                                        <AvatarImage src={linkedAgent.imageUrl} alt={linkedAgent.name} />
-                                        <AvatarFallback>{linkedAgent.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                                        <AvatarImage src={linkedAgent.photoURL ?? undefined} alt={linkedAgent.displayName ?? ""} />
+                                        <AvatarFallback>{linkedAgent.displayName?.split(" ").map((n: string) => n[0]).join("")}</AvatarFallback>
                                     </Avatar>
                                     <div>
-                                        <p className="font-bold">{linkedAgent.name}</p>
-                                        <p className="text-sm text-muted-foreground">{linkedAgent.company}</p>
+                                        <p className="font-bold">{linkedAgent.displayName}</p>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="text-center text-muted-foreground py-4">
                                     <p>No linked agent.</p>
-                                    <Button variant="link" size="sm">Find an agent</Button>
+                                    <Button variant="link" size="sm" asChild>
+                                        <Link href="/agents">Find an agent</Link>
+                                    </Button>
                                 </div>
                             )}
                         </CardContent>
