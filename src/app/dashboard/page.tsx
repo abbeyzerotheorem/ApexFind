@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useMemo, Suspense } from "react";
@@ -53,6 +54,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Property } from "@/types";
 import { deleteListing } from "@/lib/listings";
 import ChatInterface from "@/components/dashboard/chat-interface";
+import { Textarea } from "@/components/ui/textarea";
 
 function DashboardPageContent() {
   const router = useRouter();
@@ -63,6 +65,10 @@ function DashboardPageContent() {
   // Profile State
   const [displayName, setDisplayName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [photoURL, setPhotoURL] = useState('');
+  const [about, setAbout] = useState('');
+  const [specialties, setSpecialties] = useState('');
+  const [languages, setLanguages] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
@@ -71,7 +77,15 @@ function DashboardPageContent() {
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
   
-  const { data: userProfile, loading: profileLoading } = useDoc<{phoneNumber?: string, role?: 'customer' | 'agent', displayName?: string, photoURL?: string}>(userDocRef);
+  const { data: userProfile, loading: profileLoading } = useDoc<{
+    phoneNumber?: string, 
+    role?: 'customer' | 'agent', 
+    displayName?: string, 
+    photoURL?: string,
+    about?: string,
+    specialties?: string[],
+    languages?: string[],
+  }>(userDocRef);
 
   // Agent listings state
   const propertiesQuery = useMemo(() => {
@@ -93,10 +107,16 @@ function DashboardPageContent() {
   useEffect(() => {
     if (user) {
       setDisplayName(user.displayName || '');
+      setPhotoURL(user.photoURL || '');
     }
     // `userProfile` might be loaded after `user`
     if (userProfile) {
+      setDisplayName(userProfile.displayName || user?.displayName || '');
       setPhoneNumber(userProfile.phoneNumber || '');
+      setPhotoURL(userProfile.photoURL || user?.photoURL || '');
+      setAbout(userProfile.about || '');
+      setSpecialties(userProfile.specialties?.join(', ') || '');
+      setLanguages(userProfile.languages?.join(', ') || '');
     }
   }, [user, userProfile]);
 
@@ -113,11 +133,19 @@ function DashboardPageContent() {
     setIsSaving(true);
     setSaveMessage('');
     try {
-        await updateUserProfile(firestore, user.uid, {
-            displayName: displayName,
-            phoneNumber: phoneNumber
-        });
+        const profileData: any = {
+            displayName,
+            phoneNumber
+        };
+        if (userProfile?.role === 'agent') {
+            profileData.photoURL = photoURL;
+            profileData.about = about;
+            profileData.specialties = specialties.split(',').map(s => s.trim()).filter(Boolean);
+            profileData.languages = languages.split(',').map(s => s.trim()).filter(Boolean);
+        }
+        await updateUserProfile(firestore, user.uid, profileData);
         setSaveMessage('Profile updated successfully!');
+        setTimeout(() => setSaveMessage(''), 3000);
     } catch (error: any) {
         setSaveMessage(`Error: ${error.message}`);
     } finally {
@@ -268,10 +296,58 @@ function DashboardPageContent() {
                         <ChatInterface />
                     </TabsContent>
                     <TabsContent value="profile">
-                         <div className="mt-8 p-8 bg-secondary rounded-lg text-center">
-                            <h2 className="text-2xl font-bold">Agent Profile Management Coming Soon!</h2>
-                            <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">Soon you'll be able to edit your public agent profile, upload a professional photo, and manage your specialties.</p>
-                        </div>
+                        <Card className="mt-8">
+                            <form onSubmit={handleProfileSave}>
+                                <CardHeader>
+                                    <CardTitle>Agent Profile</CardTitle>
+                                    <CardDescription>This information will be displayed on your public agent page.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="grid gap-6">
+                                    {profileLoading ? (
+                                        <Skeleton className="h-64 w-full" />
+                                    ) : (
+                                        <>
+                                            <div className="grid sm:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="name">Full Name</Label>
+                                                    <Input id="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="email">Email</Label>
+                                                    <Input id="email" type="email" value={user.email || ''} readOnly disabled />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="phone">Phone Number</Label>
+                                                <Input id="phone" type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="e.g. +234 801 234 5678"/>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="photoURL">Profile Picture URL</Label>
+                                                <Input id="photoURL" type="url" value={photoURL} onChange={(e) => setPhotoURL(e.target.value)} placeholder="https://example.com/your-image.jpg"/>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="about">About Me</Label>
+                                                <Textarea id="about" value={about} onChange={(e) => setAbout(e.target.value)} placeholder="Tell clients a little about yourself, your experience, and your approach." />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="specialties">Specialties</Label>
+                                                <Input id="specialties" value={specialties} onChange={(e) => setSpecialties(e.target.value)} placeholder="Luxury Homes, First-time Buyers, Commercial (comma-separated)" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="languages">Languages</Label>
+                                                <Input id="languages" value={languages} onChange={(e) => setLanguages(e.target.value)} placeholder="English, Yoruba, Igbo (comma-separated)" />
+                                            </div>
+                                        </>
+                                    )}
+                                </CardContent>
+                                <CardFooter className="flex-col items-start gap-2">
+                                    <Button type="submit" disabled={isSaving}>
+                                        {isSaving ? "Saving..." : "Save Changes"}
+                                    </Button>
+                                    {saveMessage && <p className="text-sm text-muted-foreground">{saveMessage}</p>}
+                                </CardFooter>
+                            </form>
+                        </Card>
                     </TabsContent>
                     <TabsContent value="performance">
                          <div className="mt-8 p-8 bg-secondary rounded-lg text-center">

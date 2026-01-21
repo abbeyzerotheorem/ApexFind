@@ -24,6 +24,24 @@
           "type": "string",
           "description": "The user's phone number."
         },
+        "about": {
+          "type": "string",
+          "description": "A short biography of the user, visible on their public profile."
+        },
+        "specialties": {
+          "type": "array",
+          "description": "A list of real estate specialties for agents.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "languages": {
+          "type": "array",
+          "description": "A list of languages spoken by the agent.",
+          "items": {
+            "type": "string"
+          }
+        },
         "role": {
           "type": "string",
           "description": "The role of the user, determining their permissions and dashboard view.",

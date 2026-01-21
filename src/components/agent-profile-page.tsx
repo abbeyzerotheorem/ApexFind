@@ -1,16 +1,18 @@
+
 'use client';
 
-import { notFound, useRouter } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { useDoc, useCollection, useFirestore, useUser } from '@/firebase';
 import { doc, collection, query, where, orderBy } from 'firebase/firestore';
 import { Loader2, Mail, Phone, Star } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { PropertyCard } from '@/components/property-card';
 import type { Property } from '@/types';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { getOrCreateConversation } from '@/lib/chat';
+import { useRouter } from 'next/navigation';
 
 type AgentProfileUser = {
     id: string;
@@ -18,8 +20,10 @@ type AgentProfileUser = {
     photoURL?: string;
     email?: string;
     phoneNumber?: string;
+    about?: string;
+    specialties?: string[];
+    languages?: string[];
 };
-
 
 export default function AgentProfilePage({ id }: { id: string }) {
     const firestore = useFirestore();
@@ -27,21 +31,15 @@ export default function AgentProfilePage({ id }: { id: string }) {
     const { user } = useUser();
     const [isContacting, setIsContacting] = useState(false);
 
-    const agentRef = useMemo(() => {
-        if (!firestore) return null;
-        return doc(firestore, 'users', id);
-    }, [firestore, id]);
+    const agentRef = doc(firestore, 'users', id);
 
     const { data: agent, loading: agentLoading } = useDoc<AgentProfileUser>(agentRef);
 
-    const propertiesQuery = useMemo(() => {
-        if (!firestore) return null;
-        return query(
-            collection(firestore, 'properties'), 
-            where('agentId', '==', id),
-            orderBy('createdAt', 'desc')
-        );
-    }, [firestore, id]);
+    const propertiesQuery = query(
+        collection(firestore, 'properties'), 
+        where('agentId', '==', id),
+        orderBy('createdAt', 'desc')
+    );
 
     const { data: properties, loading: propertiesLoading } = useCollection<Property>(propertiesQuery);
     
@@ -59,7 +57,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
                 { uid: user.uid, displayName: user.displayName, photoURL: user.photoURL },
                 { uid: agent.id, displayName: agent.displayName || null, photoURL: agent.photoURL || null }
             );
-            router.push('/dashboard?tab=agent-messages');
+            router.push('/dashboard?tab=messages');
         } catch (error) {
             console.error("Failed to create conversation", error);
             // In a real app, show a toast notification
@@ -82,15 +80,17 @@ export default function AgentProfilePage({ id }: { id: string }) {
         notFound();
     }
     
-    // Placeholder data
     const agentStats = {
         experience: 5,
         sales: 32,
         rating: 4.8,
         reviewCount: 55,
-        specialties: ['Luxury Homes', 'First-time Buyers', 'Rentals'],
-        languages: ['English', 'Yoruba'],
+        specialties: agent.specialties || [],
+        languages: agent.languages || [],
     };
+
+    const aboutText = agent.about || `A seasoned professional with ${agentStats.experience} years of experience in the Nigerian real estate market, ${agent.displayName} is dedicated to helping clients find their perfect home. Specializing in ${agentStats.specialties.join(', ')}, they bring a wealth of knowledge and a commitment to client satisfaction.`;
+
 
     return (
         <div className="flex min-h-screen flex-col bg-background py-8 sm:py-12">
@@ -140,7 +140,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
                         <div className="mb-8">
                             <h2 className="text-3xl font-bold">About {agent.displayName}</h2>
                             <p className="mt-4 text-muted-foreground">
-                                A seasoned professional with {agentStats.experience} years of experience in the Nigerian real estate market, {agent.displayName} is dedicated to helping clients find their perfect home. Specializing in {agentStats.specialties.join(', ')}, they bring a wealth of knowledge and a commitment to client satisfaction.
+                                {aboutText}
                             </p>
                              <div className="mt-4">
                                 <p><span className="font-semibold">Languages:</span> {agentStats.languages.join(', ')}</p>

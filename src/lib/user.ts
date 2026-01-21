@@ -1,3 +1,4 @@
+
 'use client';
 
 import { getAuth, updateProfile } from 'firebase/auth';
@@ -6,6 +7,10 @@ import { doc, setDoc, type Firestore } from 'firebase/firestore';
 interface UserProfileData {
     displayName?: string;
     phoneNumber?: string;
+    photoURL?: string;
+    about?: string;
+    specialties?: string[];
+    languages?: string[];
 }
 
 /**
@@ -27,20 +32,29 @@ export async function updateUserProfile(
     }
 
     const tasks = [];
+    const authProfileUpdate: { displayName?: string; photoURL?: string; } = {};
 
-    // Update Firebase Auth profile if displayName is provided
     if (data.displayName && data.displayName !== currentUser.displayName) {
-        tasks.push(updateProfile(currentUser, { displayName: data.displayName }));
+        authProfileUpdate.displayName = data.displayName;
     }
+    if (data.photoURL && data.photoURL !== currentUser.photoURL) {
+        authProfileUpdate.photoURL = data.photoURL;
+    }
+
+    if (Object.keys(authProfileUpdate).length > 0) {
+        tasks.push(updateProfile(currentUser, authProfileUpdate));
+    }
+
 
     // Prepare data for Firestore, don't write undefined values.
     const firestoreData: { [key: string]: any } = {};
-    if (data.displayName !== undefined) {
-        firestoreData.displayName = data.displayName;
-    }
-     if (data.phoneNumber !== undefined) {
-        firestoreData.phoneNumber = data.phoneNumber;
-    }
+    if (data.displayName !== undefined) firestoreData.displayName = data.displayName;
+    if (data.phoneNumber !== undefined) firestoreData.phoneNumber = data.phoneNumber;
+    if (data.photoURL !== undefined) firestoreData.photoURL = data.photoURL;
+    if (data.about !== undefined) firestoreData.about = data.about;
+    if (data.specialties !== undefined) firestoreData.specialties = data.specialties;
+    if (data.languages !== undefined) firestoreData.languages = data.languages;
+    
 
     // Update Firestore document
     if (Object.keys(firestoreData).length > 0) {
