@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PropertyCard } from '@/components/property-card';
 import type { Property } from '@/types';
+import { useMemo } from 'react';
 
 type AgentProfileUser = {
     id: string;
@@ -23,14 +24,22 @@ export default function AgentProfilePage({ params }: { params: { id: string } })
     const firestore = useFirestore();
     const { id } = params;
 
-    const agentRef = firestore ? doc(firestore, 'users', id) : null;
+    const agentRef = useMemo(() => {
+        if (!firestore) return null;
+        return doc(firestore, 'users', id);
+    }, [firestore, id]);
+
     const { data: agent, loading: agentLoading } = useDoc<AgentProfileUser>(agentRef);
 
-    const propertiesQuery = firestore ? query(
-        collection(firestore, 'properties'), 
-        where('agentId', '==', id),
-        orderBy('createdAt', 'desc')
-    ) : null;
+    const propertiesQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'properties'), 
+            where('agentId', '==', id),
+            orderBy('createdAt', 'desc')
+        );
+    }, [firestore, id]);
+
     const { data: properties, loading: propertiesLoading } = useCollection<Property>(propertiesQuery);
 
     if (agentLoading) {

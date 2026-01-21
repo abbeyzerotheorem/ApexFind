@@ -11,11 +11,12 @@ import { useMemo } from "react";
 
 export default function EditListingPage({ params }: { params: { id: string } }) {
     const firestore = useFirestore();
+    const { id } = params;
     
     const propertyRef = useMemo(() => {
         if (!firestore) return null;
-        return doc(firestore, 'properties', params.id);
-    }, [firestore, params.id]);
+        return doc(firestore, 'properties', id);
+    }, [firestore, id]);
     
     const { data: property, loading } = useDoc(propertyRef);
     
