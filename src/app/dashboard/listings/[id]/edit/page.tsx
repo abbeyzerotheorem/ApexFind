@@ -9,9 +9,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useMemo } from "react";
 
-export default function EditListingPage({ params }: { params: { id: string } }) {
+export default function EditListingPage({ params: { id } }: { params: { id: string } }) {
     const firestore = useFirestore();
-    const { id } = params;
     
     const propertyRef = useMemo(() => {
         if (!firestore) return null;

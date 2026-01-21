@@ -21,9 +21,8 @@ import { doc } from 'firebase/firestore';
 
 const similarProperties = PlaceHolderProperties.slice(1, 4);
 
-export default function PropertyDetailsPage({ params }: { params: { id: string } }) {
+export default function PropertyDetailsPage({ params: { id } }: { params: { id: string } }) {
   const firestore = useFirestore();
-  const { id } = params;
   const mapImage = PlaceHolderImages.find((img) => img.id === "market-map");
 
   const propertyRef = useMemo(() => {

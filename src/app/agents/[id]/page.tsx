@@ -20,9 +20,8 @@ type AgentProfileUser = {
 };
 
 
-export default function AgentProfilePage({ params }: { params: { id: string } }) {
+export default function AgentProfilePage({ params: { id } }: { params: { id: string } }) {
     const firestore = useFirestore();
-    const { id } = params;
 
     const agentRef = useMemo(() => {
         if (!firestore) return null;
