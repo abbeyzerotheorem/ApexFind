@@ -21,10 +21,10 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${inter.className} font-body antialiased`}>
+      <body className={`${inter.className} font-body antialiased flex flex-col min-h-screen`}>
         <FirebaseClientProvider options={firebaseConfig}>
           <Header />
-          <main>{children}</main>
+          <main className="flex-grow flex flex-col">{children}</main>
           <Footer />
         </FirebaseClientProvider>
       </body>

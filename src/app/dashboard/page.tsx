@@ -177,7 +177,7 @@ function DashboardPageContent() {
 
   if (userLoading || profileLoading || (userProfile?.role === 'agent' && listingsLoading)) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
+      <div className="flex flex-col flex-grow items-center justify-center space-y-4 bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <h1 className="text-xl text-muted-foreground">Loading Dashboard...</h1>
       </div>
@@ -193,13 +193,13 @@ function DashboardPageContent() {
 
   if (userProfile?.role === 'agent') {
     return (
-        <div className="flex min-h-screen flex-col bg-background py-8 sm:py-12">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col flex-grow bg-background py-8 sm:py-12">
+            <div className="mx-auto w-full max-w-7xl flex flex-col flex-grow px-4 sm:px-6 lg:px-8">
               <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                 Agent Dashboard
               </h1>
               <p className="mt-1 text-muted-foreground">Welcome back, Agent {user.displayName || user.email}</p>
-                <Tabs defaultValue={initialTab} className="mt-8">
+                <Tabs defaultValue={initialTab} className="mt-8 flex flex-col flex-grow">
                     <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
                         <TabsTrigger value="my-listings"><HomeIcon className="mr-2 h-4 w-4"/> My Listings</TabsTrigger>
                         <TabsTrigger value="messages"><MessageSquare className="mr-2 h-4 w-4"/> Messages</TabsTrigger>
@@ -303,7 +303,7 @@ function DashboardPageContent() {
                             </CardContent>
                         </Card>
                     </TabsContent>
-                    <TabsContent value="messages">
+                    <TabsContent value="messages" className="flex-grow">
                         <ChatInterface />
                     </TabsContent>
                     <TabsContent value="profile">
@@ -453,13 +453,13 @@ function DashboardPageContent() {
 
   // Default to customer dashboard
   return (
-    <div className="flex min-h-screen flex-col bg-background py-8 sm:py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="flex flex-col flex-grow bg-background py-8 sm:py-12">
+        <div className="mx-auto w-full max-w-7xl flex flex-col flex-grow px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             My Dashboard
           </h1>
           <p className="mt-1 text-muted-foreground">Welcome back, {user.displayName || user.email}</p>
-          <Tabs defaultValue={initialTab} className="mt-8">
+          <Tabs defaultValue={initialTab} className="mt-8 flex flex-col flex-grow">
             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
               <TabsTrigger value="saved-homes">
                 <Heart className="mr-2 h-4 w-4" />
@@ -484,7 +484,7 @@ function DashboardPageContent() {
             <TabsContent value="viewed-history">
                 <ViewedHistory />
             </TabsContent>
-            <TabsContent value="agent-messages">
+            <TabsContent value="agent-messages" className="flex-grow">
                 <ChatInterface />
             </TabsContent>
              <TabsContent value="profile">
@@ -619,7 +619,7 @@ function DashboardPageContent() {
 export default function DashboardPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
+      <div className="flex flex-col flex-grow items-center justify-center space-y-4 bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <h1 className="text-xl text-muted-foreground">Loading Dashboard...</h1>
       </div>

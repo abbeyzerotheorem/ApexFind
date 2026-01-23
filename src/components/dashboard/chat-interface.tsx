@@ -59,7 +59,7 @@ export default function ChatInterface() {
     };
 
     return (
-        <div className="mt-8 md:grid md:grid-cols-3 lg:grid-cols-4 md:gap-8 h-[calc(100vh-280px)]">
+        <div className="md:grid md:grid-cols-3 lg:grid-cols-4 md:gap-8 h-full">
             <Card className={cn(
                 'md:col-span-1 lg:col-span-1 flex-col h-full',
                 mobileView === 'list' ? 'flex' : 'hidden md:flex'
