@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useUser, useFirestore, useCollection } from '@/firebase';
@@ -7,11 +8,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
-import { getOrCreateConversation, sendMessage } from '@/lib/chat';
+import { getOrCreateConversation, sendMessage, markConversationAsRead } from '@/lib/chat';
 import { Loader2, Send, ArrowLeft } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { Badge } from '../ui/badge';
 
 // Main component
 export default function ChatInterface() {
@@ -71,6 +73,7 @@ export default function ChatInterface() {
                     <ScrollArea className="h-full">
                         {conversations && conversations.length > 0 ? conversations.map(convo => {
                             const otherUser = getOtherParticipant(convo);
+                            const unreadCount = convo.unreadCounts?.[user.uid] || 0;
                             return (
                                 <div key={convo.id} onClick={() => { setActiveConversationId(convo.id); setMobileView('chat'); }} className={`p-4 border-b cursor-pointer hover:bg-secondary ${activeConversationId === convo.id ? 'bg-secondary' : ''}`}>
                                     <div className="flex items-center gap-3">
@@ -79,7 +82,12 @@ export default function ChatInterface() {
                                             <AvatarFallback>{otherUser?.displayName?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
                                         </Avatar>
                                         <div className='w-full overflow-hidden'>
-                                            <p className="font-semibold">{otherUser?.displayName}</p>
+                                            <div className="flex justify-between items-center">
+                                                <p className="font-semibold truncate">{otherUser?.displayName}</p>
+                                                {unreadCount > 0 && (
+                                                    <Badge className="h-5 w-5 p-0 flex items-center justify-center text-xs">{unreadCount}</Badge>
+                                                )}
+                                            </div>
                                             <p className="text-sm text-muted-foreground truncate">{convo.lastMessageText || 'No messages yet'}</p>
                                         </div>
                                     </div>
@@ -131,6 +139,12 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
 
     const { data: messages, loading: messagesLoading } = useCollection<Message>(messagesQuery);
     
+    useEffect(() => {
+        if (firestore && conversationId && currentUser.uid) {
+            markConversationAsRead(firestore, conversationId, currentUser.uid);
+        }
+    }, [firestore, conversationId, currentUser.uid]);
+
     useEffect(() => {
         const fetchConvo = async () => {
             if (firestore) {

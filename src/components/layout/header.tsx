@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from "react";
@@ -9,8 +10,10 @@ import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/lib/auth";
-import { useUser, useFirestore, useDoc } from "@/firebase";
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
+import { doc, collection, query, where } from 'firebase/firestore';
+import type { Conversation } from "@/types";
+import { Badge } from "@/components/ui/badge";
 
 
 // Links for non-registered users
@@ -25,8 +28,8 @@ const publicNavLinks = [
 
 // Links for registered customers
 const customerNavLinks = [
-  ...publicNavLinks,
-  { name: "Manage Rentals", href: "/rentals" },
+  ...publicNavLinks.filter(link => link.name !== 'Rent'), // Remove generic Rent
+  { name: "My Rentals", href: "/rentals" }, // Add specific link
 ];
 
 // Links for registered agents (excluding "Find Agents")
@@ -43,7 +46,25 @@ export default function Header() {
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
   
-  const { data: userProfile } = useDoc(userDocRef);
+  const { data: userProfile } = useDoc<{ role?: 'customer' | 'agent' }>(userDocRef);
+
+  const conversationsQuery = useMemo(() => {
+      if (!user || !firestore) return null;
+      return query(
+          collection(firestore, 'conversations'),
+          where('participants', 'array-contains', user.uid)
+      );
+  }, [user, firestore]);
+
+  const { data: conversations } = useCollection<Conversation>(conversationsQuery);
+
+  const totalUnreadCount = useMemo(() => {
+    if (!conversations || !user) return 0;
+    return conversations.reduce((acc, convo) => {
+        return acc + (convo.unreadCounts?.[user.uid] || 0);
+    }, 0);
+  }, [conversations, user]);
+
 
   const handleSignOut = async () => {
     await signOut();
@@ -102,6 +123,9 @@ export default function Header() {
                             <Avatar className="h-10 w-10">
                                 <AvatarFallback>{userInitial.toUpperCase()}</AvatarFallback>
                             </Avatar>
+                             {totalUnreadCount > 0 && (
+                                <Badge className="absolute top-0 right-0 h-5 w-5 p-0 flex items-center justify-center">{totalUnreadCount}</Badge>
+                            )}
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -156,7 +180,12 @@ export default function Header() {
                   ))}
                    {user && (
                         <SheetClose asChild>
-                            <Link href="/dashboard" className="text-muted-foreground hover:text-foreground">Dashboard</Link>
+                            <Link href="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                                Dashboard
+                                {totalUnreadCount > 0 && (
+                                    <Badge className="h-5 w-5 p-0 flex items-center justify-center">{totalUnreadCount}</Badge>
+                                )}
+                            </Link>
                         </SheetClose>
                    )}
                   {user ? (
