@@ -11,15 +11,22 @@ import { signOut } from "@/lib/auth";
 import { useUser } from "@/firebase";
 
 
-const baseNavLinks = [
+// Links for non-registered users
+const publicNavLinks = [
   { name: "Buy", href: "/search" },
   { name: "Sell", href: "/sell" },
   { name: "Rent", href: "/search?type=rent" },
   { name: "Mortgage", href: "/mortgage" },
   { name: "Find Agents", href: "/agents" },
-  { name: "Manage Rentals", href: "/rentals" },
   { name: "Market Insights", href: "/insights" },
 ];
+
+// Links for registered users, including all public links
+const authenticatedNavLinks = [
+  ...publicNavLinks,
+  { name: "Manage Rentals", href: "/rentals" },
+];
+
 
 export default function Header() {
   const { user } = useUser();
@@ -31,7 +38,7 @@ export default function Header() {
     router.refresh();
   };
 
-  const navLinks = user ? [...baseNavLinks, { name: "Dashboard", href: "/dashboard" }] : baseNavLinks;
+  const navLinks = user ? authenticatedNavLinks : publicNavLinks;
   const userInitial = user?.displayName?.[0] || user?.email?.[0] || 'A';
 
 
@@ -52,7 +59,7 @@ export default function Header() {
             <span className="text-xl font-bold">ApexFind</span>
           </Link>
           <nav className="hidden md:flex md:gap-8">
-            {baseNavLinks.map((link) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
@@ -124,6 +131,11 @@ export default function Header() {
                         </Link>
                       </SheetClose>
                   ))}
+                   {user && (
+                        <SheetClose asChild>
+                            <Link href="/dashboard" className="text-muted-foreground hover:text-foreground">Dashboard</Link>
+                        </SheetClose>
+                   )}
                   {user ? (
                       <SheetClose asChild>
                         <Button onClick={handleSignOut} variant="outline">Sign Out</Button>
