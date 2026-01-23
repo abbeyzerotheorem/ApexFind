@@ -178,7 +178,7 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="p-0 flex-1">
+            <CardContent className="p-0 flex-1 min-h-0">
                  <ScrollArea className="h-full p-6" viewportRef={scrollAreaRef}>
                      <div className="space-y-4">
                         {messagesLoading && <div className="flex justify-center"><Loader2 className="animate-spin" /></div>}
