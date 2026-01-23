@@ -55,11 +55,12 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
     "@type": "RealEstateListing",
     "name": property.address,
     "image": propertyImages,
-    "description": `Stunning ${property.beds}-bedroom, ${property.baths}-bathroom ${property.home_type.toLowerCase()} in ${property.address.split(',')[1]}.`,
+    "description": `Stunning ${property.beds}-bedroom, ${property.baths}-bathroom ${property.home_type.toLowerCase()} in ${property.city}.`,
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": property.address.split(',')[0],
-      "addressLocality": property.address.split(',')[1].trim(),
+      "streetAddress": property.address,
+      "addressLocality": property.city,
+      "addressRegion": property.state,
       "addressCountry": "NG"
     },
     "geo": {
@@ -154,7 +155,7 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
               <div className="mt-8">
                 <h2 className="text-2xl font-bold text-foreground">About this home</h2>
                 <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-                  Discover luxury living in this stunning ${property.beds}-bedroom, ${property.baths}-bathroom ${property.home_type.toLowerCase()} located in the heart of ${property.address.split(',')[1]}. Spanning ${property.sqft.toLocaleString()} square feet, this home offers an open-concept living space perfect for both relaxation and entertaining. The gourmet kitchen features state-of-the-art appliances and custom cabinetry. The master suite is a private oasis with a spa-like ensuite bathroom. Enjoy the Nigerian sun in your private outdoor space. This property combines modern elegance with comfort, making it the perfect place to call home.
+                  Discover luxury living in this stunning {property.beds}-bedroom, {property.baths}-bathroom {property.home_type.toLowerCase()} located in the heart of {property.city}. Spanning {property.sqft.toLocaleString()} square feet, this home offers an open-concept living space perfect for both relaxation and entertaining. The gourmet kitchen features state-of-the-art appliances and custom cabinetry. The master suite is a private oasis with a spa-like ensuite bathroom. Enjoy the Nigerian sun in your private outdoor space. This property combines modern elegance with comfort, making it the perfect place to call home.
                 </p>
                  <div className="mt-6 flex flex-wrap gap-3">
                     {property.is_furnished && <Badge variant="secondary">Furnished</Badge>}
