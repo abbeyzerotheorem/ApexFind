@@ -8,15 +8,17 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
 import { getOrCreateConversation, sendMessage } from '@/lib/chat';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Send, ArrowLeft } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from '../ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 // Main component
 export default function ChatInterface() {
     const { user, loading: userLoading } = useUser();
     const firestore = useFirestore();
     const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+    const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
 
     // Get all conversations for the current user
     const conversationsQuery = useMemo(() => {
@@ -57,17 +59,20 @@ export default function ChatInterface() {
     };
 
     return (
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 h-[calc(100vh-280px)]">
-            <Card className="md:col-span-1 lg:col-span-1 flex flex-col">
+        <div className="mt-8 md:grid md:grid-cols-3 lg:grid-cols-4 md:gap-8 h-[calc(100vh-280px)]">
+            <Card className={cn(
+                'md:col-span-1 lg:col-span-1 flex-col h-full',
+                mobileView === 'list' ? 'flex' : 'hidden md:flex'
+            )}>
                 <CardHeader>
                     <CardTitle>Conversations</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0 flex-grow">
-                    <ScrollArea className="h-[calc(100vh-400px)]">
+                    <ScrollArea className="h-full">
                         {conversations && conversations.length > 0 ? conversations.map(convo => {
                             const otherUser = getOtherParticipant(convo);
                             return (
-                                <div key={convo.id} onClick={() => setActiveConversationId(convo.id)} className={`p-4 border-b cursor-pointer hover:bg-secondary ${activeConversationId === convo.id ? 'bg-secondary' : ''}`}>
+                                <div key={convo.id} onClick={() => { setActiveConversationId(convo.id); setMobileView('chat'); }} className={`p-4 border-b cursor-pointer hover:bg-secondary ${activeConversationId === convo.id ? 'bg-secondary' : ''}`}>
                                     <div className="flex items-center gap-3">
                                         <Avatar className="h-10 w-10">
                                             <AvatarImage src={otherUser?.photoURL ?? undefined} />
@@ -82,18 +87,21 @@ export default function ChatInterface() {
                                 </div>
                             )
                         }) : (
-                            <div className="p-4 text-center text-muted-foreground">
+                            <div className="p-4 text-center text-muted-foreground h-full flex items-center justify-center">
                                 No conversations yet.
                             </div>
                         )}
                     </ScrollArea>
                 </CardContent>
             </Card>
-            <div className="md:col-span-2 lg:col-span-3">
+            <div className={cn(
+                "md:col-span-2 lg:col-span-3 h-full",
+                mobileView === 'chat' ? 'block' : 'hidden md:block'
+            )}>
                 {activeConversationId && user ? (
-                    <MessageWindow key={activeConversationId} conversationId={activeConversationId} currentUser={user} />
+                    <MessageWindow key={activeConversationId} conversationId={activeConversationId} currentUser={user} onBack={() => setMobileView('list')} />
                 ) : (
-                     <div className="h-full flex items-center justify-center bg-secondary rounded-lg">
+                     <div className="h-full items-center justify-center bg-secondary rounded-lg hidden md:flex">
                         <div className="text-center">
                             <h3 className="text-xl font-semibold">Select a conversation</h3>
                             <p className="text-muted-foreground">Or start a new one by contacting an agent.</p>
@@ -107,7 +115,7 @@ export default function ChatInterface() {
 
 
 // Message window component
-function MessageWindow({ conversationId, currentUser }: { conversationId: string, currentUser: User }) {
+function MessageWindow({ conversationId, currentUser, onBack }: { conversationId: string, currentUser: User, onBack: () => void }) {
     const firestore = useFirestore();
     const [newMessage, setNewMessage] = useState('');
     const [conversation, setConversation] = useState<Conversation | null>(null);
@@ -140,7 +148,7 @@ function MessageWindow({ conversationId, currentUser }: { conversationId: string
 
     useEffect(() => {
         if (scrollAreaRef.current) {
-            scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
+            scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
         }
     }, [messages]);
 
@@ -157,6 +165,10 @@ function MessageWindow({ conversationId, currentUser }: { conversationId: string
         <Card className="flex flex-col h-full">
             <CardHeader className="border-b">
                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack}>
+                        <ArrowLeft className="h-4 w-4" />
+                        <span className="sr-only">Back to conversations</span>
+                    </Button>
                     <Avatar className="h-10 w-10">
                             <AvatarImage src={otherUser?.photoURL ?? undefined} />
                             <AvatarFallback>{otherUser?.displayName?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
