@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
@@ -8,7 +9,8 @@ import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/lib/auth";
-import { useUser } from "@/firebase";
+import { useUser, useFirestore, useDoc } from "@/firebase";
+import { doc } from 'firebase/firestore';
 
 
 // Links for non-registered users
@@ -21,16 +23,27 @@ const publicNavLinks = [
   { name: "Market Insights", href: "/insights" },
 ];
 
-// Links for registered users, including all public links
-const authenticatedNavLinks = [
+// Links for registered customers
+const customerNavLinks = [
   ...publicNavLinks,
   { name: "Manage Rentals", href: "/rentals" },
 ];
+
+// Links for registered agents (excluding "Find Agents")
+const agentNavLinks = customerNavLinks.filter(link => link.name !== 'Find Agents');
 
 
 export default function Header() {
   const { user } = useUser();
   const router = useRouter();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemo(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [user, firestore]);
+  
+  const { data: userProfile } = useDoc(userDocRef);
 
   const handleSignOut = async () => {
     await signOut();
@@ -38,7 +51,17 @@ export default function Header() {
     router.refresh();
   };
 
-  const navLinks = user ? authenticatedNavLinks : publicNavLinks;
+  const navLinks = useMemo(() => {
+    if (!user) {
+      return publicNavLinks;
+    }
+    if (userProfile?.role === 'agent') {
+      return agentNavLinks;
+    }
+    // Default for authenticated users (customers)
+    return customerNavLinks;
+  }, [user, userProfile]);
+
   const userInitial = user?.displayName?.[0] || user?.email?.[0] || 'A';
 
 
