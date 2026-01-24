@@ -14,7 +14,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { Property } from '@/types';
 import { useState } from 'react';
 import { useFirestore, useUser } from '@/firebase';
-import { addListing, updateListing } from '@/lib/listings';
+import { addListing, updateListing, uploadPropertyImage } from '@/lib/listings';
+import { Progress } from '../ui/progress';
+import Image from 'next/image';
 
 const propertySchema = z.object({
   address: z.string().min(1, 'Address is required'),
@@ -26,7 +28,7 @@ const propertySchema = z.object({
   sqft: z.preprocess((a) => parseInt(z.string().parse(a || '0'), 10), z.number().positive('Sqft must be positive')),
   listing_type: z.enum(['sale', 'rent']),
   home_type: z.string().min(1, 'Home type is required'),
-  imageUrl: z.string().url('Please enter a valid image URL'),
+  imageUrl: z.string().min(1, 'Please upload an image.').url('A valid image URL is required.'),
   description: z.string().optional(),
   is_furnished: z.boolean().default(false),
   power_supply: z.string().optional(),
@@ -45,8 +47,9 @@ export default function ListingForm({ property }: ListingFormProps) {
   const { user } = useUser();
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   
-  const { register, handleSubmit, control, formState: { errors } } = useForm<PropertyFormValues>({
+  const { register, handleSubmit, control, formState: { errors }, setValue, watch } = useForm<PropertyFormValues>({
     resolver: zodResolver(propertySchema),
     defaultValues: {
       address: property?.address || '',
@@ -65,6 +68,28 @@ export default function ListingForm({ property }: ListingFormProps) {
       description: property?.description || '',
     },
   });
+
+  const imageUrl = watch('imageUrl');
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploadProgress(0);
+    setIsSubmitting(true);
+    try {
+      const downloadURL = await uploadPropertyImage(file, user.uid, (progress) => {
+        setUploadProgress(progress);
+      });
+      setValue('imageUrl', downloadURL, { shouldValidate: true });
+      setUploadProgress(null);
+    } catch (error) {
+      console.error("Image upload failed", error);
+      setUploadProgress(null);
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
 
   const onSubmit = async (data: PropertyFormValues) => {
     if (!user || !firestore) {
@@ -182,8 +207,19 @@ export default function ListingForm({ property }: ListingFormProps) {
           </div>
 
             <div className="space-y-2">
-              <Label htmlFor="imageUrl">Property Image URL</Label>
-              <Input id="imageUrl" placeholder="https://..." {...register('imageUrl')} />
+              <Label htmlFor="image-upload">Property Image</Label>
+              <Input id="image-upload" type="file" onChange={handleImageUpload} accept="image/*" disabled={uploadProgress !== null} />
+              {uploadProgress !== null && (
+                <div className="flex items-center gap-2 mt-2">
+                  <Progress value={uploadProgress} className="w-full" />
+                  <span className="text-sm text-muted-foreground">{Math.round(uploadProgress)}%</span>
+                </div>
+              )}
+               {imageUrl && (
+                <div className="mt-4 relative w-full h-64 rounded-md overflow-hidden border">
+                    <Image src={imageUrl} alt="Property preview" fill className="object-cover" />
+                </div>
+              )}
               {errors.imageUrl && <p className="text-sm text-destructive">{errors.imageUrl.message}</p>}
             </div>
 
@@ -218,7 +254,7 @@ export default function ListingForm({ property }: ListingFormProps) {
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => router.back()}>Cancel</Button>
             <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : (property ? 'Save Changes' : 'Add Listing')}
+                {isSubmitting ? (uploadProgress !== null ? 'Uploading...' : 'Saving...') : (property ? 'Save Changes' : 'Add Listing')}
             </Button>
           </div>
         </form>
