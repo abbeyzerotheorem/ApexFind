@@ -1,13 +1,25 @@
 'use client';
 import { useState, useMemo } from 'react';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useUser } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
-import { Search, ChevronDown, Star, Loader2 } from "lucide-react";
+import { Search, ChevronDown, Star, Loader2, Phone } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { getOrCreateConversation } from '@/lib/chat';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type AgentUser = {
     id: string;
@@ -114,7 +126,35 @@ export default function AgentSearchPage() {
 }
 
 function AgentCard({ agent }: { agent: AgentUser }) {
+    const { user } = useUser();
+    const firestore = useFirestore();
+    const router = useRouter();
+    const [isContacting, setIsContacting] = useState(false);
+    const [showAuthDialog, setShowAuthDialog] = useState(false);
     
+    const handleContactAgent = async () => {
+        if (!user || !firestore) {
+            setShowAuthDialog(true);
+            return;
+        }
+        if (!agent) return;
+
+        setIsContacting(true);
+        try {
+            await getOrCreateConversation(
+                firestore,
+                { uid: user.uid, displayName: user.displayName, photoURL: user.photoURL },
+                { uid: agent.id, displayName: agent.displayName || null, photoURL: agent.photoURL || null }
+            );
+            router.push('/dashboard?tab=messages');
+        } catch (error) {
+            console.error("Failed to create conversation", error);
+            // In a real app, show a toast notification
+        } finally {
+            setIsContacting(false);
+        }
+    }
+
     const agentProfile = {
         id: agent.id,
         name: agent.displayName || 'Unnamed Agent',
@@ -129,35 +169,54 @@ function AgentCard({ agent }: { agent: AgentUser }) {
     };
 
     return (
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-lg">
-            <div className="p-6 text-center">
-                 <Link href={`/agents/${agentProfile.id}`}>
-                    <Avatar className="h-24 w-24 mx-auto mb-4">
-                        <AvatarImage src={agentProfile.imageUrl} alt={agentProfile.name} data-ai-hint={agentProfile.imageHint} />
-                        <AvatarFallback>{agentProfile.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
-                    </Avatar>
-                    <h3 className="text-xl font-bold">{agentProfile.name}</h3>
-                </Link>
-                <p className="text-muted-foreground">{agentProfile.title}, {agentProfile.company}</p>
-                <div className="mt-2 flex items-center justify-center gap-1">
-                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                    <span className="font-bold">{agentProfile.rating.toFixed(1)}</span>
-                    <span className="text-muted-foreground">({agentProfile.reviewCount} reviews)</span>
+        <>
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-lg">
+                <div className="p-6 text-center">
+                    <Link href={`/agents/${agentProfile.id}`}>
+                        <Avatar className="h-24 w-24 mx-auto mb-4">
+                            <AvatarImage src={agentProfile.imageUrl} alt={agentProfile.name} data-ai-hint={agentProfile.imageHint} />
+                            <AvatarFallback>{agentProfile.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
+                        </Avatar>
+                        <h3 className="text-xl font-bold">{agentProfile.name}</h3>
+                    </Link>
+                    <p className="text-muted-foreground">{agentProfile.title}, {agentProfile.company}</p>
+                    <div className="mt-2 flex items-center justify-center gap-1">
+                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                        <span className="font-bold">{agentProfile.rating.toFixed(1)}</span>
+                        <span className="text-muted-foreground">({agentProfile.reviewCount} reviews)</span>
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 border-t text-center">
+                    <div className="p-4 border-r">
+                        <p className="text-2xl font-bold">{agentProfile.experience} yrs</p>
+                        <p className="text-sm text-muted-foreground">Experience</p>
+                    </div>
+                    <div className="p-4">
+                        <p className="text-2xl font-bold">{agentProfile.sales}</p>
+                        <p className="text-sm text-muted-foreground">Sales (24 mo)</p>
+                    </div>
+                </div>
+                <div className="p-6">
+                     <Button className="w-full" onClick={handleContactAgent} disabled={isContacting}>
+                        {isContacting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Phone className="mr-2 h-4 w-4"/>}
+                        {isContacting ? 'Contacting...' : 'Contact Agent'}
+                    </Button>
                 </div>
             </div>
-            <div className="grid grid-cols-2 border-t text-center">
-                <div className="p-4 border-r">
-                    <p className="text-2xl font-bold">{agentProfile.experience} yrs</p>
-                    <p className="text-sm text-muted-foreground">Experience</p>
-                </div>
-                <div className="p-4">
-                    <p className="text-2xl font-bold">{agentProfile.sales}</p>
-                    <p className="text-sm text-muted-foreground">Sales (24 mo)</p>
-                </div>
-            </div>
-            <div className="p-6">
-                <Button className="w-full">Contact Agent</Button>
-            </div>
-        </div>
+            <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Create an Account to Continue</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    To save properties, schedule tours, and contact agents, you need to have an account. It's free and only takes a minute!
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => router.push('/auth')}>Sign Up / Sign In</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+        </>
     )
 }
