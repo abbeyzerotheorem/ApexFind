@@ -1,6 +1,6 @@
 [
   {
-    "origin": ["https://9000-firebase-studio-1768466034197.cluster-lu4mup47g5gm4rtyvhzpwbfadi.cloudworkstations.dev"],
+    "origin": ["*"],
     "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     "responseHeader": [
       "Content-Type",
@@ -8,7 +8,9 @@
       "Authorization",
       "Content-Length",
       "X-Goog-Content-Length-Range",
-      "x-goog-content-sha256"
+      "x-goog-content-sha256",
+      "X-Goog-Upload-Command",
+      "X-Goog-Upload-Offset"
     ],
     "maxAgeSeconds": 3600
   }
