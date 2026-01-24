@@ -2,8 +2,7 @@
 
 import { notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { PlaceHolderProperties } from '@/lib/placeholder-properties';
-import { BedDouble, Bath, Maximize, Calendar, Car, Home, Droplet, Wind, Heart, Share2, MapPin, CheckSquare, Zap, Shield, Loader2 } from 'lucide-react';
+import { BedDouble, Bath, Maximize, Calendar, Car, Home, Droplet, Wind, Heart, Share2, MapPin, Zap, Shield, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
@@ -19,6 +18,17 @@ import { useDoc, useFirestore, useUser } from '@/firebase';
 import { useMemo, useState, useEffect } from 'react';
 import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
+import { PlaceHolderProperties } from '@/lib/placeholder-properties';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const similarProperties = PlaceHolderProperties.slice(1, 4);
 
@@ -28,6 +38,7 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
   const router = useRouter();
   const mapImage = PlaceHolderImages.find((img) => img.id === "market-map");
   const [isSaved, setIsSaved] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   const propertyRef = useMemo(() => {
       if (!firestore) return null;
@@ -56,7 +67,7 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
 
   const handleToggleSave = async () => {
     if (!user) {
-        router.push('/auth');
+        setShowAuthDialog(true);
         return;
     }
     if (!savedHomeRef || !property) return;
@@ -71,14 +82,13 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
   };
   
   const handleProtectedAction = (e: React.MouseEvent | React.FormEvent) => {
+    e.preventDefault();
     if (!user) {
-        e.preventDefault();
-        router.push('/auth');
+        setShowAuthDialog(true);
     }
     // For now, a logged in user just gets a console log.
     // A real app would open a scheduling modal or submit the form.
     else {
-        e.preventDefault();
         console.log("Protected action triggered by logged-in user.");
         // In a real app, you would handle form submission here.
     }
@@ -308,6 +318,20 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                 </div>
             </div>
         </div>
+        <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Create an Account to Continue</AlertDialogTitle>
+              <AlertDialogDescription>
+                To save properties, schedule tours, and contact agents, you need to have an account. It's free and only takes a minute!
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => router.push('/auth')}>Sign Up / Sign In</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <TrackView property={property} />
     </div>
   );

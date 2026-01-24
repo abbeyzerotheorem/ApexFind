@@ -1,4 +1,3 @@
-
 'use client';
 
 import { notFound } from 'next/navigation';
@@ -13,6 +12,16 @@ import type { Property } from '@/types';
 import { useState } from 'react';
 import { getOrCreateConversation } from '@/lib/chat';
 import { useRouter } from 'next/navigation';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type AgentProfileUser = {
     id: string;
@@ -30,6 +39,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
     const router = useRouter();
     const { user } = useUser();
     const [isContacting, setIsContacting] = useState(false);
+    const [showAuthDialog, setShowAuthDialog] = useState(false);
 
     const agentRef = doc(firestore, 'users', id);
 
@@ -45,7 +55,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
     
     const handleContactAgent = async () => {
         if (!user || !firestore) {
-            router.push('/auth');
+            setShowAuthDialog(true);
             return;
         }
         if (!agent) return;
@@ -179,6 +189,20 @@ export default function AgentProfilePage({ id }: { id: string }) {
                     </div>
                 </div>
             </div>
+            <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Create an Account to Continue</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    To save properties, schedule tours, and contact agents, you need to have an account. It's free and only takes a minute!
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => router.push('/auth')}>Sign Up / Sign In</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
