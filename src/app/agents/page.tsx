@@ -1,6 +1,6 @@
 'use client';
 import { useState, useMemo } from 'react';
-import { useCollection, useFirestore, useUser } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -19,13 +19,12 @@ type AgentUser = {
 
 export default function AgentSearchPage() {
     const firestore = useFirestore();
-    const { user } = useUser();
     const [searchTerm, setSearchTerm] = useState('');
     
     const agentsQuery = useMemo(() => {
-        if (!firestore || !user) return null;
+        if (!firestore) return null;
         return query(collection(firestore, 'users'), where('role', '==', 'agent'));
-    }, [firestore, user]);
+    }, [firestore]);
 
     const { data: allAgents, loading } = useCollection<Omit<AgentUser, 'id'>>(agentsQuery);
 
