@@ -180,6 +180,47 @@
         "saved_at"
       ]
     },
+    "savedSearch": {
+      "title": "Saved Search",
+      "description": "A user's saved search criteria.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name given to the search by the user."
+        },
+        "description": {
+          "type": "string",
+          "description": "A generated summary of the search criteria."
+        },
+        "searchParams": {
+          "type": "string",
+          "description": "The URL search parameters for the search."
+        },
+        "alertFrequency": {
+          "type": "string",
+          "enum": [
+            "daily",
+            "weekly",
+            "instant",
+            "never"
+          ]
+        },
+        "newMatchCount": {
+          "type": "number",
+          "description": "Number of new matches since last view."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "searchParams"
+      ]
+    },
     "viewedProperty": {
       "title": "Viewed Property",
       "description": "A user's viewed property.",
@@ -293,6 +334,12 @@
         "$ref": "#/entities/savedHome"
       },
       "description": "Stores a user's saved properties. The document ID is the property ID."
+    },
+    "/users/{userId}/saved_searches/{searchId}": {
+      "schema": {
+        "$ref": "#/entities/savedSearch"
+      },
+      "description": "Stores a user's saved search criteria."
     },
     "/users/{userId}/viewed_properties/{propertyId}": {
       "schema": {

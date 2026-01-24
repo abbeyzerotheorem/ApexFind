@@ -1,4 +1,5 @@
 
+
 import type { User as FirebaseUser } from 'firebase/auth';
 
 export type Property = {
@@ -68,4 +69,14 @@ export type Conversation = {
     lastMessageAt?: any; // Firestore Timestamp
     lastMessageSenderId?: string;
     unreadCounts?: { [key: string]: number };
+};
+
+export type SavedSearch = {
+    id: string;
+    name: string;
+    description: string;
+    searchParams: string;
+    alertFrequency: 'daily' | 'weekly' | 'instant' | 'never';
+    newMatchCount: number;
+    createdAt: any; // Firestore Timestamp
 };

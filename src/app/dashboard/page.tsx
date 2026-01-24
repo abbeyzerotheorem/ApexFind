@@ -1,10 +1,11 @@
 
+
 'use client';
 
 import { useEffect, useState, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
-import { Loader2, Heart, User as UserIcon, History, MessageSquare, Home as HomeIcon, BarChart2, MoreHorizontal, Pencil, Trash2, Eye, Users, TrendingUp } from "lucide-react";
+import { Loader2, Heart, User as UserIcon, History, MessageSquare, Home as HomeIcon, BarChart2, MoreHorizontal, Pencil, Trash2, Eye, Users, TrendingUp, Filter } from "lucide-react";
 import { doc, collection, query, where, orderBy, limit } from "firebase/firestore";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -57,6 +58,7 @@ import type { Property } from "@/types";
 import { deleteListing } from "@/lib/listings";
 import ChatInterface from "@/components/dashboard/chat-interface";
 import { Textarea } from "@/components/ui/textarea";
+import SavedSearches from "@/components/dashboard/saved-searches";
 
 const viewsData = [
     { month: "Jan", views: 1200 },
@@ -460,10 +462,14 @@ function DashboardPageContent() {
           </h1>
           <p className="mt-1 text-muted-foreground">Welcome back, {user.displayName || user.email}</p>
           <Tabs defaultValue={initialTab} className="mt-8 flex flex-col flex-grow">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-3xl">
               <TabsTrigger value="saved-homes">
                 <Heart className="mr-2 h-4 w-4" />
                 Saved Homes
+              </TabsTrigger>
+              <TabsTrigger value="saved-searches">
+                <Filter className="mr-2 h-4 w-4" />
+                Saved Searches
               </TabsTrigger>
               <TabsTrigger value="viewed-history">
                 <History className="mr-2 h-4 w-4" />
@@ -480,6 +486,9 @@ function DashboardPageContent() {
             </TabsList>
             <TabsContent value="saved-homes">
                 <SavedHomes />
+            </TabsContent>
+            <TabsContent value="saved-searches">
+                <SavedSearches />
             </TabsContent>
             <TabsContent value="viewed-history">
                 <ViewedHistory />

@@ -11,14 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Switch } from "../ui/switch";
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
-
-type SavedSearch = {
-    id: string;
-    name: string;
-    description: string;
-    alertFrequency: 'daily' | 'weekly' | 'instant' | 'never';
-    newMatchCount: number;
-};
+import type { SavedSearch } from "@/types";
 
 
 export default function SavedSearches() {
