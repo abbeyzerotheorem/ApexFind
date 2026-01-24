@@ -1,0 +1,16 @@
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow public read access to all property images
+    match /properties/{allPaths=**} {
+      allow read: if true;
+    }
+
+    // Allow authenticated users to write only to their own folder within 'properties'
+    match /properties/{userId}/{fileName} {
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
