@@ -2,7 +2,14 @@
   {
     "origin": ["https://9000-firebase-studio-1768466034197.cluster-lu4mup47g5gm4rtyvhzpwbfadi.cloudworkstations.dev"],
     "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    "responseHeader": ["Content-Type", "x-goog-resumable"],
+    "responseHeader": [
+      "Content-Type",
+      "x-goog-resumable",
+      "Authorization",
+      "Content-Length",
+      "X-Goog-Content-Length-Range",
+      "x-goog-content-sha256"
+    ],
     "maxAgeSeconds": 3600
   }
 ]
