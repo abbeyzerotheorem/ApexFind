@@ -1,6 +1,6 @@
 'use client';
 
-import { notFound } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { PlaceHolderProperties } from '@/lib/placeholder-properties';
 import { BedDouble, Bath, Maximize, Calendar, Car, Home, Droplet, Wind, Heart, Share2, MapPin, CheckSquare, Zap, Shield, Loader2 } from 'lucide-react';
@@ -15,15 +15,19 @@ import { MediaGallery } from '@/components/property/media-gallery';
 import { formatNaira } from '@/lib/naira-formatter';
 import { Badge } from '@/components/ui/badge';
 import { TrackView } from '@/components/property/track-view';
-import { useDoc, useFirestore } from '@/firebase';
-import { useMemo } from 'react';
-import { doc } from 'firebase/firestore';
+import { useDoc, useFirestore, useUser } from '@/firebase';
+import { useMemo, useState, useEffect } from 'react';
+import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { cn } from '@/lib/utils';
 
 const similarProperties = PlaceHolderProperties.slice(1, 4);
 
 export default function PropertyDetailsPage({ id }: { id: string }) {
   const firestore = useFirestore();
+  const { user } = useUser();
+  const router = useRouter();
   const mapImage = PlaceHolderImages.find((img) => img.id === "market-map");
+  const [isSaved, setIsSaved] = useState(false);
 
   const propertyRef = useMemo(() => {
       if (!firestore) return null;
@@ -31,6 +35,54 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
   }, [firestore, id]);
 
   const { data: property, loading } = useDoc(propertyRef);
+
+  const savedHomeRef = useMemo(() => {
+      if (!user || !firestore || !property) return null;
+      return doc(firestore, `users/${user.uid}/saved_homes`, String(property.id));
+  }, [user, firestore, property]);
+
+  useEffect(() => {
+    if (!savedHomeRef) {
+        setIsSaved(false);
+        return;
+    };
+
+    const checkIsSaved = async () => {
+        const docSnap = await getDoc(savedHomeRef);
+        setIsSaved(docSnap.exists());
+    };
+    checkIsSaved();
+  }, [savedHomeRef]);
+
+  const handleToggleSave = async () => {
+    if (!user) {
+        router.push('/auth');
+        return;
+    }
+    if (!savedHomeRef || !property) return;
+
+    if (isSaved) {
+        await deleteDoc(savedHomeRef);
+        setIsSaved(false);
+    } else {
+        await setDoc(savedHomeRef, { property_data: property, saved_at: serverTimestamp() });
+        setIsSaved(true);
+    }
+  };
+  
+  const handleProtectedAction = (e: React.MouseEvent | React.FormEvent) => {
+    if (!user) {
+        e.preventDefault();
+        router.push('/auth');
+    }
+    // For now, a logged in user just gets a console log.
+    // A real app would open a scheduling modal or submit the form.
+    else {
+        e.preventDefault();
+        console.log("Protected action triggered by logged-in user.");
+        // In a real app, you would handle form submission here.
+    }
+  };
 
   if (loading) {
     return (
@@ -110,7 +162,9 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                         <p className="mt-1 text-sm text-muted-foreground">Est. Payment: {formatNaira(property.price / 120)}/mo</p>
                     </div>
                     <div className="flex flex-shrink-0 gap-2">
-                        <Button variant="outline" size="icon"><Heart className="h-5 w-5" /></Button>
+                        <Button variant="outline" size="icon" onClick={handleToggleSave} aria-label={isSaved ? "Unsave property" : "Save property"}>
+                            <Heart className={cn("h-5 w-5", isSaved && "fill-destructive text-destructive")} />
+                        </Button>
                         <Button variant="outline" size="icon"><Share2 className="h-5 w-5" /></Button>
                     </div>
                 </div>
@@ -146,8 +200,8 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                     </div>}
                 </div>
                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                    <Button size="lg" className="w-full sm:w-auto flex-1">Schedule a Tour</Button>
-                    <Button size="lg" variant="outline" className="w-full sm:w-auto flex-1">Contact Agent</Button>
+                    <Button size="lg" className="w-full sm:w-auto flex-1" onClick={handleProtectedAction}>Schedule a Tour</Button>
+                    <Button size="lg" variant="outline" className="w-full sm:w-auto flex-1" onClick={handleProtectedAction}>Contact Agent</Button>
                 </div>
               </div>
 
@@ -218,14 +272,14 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
             <div className="lg:col-span-1">
               <div className="sticky top-24 rounded-lg border bg-card p-6 shadow-sm">
                 <h3 className="text-xl font-bold text-foreground">Contact Agent</h3>
-                <form className="mt-4 space-y-4">
+                <form className="mt-4 space-y-4" onSubmit={handleProtectedAction}>
                   <div>
                     <Label htmlFor="name">Name</Label>
-                    <Input id="name" type="text" placeholder="Your Name" />
+                    <Input id="name" type="text" placeholder="Your Name" defaultValue={user?.displayName ?? ''} />
                   </div>
                   <div>
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="your@email.com" />
+                    <Input id="email" type="email" placeholder="your@email.com" defaultValue={user?.email ?? ''} />
                   </div>
                   <div>
                     <Label htmlFor="phone">Phone</Label>
