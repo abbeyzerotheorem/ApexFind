@@ -67,7 +67,10 @@ export function PropertyCard({
   }, [savedHomeRef]);
 
 
-  const handleToggleSave = async () => {
+  const handleToggleSave = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (!user) {
         setShowAuthDialog(true);
         return;
