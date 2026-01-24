@@ -1,4 +1,4 @@
-{[
+[
   {
     "origin": ["*"],
     "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
