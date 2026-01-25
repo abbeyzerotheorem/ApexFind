@@ -177,7 +177,7 @@ function DashboardPageContent() {
   }
 
 
-  if (userLoading || profileLoading || (userProfile?.role === 'agent' && listingsLoading)) {
+  if (userLoading || profileLoading || (propertiesQuery && listingsLoading)) {
     return (
       <div className="flex flex-col flex-grow items-center justify-center space-y-4 bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
