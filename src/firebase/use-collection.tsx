@@ -1,10 +1,9 @@
 
 'use client';
 
-import {useEffect, useState} from 'react';
-
+import { useQuery } from '@tanstack/react-query';
 import {
-  onSnapshot,
+  getDocs,
   type DocumentData,
   type Query,
 } from 'firebase/firestore';
@@ -30,49 +29,45 @@ interface ErrorHook {
 type HookResult<T> = LoadingHook<T> | SuccessHook<T> | ErrorHook;
 
 /**
- * A hook to fetch a collection from Firestore.
+ * A hook to fetch a collection from Firestore using React Query.
  * @param q The query to the collection. Can be null if the query is not ready.
  * @returns The collection data, loading state, and error state.
  */
 export function useCollection<T = DocumentData>(
   q: Query<T> | null
 ): HookResult<Array<T & {id: string}>> {
-  const [state, setState] = useState<HookResult<Array<T & {id: string}>>>({
-    data: undefined,
-    loading: true,
-    error: undefined,
-  });
 
+  // Generate a stable key for the query based on its path.
   const queryPath = (q as any)?._query?.path?.canonical ?? null;
+  const queryKey = ['firestore-collection', queryPath];
 
-  useEffect(() => {
-    if (q === null) {
-      // If the query is not ready (e.g., waiting for user data),
-      // remain in a loading state.
-      setState({ data: undefined, loading: true, error: undefined });
-      return;
-    }
-
-    const unsubscribe = onSnapshot(
-      q,
-      snapshot => {
+  const { data, isLoading, isError, error, isFetching } = useQuery({
+    queryKey: queryKey,
+    queryFn: async () => {
+        if (!q) return [];
+        const snapshot = await getDocs(q);
         const docs: Array<T & {id: string}> = [];
         snapshot.forEach(doc => {
-          docs.push({
+            docs.push({
             id: doc.id,
             ...(doc.data() as T),
-          });
+            });
         });
-        setState({ data: docs, loading: false, error: undefined });
-      },
-      err => {
-        console.error("Error in useCollection:", err);
-        setState({ data: undefined, loading: false, error: err });
-      }
-    );
+        return docs;
+    },
+    enabled: !!q, // Only run query if `q` is not null
+  });
 
-    return () => unsubscribe();
-  }, [queryPath]);
+  const loading = isLoading || isFetching;
 
-  return state;
+  if (loading) {
+    return { data: undefined, loading: true, error: undefined };
+  }
+
+  if (isError) {
+    return { data: undefined, loading: false, error: error as Error };
+  }
+
+  // React Query returns `undefined` while loading, so `?? []` ensures we always return an array.
+  return { data: data ?? [], loading: false, error: undefined };
 }

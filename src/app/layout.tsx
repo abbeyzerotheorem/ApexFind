@@ -5,6 +5,7 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { FirebaseClientProvider } from '@/firebase';
 import { firebaseConfig } from '@/firebase/config';
+import ReactQueryProvider from '@/components/react-query-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,11 +23,13 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} font-body antialiased flex flex-col min-h-screen`}>
-        <FirebaseClientProvider options={firebaseConfig}>
-          <Header />
-          <main className="flex-grow flex flex-col">{children}</main>
-          <Footer />
-        </FirebaseClientProvider>
+        <ReactQueryProvider>
+          <FirebaseClientProvider options={firebaseConfig}>
+            <Header />
+            <main className="flex-grow flex flex-col">{children}</main>
+            <Footer />
+          </FirebaseClientProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

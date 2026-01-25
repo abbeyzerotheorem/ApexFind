@@ -1,10 +1,9 @@
 
 'use client';
 
-import {useEffect, useState} from 'react';
-
+import { useQuery } from '@tanstack/react-query';
 import {
-  onSnapshot,
+  getDoc,
   type DocumentData,
   type DocumentReference,
 } from 'firebase/firestore';
@@ -30,51 +29,40 @@ interface ErrorHook {
 type HookResult<T> = LoadingHook<T> | SuccessHook<T> | ErrorHook;
 
 /**
- * A hook to fetch a document from Firestore.
+ * A hook to fetch a document from Firestore using React Query.
  * @param ref The reference to the document. Can be null if the reference is not ready.
  * @returns The document data, loading state, and error state.
  */
 export function useDoc<T = DocumentData>(
   ref: DocumentReference<T> | null
 ): HookResult<(T & {id: string}) | null> {
-  const [state, setState] = useState<HookResult<(T & {id: string}) | null>>({
-    data: undefined,
-    loading: true,
-    error: undefined,
+  
+  const queryKey = ['firestore-doc', ref?.path];
+  
+  const { data, isLoading, isError, error, isFetching } = useQuery({
+    queryKey: queryKey,
+    queryFn: async () => {
+      if (!ref) return null;
+      const snapshot = await getDoc(ref);
+      if (snapshot.exists()) {
+        return { id: snapshot.id, ...snapshot.data() as T };
+      }
+      return null;
+    },
+    enabled: !!ref, // Only run the query if the ref is not null
   });
 
-  const refPath = ref?.path ?? null;
+  const loading = isLoading || isFetching;
 
-  useEffect(() => {
-    if (ref === null) {
-      // If the ref is not ready (e.g., waiting for user ID),
-      // remain in a loading state.
-      setState({ data: undefined, loading: true, error: undefined });
-      return;
-    }
+  if (loading) {
+    return { data: undefined, loading: true, error: undefined };
+  }
 
-    const unsubscribe = onSnapshot(
-      ref,
-      snapshot => {
-        if (snapshot.exists()) {
-          setState({
-            data: { id: snapshot.id, ...snapshot.data() as T },
-            loading: false,
-            error: undefined
-          });
-        } else {
-          // Document does not exist, this is a valid loaded state.
-          setState({ data: null, loading: false, error: undefined });
-        }
-      },
-      err => {
-        console.error("Error in useDoc:", err);
-        setState({ data: undefined, loading: false, error: err });
-      }
-    );
+  if (isError) {
+    return { data: undefined, loading: false, error: error as Error };
+  }
 
-    return () => unsubscribe();
-  }, [refPath]);
-
-  return state;
+  // React Query returns `undefined` while loading, so we ensure the output is consistent.
+  // The `?? null` handles the case where data is `undefined` after loading is complete.
+  return { data: data ?? null, loading: false, error: undefined };
 }
