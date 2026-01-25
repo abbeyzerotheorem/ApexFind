@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -29,6 +28,30 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+const getSafeImageUrl = (url: string | undefined, home_type: string): string => {
+    if (!url) {
+        return getFallbackImage(home_type);
+    }
+    try {
+        const urlObject = new URL(url);
+        const allowedHosts = [
+            'res.cloudinary.com',
+            'firebasestorage.googleapis.com',
+            'placehold.co',
+            'images.unsplash.com',
+            'picsum.photos',
+            'api.dicebear.com',
+            'lh3.googleusercontent.com'
+        ];
+        if (allowedHosts.includes(urlObject.hostname)) {
+            return url;
+        }
+    } catch (e) {
+        // Invalid URL format, fall through to return fallback
+    }
+    return getFallbackImage(home_type);
+}
+
 type ViewMode = "list" | "map" | "gallery";
 
 export function PropertyCard({ 
@@ -44,7 +67,7 @@ export function PropertyCard({
   const firestore = useFirestore();
   const [isSaved, setIsSaved] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [currentImageUrl, setCurrentImageUrl] = useState(property.imageUrl);
+  const [currentImageUrl, setCurrentImageUrl] = useState(() => getSafeImageUrl(property.imageUrl, property.home_type));
   const router = useRouter();
   const isRental = property.listing_type === 'rent';
 
@@ -65,6 +88,10 @@ export function PropertyCard({
     };
     checkIsSaved();
   }, [savedHomeRef]);
+
+  useEffect(() => {
+      setCurrentImageUrl(getSafeImageUrl(property.imageUrl, property.home_type));
+  }, [property.imageUrl, property.home_type]);
 
 
   const handleToggleSave = async (e: React.MouseEvent) => {
