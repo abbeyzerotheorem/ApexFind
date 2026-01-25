@@ -1,3 +1,4 @@
+
 'use client';
 
 import {useEffect, useState} from 'react';
@@ -42,18 +43,17 @@ export function useCollection<T = DocumentData>(
   const [error, setError] = useState<Error | undefined>(undefined);
 
   useEffect(() => {
-    // When the query changes, reset the data to re-enter a loading state.
-    // This is crucial for when the query transitions from null to a valid query.
-    setData(undefined);
-    setError(undefined);
-
-    // If the query is not ready, for example, if we are waiting for a user to be authenticated,
-    // we can return an empty array to signify that the collection is empty.
+    // If the query is not ready (e.g., waiting for user auth), we're not loading and have no data.
     if (q === null) {
       setData([]);
+      setError(undefined);
       return;
     }
     
+    // If we have a query, we should be in a loading state until the first snapshot arrives.
+    setData(undefined);
+    setError(undefined);
+
     const unsubscribe = onSnapshot(
       q,
       snapshot => {
