@@ -16,11 +16,11 @@ import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 
 // Main component
-export default function ChatInterface() {
+export default function ChatInterface({ initialConversationId }: { initialConversationId?: string | null }) {
     const { user, loading: userLoading } = useUser();
     const firestore = useFirestore();
-    const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
-    const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
+    const [activeConversationId, setActiveConversationId] = useState<string | null>(initialConversationId || null);
+    const [mobileView, setMobileView] = useState<'list' | 'chat'>(initialConversationId ? 'chat' : 'list');
 
     // Get all conversations for the current user
     const conversationsQuery = useMemo(() => {
@@ -38,7 +38,7 @@ export default function ChatInterface() {
         if (!rawConversations) return undefined;
         // Sort conversations by lastMessageAt descending
         return [...rawConversations].sort((a, b) => {
-            const timeA = a.lastMessageAt?.toDate()?.getTime() || 0;
+            const timeA = a.lastMessageAt?.toDate?.()?.getTime() || 0;
             const timeB = b.lastMessageAt?.toDate()?.getTime() || 0;
             return timeB - timeA;
         });
@@ -49,6 +49,13 @@ export default function ChatInterface() {
             setActiveConversationId(conversations[0].id);
         }
     }, [conversations, activeConversationId]);
+
+    useEffect(() => {
+        if (initialConversationId) {
+            setActiveConversationId(initialConversationId);
+            setMobileView('chat');
+        }
+    }, [initialConversationId]);
     
     if (userLoading || (conversationsLoading && !conversations)) {
         return <div className="flex items-center justify-center p-8 mt-8"><Loader2 className="animate-spin h-8 w-8" /></div>;

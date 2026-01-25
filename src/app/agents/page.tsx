@@ -141,12 +141,12 @@ function AgentCard({ agent }: { agent: AgentUser }) {
 
         setIsContacting(true);
         try {
-            await getOrCreateConversation(
+            const conversationId = await getOrCreateConversation(
                 firestore,
                 { uid: user.uid, displayName: user.displayName, photoURL: user.photoURL },
                 { uid: agent.id, displayName: agent.displayName || null, photoURL: agent.photoURL || null }
             );
-            router.push('/dashboard?tab=messages');
+            router.push(`/dashboard?tab=messages&convoId=${conversationId}`);
         } catch (error) {
             console.error("Failed to create conversation", error);
             // In a real app, show a toast notification

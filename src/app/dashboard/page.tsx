@@ -50,7 +50,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
@@ -208,6 +207,7 @@ function DashboardPageContent() {
   }
 
   const initialTab = searchParams.get('tab') || (userProfile?.role === 'agent' ? 'my-listings' : 'saved-homes');
+  const initialConvoId = searchParams.get('convoId');
 
   if (userProfile?.role === 'agent') {
     return (
@@ -322,7 +322,7 @@ function DashboardPageContent() {
                         </Card>
                     </TabsContent>
                     <TabsContent value="messages" className="flex-grow">
-                        <ChatInterface />
+                        <ChatInterface initialConversationId={initialConvoId} />
                     </TabsContent>
                     <TabsContent value="profile">
                         <Card className="mt-8">
@@ -510,7 +510,7 @@ function DashboardPageContent() {
                 <ViewedHistory />
             </TabsContent>
             <TabsContent value="agent-messages" className="flex-grow">
-                <ChatInterface />
+                <ChatInterface initialConversationId={initialConvoId} />
             </TabsContent>
              <TabsContent value="profile">
                  <div className="mt-8 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
