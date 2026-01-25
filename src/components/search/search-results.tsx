@@ -1,4 +1,3 @@
-
 'use client';
 import { useState } from "react";
 import Image from "next/image";
@@ -70,6 +69,7 @@ export default function SearchResults({ properties }: { properties: Property[]})
                                 data-ai-hint={mapImage.imageHint}
                                 fill
                                 className="object-cover"
+                                sizes="(max-width: 1023px) 0vw, 50vw"
                             />
                         </div>
                     )}

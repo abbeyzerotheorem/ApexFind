@@ -219,7 +219,7 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
               <div className="mt-8">
                 <h2 className="text-2xl font-bold text-foreground">About this home</h2>
                 <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-                  Discover luxury living in this stunning {property.beds}-bedroom, {property.baths}-bathroom {property.home_type.toLowerCase()} located in the heart of {property.city}. Spanning {property.sqft.toLocaleString()} square feet, this home offers an open-concept living space perfect for both relaxation and entertaining. The gourmet kitchen features state-of-the-art appliances and custom cabinetry. The master suite is a private oasis with a spa-like ensuite bathroom. Enjoy the Nigerian sun in your private outdoor space. This property combines modern elegance with comfort, making it the perfect place to call home.
+                  Discover luxury living in this stunning ${property.beds}-bedroom, ${property.baths}-bathroom ${property.home_type.toLowerCase()} located in the heart of ${property.city}. Spanning ${property.sqft.toLocaleString()} square feet, this home offers an open-concept living space perfect for both relaxation and entertaining. The gourmet kitchen features state-of-the-art appliances and custom cabinetry. The master suite is a private oasis with a spa-like ensuite bathroom. Enjoy the Nigerian sun in your private outdoor space. This property combines modern elegance with comfort, making it the perfect place to call home.
                 </p>
                  <div className="mt-6 flex flex-wrap gap-3">
                     {property.is_furnished && <Badge variant="secondary">Furnished</Badge>}
@@ -265,6 +265,7 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                                 data-ai-hint={mapImage.imageHint}
                                 fill
                                 className="object-cover"
+                                sizes="(max-width: 1023px) 100vw, 66vw"
                             />
                              <div className="absolute bottom-4 left-4 rounded-lg bg-background p-3 shadow-lg">
                                 <div className="flex items-center gap-2">
