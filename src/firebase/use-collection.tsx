@@ -37,22 +37,24 @@ type HookResult<T> = LoadingHook<T> | SuccessHook<T> | ErrorHook;
 export function useCollection<T = DocumentData>(
   q: Query<T> | null
 ): HookResult<Array<T & {id: string}>> {
-  const [data, setData] = useState<Array<T & {id: string}> | undefined>(
-    undefined
-  );
-  const [error, setError] = useState<Error | undefined>(undefined);
+  const [state, setState] = useState<HookResult<Array<T & {id: string}>>>({
+    data: undefined,
+    loading: true,
+    error: undefined,
+  });
+
+  // Using a stable primitive from the query for the dependency array.
+  const queryPath = (q as any)?._query?.path?.canonical ?? null;
 
   useEffect(() => {
-    // If the query is not ready (e.g., waiting for user auth), we're not loading and have no data.
-    if (q === null) {
-      setData([]);
-      setError(undefined);
+    // When query changes, go back to a full loading state.
+    setState({ data: undefined, loading: true, error: undefined });
+
+    if (!q) {
+      // If the query is not ready, we are waiting for dependencies.
+      // The state is already set to loading, so we just wait.
       return;
     }
-    
-    // If we have a query, we should be in a loading state until the first snapshot arrives.
-    setData(undefined);
-    setError(undefined);
 
     const unsubscribe = onSnapshot(
       q,
@@ -64,18 +66,15 @@ export function useCollection<T = DocumentData>(
             ...(doc.data() as T),
           });
         });
-        setData(docs);
-        setError(undefined);
+        setState({ data: docs, loading: false, error: undefined });
       },
       err => {
-        setError(err);
+        setState({ data: undefined, loading: false, error: err });
       }
     );
 
     return () => unsubscribe();
-  }, [q]); // The dependency on the query object is crucial for re-fetching data when the query changes.
+  }, [queryPath]);
 
-  const loading = data === undefined && error === undefined;
-
-  return {data, loading, error} as HookResult<Array<T & {id: string}>>;
+  return state;
 }

@@ -1,3 +1,4 @@
+
 'use client';
 
 import {useEffect, useState} from 'react';
@@ -36,45 +37,45 @@ type HookResult<T> = LoadingHook<T> | SuccessHook<T> | ErrorHook;
 export function useDoc<T = DocumentData>(
   ref: DocumentReference<T> | null
 ): HookResult<(T & {id: string}) | null> {
-  // undefined: not yet loaded. null: loaded, but doesn't exist. object: loaded and exists.
-  const [data, setData] = useState<(T & {id: string}) | null | undefined>(undefined);
-  const [error, setError] = useState<Error | undefined>(undefined);
+  const [state, setState] = useState<HookResult<(T & {id: string}) | null>>({
+    data: undefined,
+    loading: true,
+    error: undefined,
+  });
+
+  const refPath = ref?.path ?? null;
 
   useEffect(() => {
-    // Reset state when ref changes to allow for re-loading.
-    setData(undefined);
-    setError(undefined);
-
+    // When ref changes, go back to loading state.
+    setState({ data: undefined, loading: true, error: undefined });
+    
     if (ref === null) {
-      // If the reference is not ready, we can't fetch the document.
-      // This is a valid "loaded but no data" state.
-      setData(null);
-      return;
+        // If the reference is not ready, we are waiting for dependencies.
+        // The state is already set to loading, so we wait.
+        return;
     }
     
     const unsubscribe = onSnapshot(
       ref,
       snapshot => {
         if (snapshot.exists()) {
-          setData({
-            id: snapshot.id,
-            ...(snapshot.data() as T),
+          setState({
+            data: { id: snapshot.id, ...snapshot.data() as T },
+            loading: false,
+            error: undefined
           });
         } else {
           // Document does not exist, this is a valid loaded state.
-          setData(null);
+          setState({ data: null, loading: false, error: undefined });
         }
-        setError(undefined);
       },
       err => {
-        setError(err);
+        setState({ data: undefined, loading: false, error: err });
       }
     );
 
     return () => unsubscribe();
-  }, [ref?.path]); // Depend on the path string which is stable, not the object reference.
+  }, [refPath]);
 
-  const loading = data === undefined && error === undefined;
-
-  return {data, loading, error} as HookResult<(T & {id: string}) | null>;
+  return state;
 }
