@@ -39,7 +39,7 @@ export function useDoc<T = DocumentData>(
   
   const queryKey = ['firestore-doc', ref?.path];
   
-  const { data, isLoading, isError, error, isFetching } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: queryKey,
     queryFn: async () => {
       if (!ref) return null;
@@ -52,9 +52,7 @@ export function useDoc<T = DocumentData>(
     enabled: !!ref, // Only run the query if the ref is not null
   });
 
-  const loading = isLoading || isFetching;
-
-  if (loading) {
+  if (isLoading) {
     return { data: undefined, loading: true, error: undefined };
   }
 

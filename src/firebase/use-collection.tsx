@@ -41,7 +41,7 @@ export function useCollection<T = DocumentData>(
   const queryPath = (q as any)?._query?.path?.canonical ?? null;
   const queryKey = ['firestore-collection', queryPath];
 
-  const { data, isLoading, isError, error, isFetching } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: queryKey,
     queryFn: async () => {
         if (!q) return [];
@@ -58,9 +58,7 @@ export function useCollection<T = DocumentData>(
     enabled: !!q, // Only run query if `q` is not null
   });
 
-  const loading = isLoading || isFetching;
-
-  if (loading) {
+  if (isLoading) {
     return { data: undefined, loading: true, error: undefined };
   }
 
