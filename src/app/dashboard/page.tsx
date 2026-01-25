@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState, useMemo, Suspense } from "react";
@@ -118,7 +119,7 @@ function DashboardPageContent() {
     return [...agentListings].sort((a, b) => {
         const timeA = a.createdAt?.toDate?.()?.getTime() || 0;
         const timeB = b.createdAt?.toDate?.()?.getTime() || 0;
-        return timeB - timeA;
+        return timeB - a.createdAt.toDate().getTime();
     });
   }, [agentListings]);
 
@@ -184,7 +185,7 @@ function DashboardPageContent() {
     if (!firestore) return;
     try {
       await deleteListing(firestore, id);
-      await queryClient.invalidateQueries({ queryKey: ['firestore-collection', 'properties'] });
+      await queryClient.invalidateQueries({ queryKey: ['firestore-collection'] });
     } catch (error) {
       console.error("Failed to delete listing", error);
       // In a real app, you'd show a toast notification here

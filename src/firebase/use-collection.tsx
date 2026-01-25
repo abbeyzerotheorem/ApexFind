@@ -37,9 +37,15 @@ export function useCollection<T = DocumentData>(
   q: Query<T> | null
 ): HookResult<Array<T & {id: string}>> {
 
-  // Generate a stable key for the query based on its path.
+  // Generate a stable and unique key for the query
   const queryPath = (q as any)?._query?.path?.canonical ?? null;
-  const queryKey = ['firestore-collection', queryPath];
+  const queryConstraints = JSON.stringify({
+      filters: (q as any)?._query?.filters,
+      limit: (q as any)?._query?.limit,
+      orderBy: (q as any)?._query?.explicitOrderBy,
+  });
+
+  const queryKey = ['firestore-collection', queryPath, queryConstraints];
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: queryKey,
