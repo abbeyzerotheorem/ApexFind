@@ -15,7 +15,7 @@ import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
 import { formatNaira } from "@/lib/naira-formatter";
-import { getFallbackImage } from "@/lib/image-utils";
+import { getFallbackImage, getSafeImageUrl } from "@/lib/image-utils";
 import type { Property } from "@/types";
 import {
   AlertDialog,
@@ -27,30 +27,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-const getSafeImageUrl = (url: string | undefined, home_type: string): string => {
-    if (!url) {
-        return getFallbackImage(home_type);
-    }
-    try {
-        const urlObject = new URL(url);
-        const allowedHosts = [
-            'res.cloudinary.com',
-            'firebasestorage.googleapis.com',
-            'placehold.co',
-            'images.unsplash.com',
-            'picsum.photos',
-            'api.dicebear.com',
-            'lh3.googleusercontent.com'
-        ];
-        if (allowedHosts.includes(urlObject.hostname)) {
-            return url;
-        }
-    } catch (e) {
-        // Invalid URL format, fall through to return fallback
-    }
-    return getFallbackImage(home_type);
-}
 
 type ViewMode = "list" | "map" | "gallery";
 
@@ -120,7 +96,7 @@ export function PropertyCard({
               <Link href={`/property/${property.id}`} className="relative block h-full w-full">
                   <Image
                   src={currentImageUrl}
-                  alt={`Image of ${property.address || 'a property'}`}
+                  alt={property.address || 'a property'}
                   data-ai-hint={property.imageHint}
                   fill
                   className="w-full object-cover transition-transform duration-300 hover:scale-105"

@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useEffect, useState, useMemo, Suspense } from "react";
@@ -59,6 +57,7 @@ import { deleteListing } from "@/lib/listings";
 import ChatInterface from "@/components/dashboard/chat-interface";
 import { Textarea } from "@/components/ui/textarea";
 import SavedSearches from "@/components/dashboard/saved-searches";
+import { getSafeImageUrl } from "@/lib/image-utils";
 
 const viewsData = [
     { month: "Jan", views: 1200 },
@@ -236,7 +235,7 @@ function DashboardPageContent() {
                                         {agentListings?.map(property => (
                                             <TableRow key={property.id}>
                                                 <TableCell className="hidden sm:table-cell">
-                                                    <Image src={property.imageUrl} alt={property.address || 'Property image'} width={100} height={60} className="rounded-md object-cover" />
+                                                    <Image src={getSafeImageUrl(property.imageUrl, property.home_type)} alt={property.address || 'Property image'} width={100} height={60} className="rounded-md object-cover" />
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="font-medium">{property.address}</div>
