@@ -46,15 +46,15 @@ export function useDoc<T = DocumentData>(
   const refPath = ref?.path ?? null;
 
   useEffect(() => {
-    // When ref changes, go back to loading state.
-    setState({ data: undefined, loading: true, error: undefined });
-    
     if (ref === null) {
-        // If the reference is not ready, we are waiting for dependencies.
-        // The state is already set to loading, so we wait.
-        return;
+      // If there's no ref, we aren't loading, and data is null.
+      setState({ data: null, loading: false, error: undefined });
+      return;
     }
     
+    // There is a ref, so we are loading.
+    setState(prevState => ({ ...prevState, loading: true }));
+
     const unsubscribe = onSnapshot(
       ref,
       snapshot => {

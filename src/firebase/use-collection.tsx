@@ -43,18 +43,17 @@ export function useCollection<T = DocumentData>(
     error: undefined,
   });
 
-  // Using a stable primitive from the query for the dependency array.
   const queryPath = (q as any)?._query?.path?.canonical ?? null;
 
   useEffect(() => {
-    // When query changes, go back to a full loading state.
-    setState({ data: undefined, loading: true, error: undefined });
-
-    if (!q) {
-      // If the query is not ready, we are waiting for dependencies.
-      // The state is already set to loading, so we just wait.
+    if (q === null) {
+      // If there is no query, we are not loading and have no data.
+      setState({ data: [], loading: false, error: undefined });
       return;
     }
+
+    // There is a query, so we are loading until we get a snapshot.
+    setState(prevState => ({ ...prevState, loading: true }));
 
     const unsubscribe = onSnapshot(
       q,
