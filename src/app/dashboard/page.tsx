@@ -102,10 +102,22 @@ function DashboardPageContent() {
   // Agent listings state
   const propertiesQuery = useMemo(() => {
     if (!firestore || !user || userProfile?.role !== 'agent') return null;
-    return query(collection(firestore, 'properties'), where('agentId', '==', user.uid), orderBy('createdAt', 'desc'));
+    // The orderBy('createdAt') is removed to avoid needing a composite index, which may not exist.
+    // Sorting will be done on the client.
+    return query(collection(firestore, 'properties'), where('agentId', '==', user.uid));
   }, [firestore, user, userProfile]);
 
   const { data: agentListings, loading: listingsLoading } = useCollection<Property>(propertiesQuery);
+  
+  // Client-side sorting
+  const sortedAgentListings = useMemo(() => {
+    if (!agentListings) return [];
+    return [...agentListings].sort((a, b) => {
+        const timeA = a.createdAt?.toDate?.()?.getTime() || 0;
+        const timeB = b.createdAt?.toDate?.()?.getTime() || 0;
+        return timeB - timeA;
+    });
+  }, [agentListings]);
 
   // Fetch one agent to show in customer dashboard
   const firstAgentQuery = useMemo(() => {
@@ -213,7 +225,7 @@ function DashboardPageContent() {
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div>
                                         <CardTitle>My Property Listings</CardTitle>
-                                        <CardDescription>You have {agentListings?.length || 0} active listings.</CardDescription>
+                                        <CardDescription>You have {sortedAgentListings?.length || 0} active listings.</CardDescription>
                                     </div>
                                     <Button asChild>
                                         <Link href="/dashboard/listings/new">+ Add New Listing</Link>
@@ -232,7 +244,7 @@ function DashboardPageContent() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {agentListings?.map(property => (
+                                        {sortedAgentListings?.map(property => (
                                             <TableRow key={property.id}>
                                                 <TableCell className="hidden sm:table-cell">
                                                     <Image src={getSafeImageUrl(property.imageUrl, property.home_type)} alt={property.address || 'Property image'} width={100} height={60} className="rounded-md object-cover" />
@@ -292,7 +304,7 @@ function DashboardPageContent() {
                                         ))}
                                     </TableBody>
                                 </Table>
-                                {(!agentListings || agentListings.length === 0) && (
+                                {(!sortedAgentListings || sortedAgentListings.length === 0) && (
                                   <div className="text-center p-8">
                                     <h3 className="text-xl font-semibold">No listings yet.</h3>
                                     <p className="text-muted-foreground mt-2">Get started by adding your first property.</p>
@@ -429,7 +441,7 @@ function DashboardPageContent() {
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {agentListings?.slice(0, 5).map((listing, index) => (
+                                                {sortedAgentListings?.slice(0, 5).map((listing, index) => (
                                                     <TableRow key={listing.id}>
                                                         <TableCell>
                                                             <div className="font-medium truncate max-w-40">{listing.address}</div>
