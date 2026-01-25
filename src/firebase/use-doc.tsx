@@ -47,13 +47,11 @@ export function useDoc<T = DocumentData>(
 
   useEffect(() => {
     if (ref === null) {
-      // If there's no ref, we aren't loading, and data is null.
-      setState({ data: null, loading: false, error: undefined });
+      // If the ref is not ready (e.g., waiting for user ID),
+      // remain in a loading state.
+      setState({ data: undefined, loading: true, error: undefined });
       return;
     }
-    
-    // There is a ref, so we are loading.
-    setState(prevState => ({ ...prevState, loading: true }));
 
     const unsubscribe = onSnapshot(
       ref,
@@ -70,6 +68,7 @@ export function useDoc<T = DocumentData>(
         }
       },
       err => {
+        console.error("Error in useDoc:", err);
         setState({ data: undefined, loading: false, error: err });
       }
     );

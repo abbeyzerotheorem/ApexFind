@@ -47,13 +47,11 @@ export function useCollection<T = DocumentData>(
 
   useEffect(() => {
     if (q === null) {
-      // If there is no query, we are not loading and have no data.
-      setState({ data: [], loading: false, error: undefined });
+      // If the query is not ready (e.g., waiting for user data),
+      // remain in a loading state.
+      setState({ data: undefined, loading: true, error: undefined });
       return;
     }
-
-    // There is a query, so we are loading until we get a snapshot.
-    setState(prevState => ({ ...prevState, loading: true }));
 
     const unsubscribe = onSnapshot(
       q,
@@ -68,6 +66,7 @@ export function useCollection<T = DocumentData>(
         setState({ data: docs, loading: false, error: undefined });
       },
       err => {
+        console.error("Error in useCollection:", err);
         setState({ data: undefined, loading: false, error: err });
       }
     );
