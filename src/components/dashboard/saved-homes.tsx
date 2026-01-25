@@ -43,7 +43,7 @@ export default function SavedHomes() {
     return <div className="text-destructive">Error: {error.message}</div>
   }
   
-  const savedProperties = properties?.map(p => p.property_data) || [];
+  const savedProperties = properties?.map(p => p.property_data).filter(Boolean) as Property[] || [];
 
   return (
     <div>
