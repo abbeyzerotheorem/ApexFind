@@ -90,7 +90,7 @@ export function PropertyCard({
     <>
       <Card className="overflow-hidden transition-shadow duration-300 hover:shadow-xl flex flex-col">
           <div className="relative h-64">
-              <Link href={`/property/${property.id}`} className="block h-full w-full">
+              <Link href={`/property/${property.id}`} className="relative block h-full w-full">
                   <Image
                   src={currentImageUrl}
                   alt={`Image of ${property.address}`}
