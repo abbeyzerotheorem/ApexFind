@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useMemo, Suspense } from "react";
@@ -6,6 +7,7 @@ import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
 import { Loader2, Heart, User as UserIcon, History, MessageSquare, Home as HomeIcon, BarChart2, MoreHorizontal, Pencil, Trash2, Eye, Users, TrendingUp, Filter } from "lucide-react";
 import { doc, collection, query, where, orderBy, limit } from "firebase/firestore";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useQueryClient } from "@tanstack/react-query";
 
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -73,6 +75,7 @@ function DashboardPageContent() {
   const searchParams = useSearchParams();
   const { user, loading: userLoading } = useUser();
   const firestore = useFirestore();
+  const queryClient = useQueryClient();
 
   // Profile State
   const [displayName, setDisplayName] = useState('');
@@ -181,6 +184,7 @@ function DashboardPageContent() {
     if (!firestore) return;
     try {
       await deleteListing(firestore, id);
+      await queryClient.invalidateQueries({ queryKey: ['firestore-collection', 'properties'] });
     } catch (error) {
       console.error("Failed to delete listing", error);
       // In a real app, you'd show a toast notification here
@@ -648,3 +652,5 @@ export default function DashboardPage() {
     </Suspense>
   );
 }
+
+    
