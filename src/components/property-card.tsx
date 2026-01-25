@@ -120,7 +120,7 @@ export function PropertyCard({
               <Link href={`/property/${property.id}`} className="relative block h-full w-full">
                   <Image
                   src={currentImageUrl}
-                  alt={`Image of ${property.address}`}
+                  alt={`Image of ${property.address || 'a property'}`}
                   data-ai-hint={property.imageHint}
                   fill
                   className="w-full object-cover transition-transform duration-300 hover:scale-105"

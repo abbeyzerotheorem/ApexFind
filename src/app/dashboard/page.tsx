@@ -49,7 +49,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
@@ -177,7 +176,7 @@ function DashboardPageContent() {
   }
 
 
-  if (userLoading || profileLoading || (propertiesQuery && listingsLoading)) {
+  if (userLoading || profileLoading || (userProfile?.role === 'agent' && listingsLoading)) {
     return (
       <div className="flex flex-col flex-grow items-center justify-center space-y-4 bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -236,7 +235,7 @@ function DashboardPageContent() {
                                         {agentListings?.map(property => (
                                             <TableRow key={property.id}>
                                                 <TableCell className="hidden sm:table-cell">
-                                                    <Image src={property.imageUrl} alt={property.address} width={100} height={60} className="rounded-md object-cover" />
+                                                    <Image src={property.imageUrl} alt={property.address || 'Property image'} width={100} height={60} className="rounded-md object-cover" />
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="font-medium">{property.address}</div>
@@ -559,7 +558,7 @@ function DashboardPageContent() {
                             {linkedAgent ? (
                                 <div className="flex items-center gap-4">
                                      <Avatar className="h-16 w-16">
-                                        <AvatarImage src={linkedAgent.photoURL ?? undefined} alt={linkedAgent.displayName ?? ""} />
+                                        <AvatarImage src={linkedAgent.photoURL ?? undefined} alt={linkedAgent.displayName ?? "Agent"} />
                                         <AvatarFallback>{linkedAgent.displayName?.split(" ").map((n: string) => n[0]).join("")}</AvatarFallback>
                                     </Avatar>
                                     <div>
