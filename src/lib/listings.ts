@@ -14,27 +14,24 @@ import type { Property } from '@/types';
 
 type PropertyFormData = Omit<Property, 'id' | 'agentId' | 'createdAt' | 'updatedAt'>;
 
-export function uploadPropertyImage(
+export async function uploadPropertyImage(
     file: File, 
     onProgress: (progress: number | null) => void
 ): Promise<string> {
-    return new Promise(async (resolve, reject) => {
-        if (!file) {
-            return reject(new Error("No file provided for upload."));
-        }
-
-        onProgress(50); // Indicate that the upload has started
-
-        try {
-            const result = await uploadToCloudinary(file);
-            onProgress(100); // Indicate completion
-            resolve(result.optimizedUrl);
-        } catch (error) {
-            console.error("Cloudinary upload failed:", error);
-            onProgress(null); // Indicate error
-            reject(error);
-        }
-    });
+    if (!file) {
+        throw new Error("No file provided for upload.");
+    }
+    
+    try {
+        const result = await uploadToCloudinary(file, (progress) => {
+            onProgress(progress);
+        });
+        return result.optimizedUrl;
+    } catch (error) {
+        console.error("Cloudinary upload failed:", error);
+        onProgress(null); // Indicate error
+        throw error;
+    }
 }
 
 
