@@ -57,6 +57,7 @@ export default function ChatInterface() {
     if (!user) return null;
 
     const getOtherParticipant = (convo: Conversation) => {
+        if (!convo.participantDetails) return undefined;
         return convo.participantDetails.find(p => p.uid !== user.uid);
     };
 
@@ -83,7 +84,7 @@ export default function ChatInterface() {
                                         </Avatar>
                                         <div className='w-full overflow-hidden'>
                                             <div className="flex justify-between items-center">
-                                                <p className="font-semibold truncate">{otherUser?.displayName}</p>
+                                                <p className="font-semibold truncate">{otherUser?.displayName || 'Unknown User'}</p>
                                                 {unreadCount > 0 && (
                                                     <Badge className="h-5 w-5 p-0 flex items-center justify-center text-xs">{unreadCount}</Badge>
                                                 )}
@@ -173,7 +174,7 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
         setNewMessage('');
     };
 
-    const otherUser = conversation?.participantDetails.find(p => p.uid !== currentUser.uid);
+    const otherUser = conversation?.participantDetails?.find(p => p.uid !== currentUser.uid);
 
     return (
         <Card className="flex flex-col h-full">
