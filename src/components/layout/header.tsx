@@ -4,7 +4,7 @@
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -115,41 +115,49 @@ export default function Header() {
           </nav>
         </div>
         <div className="flex items-center gap-4">
-            <div className="hidden items-center gap-4 md:flex">
+            <div className="hidden items-center gap-2 md:flex">
             {user ? (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                            <Avatar className="h-10 w-10">
-                                <AvatarFallback>{userInitial.toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                             {totalUnreadCount > 0 && (
-                                <Badge className="absolute top-0 right-0 h-5 w-5 p-0 flex items-center justify-center">{totalUnreadCount}</Badge>
+                <>
+                    <Button variant="ghost" size="icon" className="relative" asChild>
+                        <Link href="/messages">
+                            <MessageSquare className="h-5 w-5" />
+                            {totalUnreadCount > 0 && (
+                                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs">{totalUnreadCount}</Badge>
                             )}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="end" forceMount>
-                        <DropdownMenuLabel className="font-normal">
-                        <div className="flex flex-col space-y-1">
-                            <p className="text-sm font-medium leading-none">{user.displayName || 'My Account'}</p>
-                            <p className="text-xs leading-none text-muted-foreground">
-                            {user.email}
-                            </p>
-                        </div>
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                            <Link href="/dashboard">Dashboard</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                            <Link href="/dashboard?tab=profile">Profile</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleSignOut}>
-                        Sign out
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                            <span className="sr-only">Messages</span>
+                        </Link>
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                                <Avatar className="h-10 w-10">
+                                    <AvatarFallback>{userInitial.toUpperCase()}</AvatarFallback>
+                                </Avatar>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56" align="end" forceMount>
+                            <DropdownMenuLabel className="font-normal">
+                            <div className="flex flex-col space-y-1">
+                                <p className="text-sm font-medium leading-none">{user.displayName || 'My Account'}</p>
+                                <p className="text-xs leading-none text-muted-foreground">
+                                {user.email}
+                                </p>
+                            </div>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild>
+                                <Link href="/dashboard">Dashboard</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href="/dashboard?tab=profile">Profile</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={handleSignOut}>
+                            Sign out
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </>
             ) : (
                 <Button asChild>
                     <Link href="/auth">Sign In</Link>
@@ -179,14 +187,21 @@ export default function Header() {
                       </SheetClose>
                   ))}
                    {user && (
-                        <SheetClose asChild>
-                            <Link href="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
-                                Dashboard
-                                {totalUnreadCount > 0 && (
-                                    <Badge className="h-5 w-5 p-0 flex items-center justify-center">{totalUnreadCount}</Badge>
-                                )}
-                            </Link>
-                        </SheetClose>
+                        <>
+                            <SheetClose asChild>
+                                <Link href="/dashboard" className="text-muted-foreground hover:text-foreground">
+                                    Dashboard
+                                </Link>
+                            </SheetClose>
+                            <SheetClose asChild>
+                                <Link href="/messages" className="flex items-center gap-4 text-muted-foreground hover:text-foreground">
+                                    <span>Messages</span>
+                                    {totalUnreadCount > 0 && (
+                                        <Badge className="text-sm">{totalUnreadCount}</Badge>
+                                    )}
+                                </Link>
+                            </SheetClose>
+                        </>
                    )}
                   {user ? (
                       <SheetClose asChild>

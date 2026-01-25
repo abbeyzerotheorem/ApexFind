@@ -1,11 +1,9 @@
-
-
 'use client';
 
 import { useEffect, useState, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
-import { Loader2, Heart, User as UserIcon, History, MessageSquare, Home as HomeIcon, BarChart2, MoreHorizontal, Pencil, Trash2, Eye, Users, TrendingUp, Filter } from "lucide-react";
+import { Loader2, Heart, User as UserIcon, History, Home as HomeIcon, BarChart2, MoreHorizontal, Pencil, Trash2, Eye, Users, TrendingUp, Filter } from "lucide-react";
 import { doc, collection, query, where, orderBy, limit } from "firebase/firestore";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useQueryClient } from "@tanstack/react-query";
@@ -56,7 +54,6 @@ import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
 import { Badge } from "@/components/ui/badge";
 import type { Property } from "@/types";
 import { deleteListing } from "@/lib/listings";
-import ChatInterface from "@/components/dashboard/chat-interface";
 import { Textarea } from "@/components/ui/textarea";
 import SavedSearches from "@/components/dashboard/saved-searches";
 import { getSafeImageUrl } from "@/lib/image-utils";
@@ -105,8 +102,12 @@ function DashboardPageContent() {
   // Agent listings state
   const propertiesQuery = useMemo(() => {
     if (!firestore || !user || userProfile?.role !== 'agent') return null;
-    // The orderBy('createdAt') is removed to avoid needing a composite index, which may not exist.
-    // Sorting will be done on the client.
+    
+    const qPath = `users/${user.uid}/properties`;
+    const constraints = {
+        where: [where('agentId', '==', user.uid)],
+    };
+
     return query(collection(firestore, 'properties'), where('agentId', '==', user.uid));
   }, [firestore, user, userProfile]);
 
@@ -118,7 +119,7 @@ function DashboardPageContent() {
     return [...agentListings].sort((a, b) => {
         const timeA = a.createdAt?.toDate?.()?.getTime() || 0;
         const timeB = b.createdAt?.toDate?.()?.getTime() || 0;
-        return timeB - a.createdAt.toDate().getTime();
+        return timeB - timeA;
     });
   }, [agentListings]);
 
@@ -184,7 +185,7 @@ function DashboardPageContent() {
     if (!firestore) return;
     try {
       await deleteListing(firestore, id);
-      await queryClient.invalidateQueries({ queryKey: ['firestore-collection'] });
+      await queryClient.invalidateQueries({ queryKey: ['firestore-collection', `users/${user?.uid}/properties`] });
     } catch (error) {
       console.error("Failed to delete listing", error);
       // In a real app, you'd show a toast notification here
@@ -207,7 +208,6 @@ function DashboardPageContent() {
   }
 
   const initialTab = searchParams.get('tab') || (userProfile?.role === 'agent' ? 'my-listings' : 'saved-homes');
-  const initialConvoId = searchParams.get('convoId');
 
   if (userProfile?.role === 'agent') {
     return (
@@ -218,9 +218,8 @@ function DashboardPageContent() {
               </h1>
               <p className="mt-1 text-muted-foreground">Welcome back, Agent {user.displayName || user.email}</p>
                 <Tabs defaultValue={initialTab} className="mt-8 flex flex-col flex-grow">
-                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
+                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 max-w-2xl">
                         <TabsTrigger value="my-listings"><HomeIcon className="mr-2 h-4 w-4"/> My Listings</TabsTrigger>
-                        <TabsTrigger value="messages"><MessageSquare className="mr-2 h-4 w-4"/> Messages</TabsTrigger>
                         <TabsTrigger value="profile"><UserIcon className="mr-2 h-4 w-4"/> Profile</TabsTrigger>
                         <TabsTrigger value="performance"><BarChart2 className="mr-2 h-4 w-4"/> Performance</TabsTrigger>
                     </TabsList>
@@ -320,9 +319,6 @@ function DashboardPageContent() {
                                 )}
                             </CardContent>
                         </Card>
-                    </TabsContent>
-                    <TabsContent value="messages" className="flex-grow">
-                        <ChatInterface initialConversationId={initialConvoId} />
                     </TabsContent>
                     <TabsContent value="profile">
                         <Card className="mt-8">
@@ -478,7 +474,7 @@ function DashboardPageContent() {
           </h1>
           <p className="mt-1 text-muted-foreground">Welcome back, {user.displayName || user.email}</p>
           <Tabs defaultValue={initialTab} className="mt-8 flex flex-col flex-grow">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-3xl">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-3xl">
               <TabsTrigger value="saved-homes">
                 <Heart className="mr-2 h-4 w-4" />
                 Saved Homes
@@ -490,10 +486,6 @@ function DashboardPageContent() {
               <TabsTrigger value="viewed-history">
                 <History className="mr-2 h-4 w-4" />
                 Viewed History
-              </TabsTrigger>
-              <TabsTrigger value="agent-messages">
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Messages
               </TabsTrigger>
               <TabsTrigger value="profile">
                 <UserIcon className="mr-2 h-4 w-4" />
@@ -508,9 +500,6 @@ function DashboardPageContent() {
             </TabsContent>
             <TabsContent value="viewed-history">
                 <ViewedHistory />
-            </TabsContent>
-            <TabsContent value="agent-messages" className="flex-grow">
-                <ChatInterface initialConversationId={initialConvoId} />
             </TabsContent>
              <TabsContent value="profile">
                  <div className="mt-8 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
