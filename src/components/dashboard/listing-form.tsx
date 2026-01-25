@@ -73,16 +73,17 @@ export default function ListingForm({ property }: ListingFormProps) {
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !user) return;
+    if (!file) return;
 
     setUploadProgress(0);
     setIsSubmitting(true);
     try {
-      const downloadURL = await uploadPropertyImage(file, user.uid, (progress) => {
+      const downloadURL = await uploadPropertyImage(file, (progress) => {
         setUploadProgress(progress);
       });
       setValue('imageUrl', downloadURL, { shouldValidate: true });
-      setUploadProgress(null);
+      setUploadProgress(100);
+      setTimeout(() => setUploadProgress(null), 1000);
     } catch (error) {
       console.error("Image upload failed", error);
       setUploadProgress(null);

@@ -9,53 +9,31 @@ import {
     serverTimestamp,
     type Firestore 
 } from 'firebase/firestore';
-import { 
-    getStorage, 
-    ref, 
-    uploadBytesResumable, 
-    getDownloadURL 
-} from 'firebase/storage';
+import { uploadToCloudinary } from './cloudinary';
 import type { Property } from '@/types';
 
 type PropertyFormData = Omit<Property, 'id' | 'agentId' | 'createdAt' | 'updatedAt'>;
 
 export function uploadPropertyImage(
     file: File, 
-    userId: string, 
-    onProgress: (progress: number) => void
+    onProgress: (progress: number | null) => void
 ): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         if (!file) {
             return reject(new Error("No file provided for upload."));
         }
-        if (!userId) {
-            return reject(new Error("User must be authenticated to upload an image."));
+
+        onProgress(50); // Indicate that the upload has started
+
+        try {
+            const result = await uploadToCloudinary(file);
+            onProgress(100); // Indicate completion
+            resolve(result.optimizedUrl);
+        } catch (error) {
+            console.error("Cloudinary upload failed:", error);
+            onProgress(null); // Indicate error
+            reject(error);
         }
-
-        const storage = getStorage();
-        const filePath = `properties/${userId}/${Date.now()}_${file.name}`;
-        const storageRef = ref(storage, filePath);
-        const uploadTask = uploadBytesResumable(storageRef, file);
-
-        uploadTask.on(
-            'state_changed',
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                onProgress(progress);
-            },
-            (error) => {
-                console.error("Upload failed:", error);
-                reject(error);
-            },
-            async () => {
-                try {
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    resolve(downloadURL);
-                } catch (error) {
-                    reject(error);
-                }
-            }
-        );
     });
 }
 
