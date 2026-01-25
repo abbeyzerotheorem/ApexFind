@@ -42,6 +42,11 @@ export function useCollection<T = DocumentData>(
   const [error, setError] = useState<Error | undefined>(undefined);
 
   useEffect(() => {
+    // When the query changes, reset the data to re-enter a loading state.
+    // This is crucial for when the query transitions from null to a valid query.
+    setData(undefined);
+    setError(undefined);
+
     // If the query is not ready, for example, if we are waiting for a user to be authenticated,
     // we can return an empty array to signify that the collection is empty.
     if (q === null) {
