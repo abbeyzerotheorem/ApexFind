@@ -5,11 +5,14 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search } from 'lucide-react';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import AutocompleteSearch from './autocomplete-search';
+import allStatesWithLgas from "@/jsons/nigeria-states.json";
+
+const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lgas]);
 
 export default function HeroSearch() {
   const heroImage = PlaceHolderImages.find(p => p.id === 'hero-background');
@@ -100,12 +103,12 @@ function SearchBar() {
                 </Select>
                 
                 <div className="flex-1 relative">
-                    <Input
-                        type="text"
+                    <AutocompleteSearch
+                        allLocations={allLocations}
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={setSearchTerm}
                         placeholder="Search Lagos, Abuja, Port Harcourt..."
-                        className="w-full h-full text-base bg-white text-foreground border-0 md:border-l rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                        className="h-10 text-base bg-white text-foreground border-0 md:border-l rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                 </div>
                 

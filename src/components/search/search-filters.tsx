@@ -48,7 +48,7 @@ type SearchFiltersProps = {
 };
 
 export default function SearchFilters({ 
-  searchQuery, 
+  searchQuery: initialSearchQuery, 
   allLocations, 
   minPrice, 
   maxPrice,
@@ -64,6 +64,7 @@ export default function SearchFilters({
     const { user } = useUser();
     const firestore = useFirestore();
 
+    const [searchQuery, setSearchQuery] = React.useState(initialSearchQuery);
     const [sort, setSort] = React.useState("relevant");
     const listingType = searchParams.get('type') || 'buy';
 
@@ -71,6 +72,14 @@ export default function SearchFilters({
     const [showAuthDialog, setShowAuthDialog] = React.useState(false);
     const [searchName, setSearchName] = React.useState('');
     const [isSaving, setIsSaving] = React.useState(false);
+    
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const newParams = new URLSearchParams(searchParams.toString());
+        newParams.set('q', searchQuery);
+        router.push(`${pathname}?${newParams.toString()}`);
+    };
+
 
     const handleSaveSearchClick = () => {
         if (!user) {
@@ -119,12 +128,16 @@ export default function SearchFilters({
                  <div className="flex items-center text-sm">
                     <Link href="/" className="text-muted-foreground hover:text-foreground">Home</Link>
                     <ChevronRight className="h-4 w-4" />
-                    <span className="font-semibold">{searchQuery || "Nigeria"}</span>
+                    <span className="font-semibold">{initialSearchQuery || "Nigeria"}</span>
                 </div>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex-grow">
-                        <form action="/search" className="flex items-center gap-2">
-                            <AutocompleteSearch allLocations={allLocations} initialValue={searchQuery} />
+                        <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
+                            <AutocompleteSearch 
+                              allLocations={allLocations} 
+                              value={searchQuery}
+                              onChange={setSearchQuery}
+                            />
                             <Button type="submit">Search</Button>
                         </form>
                     </div>

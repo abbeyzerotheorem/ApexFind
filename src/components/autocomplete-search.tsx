@@ -2,23 +2,27 @@
 
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
-import { Search, Loader2 } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Input } from './ui/input';
 
 export default function AutocompleteSearch({
   allLocations,
-  initialValue = '',
+  value,
+  onChange,
+  className,
+  placeholder,
 }: {
   allLocations: string[];
-  initialValue?: string;
+  value: string;
+  onChange: (newValue: string) => void;
+  className?: string;
+  placeholder?: string;
 }) {
-  const router = useRouter();
-  const [query, setQuery] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const debouncedQuery = useDebounce(query, 300);
+  const debouncedQuery = useDebounce(value, 300);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const fetchSuggestions = useCallback(() => {
@@ -57,21 +61,15 @@ export default function AutocompleteSearch({
   }, []);
 
   const handleSelect = (suggestion: string) => {
-    setQuery(suggestion);
+    onChange(suggestion);
     setIsOpen(false);
-    router.push(`/search?q=${encodeURIComponent(suggestion)}`);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
+    onChange(e.target.value);
     if (!isOpen) {
       setIsOpen(true);
     }
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    router.push(`/search?q=${encodeURIComponent(query)}`);
   }
 
   return (
@@ -80,11 +78,11 @@ export default function AutocompleteSearch({
       <Input
         type="search"
         name="q"
-        placeholder="Enter an address, neighborhood, city, or area"
-        className="w-full pl-10 text-base"
-        value={query}
+        placeholder={placeholder || "Enter an address, neighborhood, city, or area"}
+        className={cn("w-full pl-10 text-base", className)}
+        value={value}
         onChange={handleInputChange}
-        onFocus={() => setIsOpen(suggestions.length > 0)}
+        onFocus={() => debouncedQuery && setIsOpen(suggestions.length > 0)}
         autoComplete="off"
       />
       
