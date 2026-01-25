@@ -15,8 +15,8 @@ const fallbackImages: Record<string, string> = {
  * @param propertyType - The type of the property (e.g., "Duplex", "Apartment (Flat)").
  * @returns A URL for a fallback image.
  */
-export const getFallbackImage = (propertyType: string): string => {
-    const type = propertyType.toLowerCase();
+export const getFallbackImage = (propertyType: string | undefined): string => {
+    const type = propertyType?.toLowerCase() || 'default';
     const fallbackUrl = fallbackImages[type] || fallbackImages.default;
     return fallbackUrl || 'https://placehold.co/600x400/EEE/31343C?text=Image+Not+Available';
 };
@@ -29,7 +29,7 @@ export const getFallbackImage = (propertyType: string): string => {
  * @param home_type The type of home, used to determine the correct fallback.
  * @returns A safe image URL.
  */
-export const getSafeImageUrl = (url: string | undefined, home_type: string): string => {
+export const getSafeImageUrl = (url: string | undefined, home_type: string | undefined): string => {
     if (!url) {
         return getFallbackImage(home_type);
     }
