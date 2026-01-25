@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useDebounce } from '@/hooks/use-debounce';
@@ -92,7 +93,7 @@ export default function AutocompleteSearch({
             {suggestions.map((suggestion, index) => (
               <li
                 key={index}
-                className="cursor-pointer px-4 py-2 hover:bg-accent"
+                className="cursor-pointer px-4 py-2 text-foreground hover:bg-accent"
                 onClick={() => handleSelect(suggestion)}
               >
                 {suggestion}
