@@ -77,9 +77,23 @@ export async function getOrCreateConversation(
     const conversationId = participants.sort().join('_');
     const conversationRef = doc(firestore, 'conversations', conversationId);
 
-    const docSnap = await getDoc(conversationRef);
+    let docSnap;
+    try {
+        docSnap = await getDoc(conversationRef);
+    } catch (error: any) {
+        // If rules prevent reading a non-existent doc, a permission error might be thrown.
+        // We can treat this as the document not existing and proceed to create it.
+        if (error.code === 'permission-denied') {
+            docSnap = null;
+        } else {
+            // For other errors, we should re-throw.
+            console.error("Error getting conversation doc:", error);
+            throw error;
+        }
+    }
 
-    if (docSnap.exists()) {
+
+    if (docSnap && docSnap.exists()) {
         return docSnap.id;
     }
 
