@@ -16,7 +16,7 @@ import type { Conversation } from "@/types";
 import { Badge } from "@/components/ui/badge";
 
 
-// Links for non-registered users
+// Links for non-registered users and customers
 const publicNavLinks = [
   { name: "Buy", href: "/search" },
   { name: "Sell", href: "/sell" },
@@ -26,14 +26,19 @@ const publicNavLinks = [
   { name: "Market Insights", href: "/insights" },
 ];
 
-// Links for registered customers
-const customerNavLinks = [
-  ...publicNavLinks.filter(link => link.name !== 'Rent'), // Remove generic Rent
-  { name: "My Rentals", href: "/rentals" }, // Add specific link
-];
+// Links for registered customers are the same as public
+const customerNavLinks = publicNavLinks;
 
-// Links for registered agents (excluding "Find Agents")
-const agentNavLinks = customerNavLinks.filter(link => link.name !== 'Find Agents');
+// Links for registered agents
+const agentNavLinks = publicNavLinks
+  .filter(link => link.name !== 'Find Agents') // Agents don't need to find other agents
+  .map(link => {
+    // We change the "Rent" link (for seekers) to a "Manage Rentals" link (for landlords)
+    if (link.name === 'Rent') {
+      return { name: "Manage Rentals", href: "/rentals" };
+    }
+    return link;
+  });
 
 
 export default function Header() {
