@@ -1,19 +1,19 @@
-
 'use client';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useUser, useFirestore, useCollection } from '@/firebase';
-import { collection, query, where, orderBy, doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, query, where, orderBy, doc, onSnapshot } from 'firebase/firestore';
 import type { Conversation, Message, User } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
-import { getOrCreateConversation, sendMessage, markConversationAsRead } from '@/lib/chat';
-import { Loader2, Send, ArrowLeft } from 'lucide-react';
+import { sendMessage, markConversationAsRead } from '@/lib/chat';
+import { Loader2, Send, ArrowLeft, MessageSquareText, MessagesSquare } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
+import { Skeleton } from '../ui/skeleton';
 
 // Main component
 export default function ChatInterface({ initialConversationId }: { initialConversationId?: string | null }) {
@@ -32,6 +32,7 @@ export default function ChatInterface({ initialConversationId }: { initialConver
             return;
         }
 
+        setConversationsLoading(true);
         const conversationsQuery = query(
             collection(firestore, 'conversations'),
             where('participants', 'array-contains', user.uid)
@@ -43,7 +44,6 @@ export default function ChatInterface({ initialConversationId }: { initialConver
                 convos.push({ id: doc.id, ...doc.data() } as Conversation);
             });
             
-            // Sort conversations by lastMessageAt descending
             convos.sort((a, b) => {
                 const timeA = a.lastMessageAt?.toDate?.().getTime() || 0;
                 const timeB = b.lastMessageAt?.toDate()?.getTime() || 0;
@@ -61,6 +61,7 @@ export default function ChatInterface({ initialConversationId }: { initialConver
     }, [user, firestore]);
 
     useEffect(() => {
+        // Only set active conversation if one isn't already set (e.g. from URL)
         if (!activeConversationId && conversations && conversations.length > 0) {
             setActiveConversationId(conversations[0].id);
         }
@@ -73,16 +74,40 @@ export default function ChatInterface({ initialConversationId }: { initialConver
         }
     }, [initialConversationId]);
     
-    if (userLoading || (conversationsLoading && conversations.length === 0)) {
-        return <div className="flex items-center justify-center p-8 mt-8"><Loader2 className="animate-spin h-8 w-8" /></div>;
+    const getOtherParticipant = (convo: Conversation) => {
+        if (!convo.participantDetails) return undefined;
+        return convo.participantDetails.find(p => p.uid !== user?.uid);
+    };
+
+    if (userLoading || conversationsLoading) {
+        return (
+            <div className="md:grid md:grid-cols-3 lg:grid-cols-4 md:gap-8 h-full">
+                <Card className={cn("md:col-span-1 lg:col-span-1 flex-col h-full", mobileView === 'list' ? 'flex' : 'hidden md:flex')}>
+                    <CardHeader>
+                        <CardTitle>Conversations</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0 flex-grow">
+                        <div className="space-y-4 p-4">
+                            {[...Array(5)].map((_, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <Skeleton className="h-12 w-12 rounded-full" />
+                                    <div className="space-y-2 flex-1">
+                                        <Skeleton className="h-4 w-3/4" />
+                                        <Skeleton className="h-4 w-1/2" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+                <div className={cn("md:col-span-2 lg:col-span-3 h-full", mobileView === 'chat' ? 'flex' : 'hidden md:flex', 'items-center justify-center bg-secondary rounded-lg')}>
+                     <Loader2 className="animate-spin h-8 w-8 text-muted-foreground" />
+                </div>
+            </div>
+        )
     }
 
     if (!user) return null;
-
-    const getOtherParticipant = (convo: Conversation) => {
-        if (!convo.participantDetails) return undefined;
-        return convo.participantDetails.find(p => p.uid !== user.uid);
-    };
 
     return (
         <div className="md:grid md:grid-cols-3 lg:grid-cols-4 md:gap-8 h-full">
@@ -95,32 +120,36 @@ export default function ChatInterface({ initialConversationId }: { initialConver
                 </CardHeader>
                 <CardContent className="p-0 flex-grow">
                     <ScrollArea className="h-full">
-                        {conversations && conversations.length > 0 ? conversations.map(convo => {
+                        {conversations.length > 0 ? conversations.map(convo => {
                             const otherUser = getOtherParticipant(convo);
                             const unreadCount = convo.unreadCounts?.[user.uid] || 0;
                             return (
                                 <div key={convo.id} onClick={() => { setActiveConversationId(convo.id); setMobileView('chat'); }} className={`p-4 border-b cursor-pointer hover:bg-secondary ${activeConversationId === convo.id ? 'bg-secondary' : ''}`}>
-                                    <div className="flex items-center gap-3">
-                                        <Avatar className="h-10 w-10">
-                                            <AvatarImage src={otherUser?.photoURL ?? undefined} />
-                                            <AvatarFallback>{otherUser?.displayName?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                                    <div className="flex items-center gap-4">
+                                        <Avatar className="h-12 w-12">
+                                            <AvatarImage src={otherUser?.photoURL ?? undefined} alt={otherUser?.displayName ?? 'User'}/>
+                                            <AvatarFallback>{otherUser?.displayName?.split(" ").map(n => n[0]).join("") || 'U'}</AvatarFallback>
                                         </Avatar>
                                         <div className='w-full overflow-hidden'>
-                                            <div className="flex justify-between items-center">
+                                            <div className="flex justify-between items-start">
                                                 <p className="font-semibold truncate">{otherUser?.displayName || 'Unknown User'}</p>
+                                                {convo.lastMessageAt && <p className="text-xs text-muted-foreground flex-shrink-0 ml-2">{formatDistanceToNow(convo.lastMessageAt.toDate(), { addSuffix: true })}</p>}
+                                            </div>
+                                            <div className="flex justify-between items-center mt-1">
+                                                <p className="text-sm text-muted-foreground truncate">{convo.lastMessageText || 'No messages yet'}</p>
                                                 {unreadCount > 0 && (
                                                     <Badge className="h-5 w-5 p-0 flex items-center justify-center text-xs">{unreadCount}</Badge>
                                                 )}
                                             </div>
-                                            <p className="text-sm text-muted-foreground truncate">{convo.lastMessageText || 'No messages yet'}</p>
                                         </div>
                                     </div>
-                                    {convo.lastMessageAt && <p className="text-xs text-muted-foreground mt-1 text-right">{formatDistanceToNow(convo.lastMessageAt.toDate(), { addSuffix: true })}</p>}
                                 </div>
                             )
                         }) : (
-                            <div className="p-4 text-center text-muted-foreground h-full flex items-center justify-center">
-                                No conversations yet.
+                            <div className="p-4 text-center text-muted-foreground h-full flex flex-col items-center justify-center">
+                                <MessagesSquare className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                                <h3 className="font-semibold text-lg">No conversations yet.</h3>
+                                <p className="text-sm">Start a chat by contacting an agent.</p>
                             </div>
                         )}
                     </ScrollArea>
@@ -133,11 +162,10 @@ export default function ChatInterface({ initialConversationId }: { initialConver
                 {activeConversationId && user ? (
                     <MessageWindow key={activeConversationId} conversationId={activeConversationId} currentUser={user} onBack={() => setMobileView('list')} />
                 ) : (
-                     <div className="h-full items-center justify-center bg-secondary rounded-lg hidden md:flex">
-                        <div className="text-center">
-                            <h3 className="text-xl font-semibold">Select a conversation</h3>
-                            <p className="text-muted-foreground">Or start a new one by contacting an agent.</p>
-                        </div>
+                     <div className="h-full items-center justify-center bg-secondary rounded-lg hidden md:flex flex-col">
+                        <MessagesSquare className="h-16 w-16 text-muted-foreground/50 mb-4" />
+                        <h3 className="text-xl font-semibold">Select a conversation</h3>
+                        <p className="text-muted-foreground">Or start a new one by contacting an agent.</p>
                      </div>
                 )}
             </div>
@@ -158,16 +186,12 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
 
     // Get messages in real-time
     useEffect(() => {
-        if (!firestore) {
-            setMessagesLoading(false);
-            return;
-        };
-
+        if (!firestore) return;
+        setMessagesLoading(true);
         const messagesQuery = query(
             collection(firestore, 'conversations', conversationId, 'messages'),
             orderBy('createdAt', 'asc')
         );
-
         const unsubscribe = onSnapshot(messagesQuery, (querySnapshot) => {
             const newMessages: Message[] = [];
             querySnapshot.forEach((doc) => {
@@ -179,20 +203,19 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
             console.error("Error fetching messages:", error);
             setMessagesLoading(false);
         });
-
         return () => unsubscribe();
     }, [firestore, conversationId]);
     
+    // Mark as read
     useEffect(() => {
         if (firestore && conversationId && currentUser.uid) {
             markConversationAsRead(firestore, conversationId, currentUser.uid);
         }
-    }, [firestore, conversationId, currentUser.uid, messages]); // Rerun when messages change to mark as read
+    }, [firestore, conversationId, currentUser.uid, messages]);
 
     // Get conversation details
     useEffect(() => {
         if (!firestore) return;
-
         const convoRef = doc(firestore, 'conversations', conversationId);
         const unsubscribe = onSnapshot(convoRef, (doc) => {
              if (doc.exists()) {
@@ -202,23 +225,22 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
         return () => unsubscribe();
     }, [firestore, conversationId]);
 
-    // Scroll to bottom on new messages
+    // Scroll to bottom
     useEffect(() => {
         if (scrollAreaRef.current) {
-            // A small delay can help ensure the DOM is fully updated before scrolling
             setTimeout(() => {
                 if (scrollAreaRef.current) {
                      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
                 }
             }, 100);
         }
-    }, [messages]);
+    }, [messages, messagesLoading]);
 
-    // Auto-resize textarea logic
+    // Auto-resize textarea
     useEffect(() => {
         const textarea = textareaRef.current;
         if (textarea) {
-            textarea.style.height = 'auto'; // Reset height to recalculate
+            textarea.style.height = 'auto';
             const scrollHeight = textarea.scrollHeight;
             textarea.style.height = `${scrollHeight}px`;
         }
@@ -227,15 +249,13 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!firestore || !newMessage.trim()) return;
-        
         const messageToSend = newMessage;
-        setNewMessage(''); // Clear input immediately for better UX
-
+        setNewMessage('');
         try {
             await sendMessage(firestore, conversationId, currentUser.uid, messageToSend);
         } catch (error) {
             console.error("Failed to send message:", error);
-            setNewMessage(messageToSend); // If sending fails, restore the message for the user
+            setNewMessage(messageToSend);
         }
     };
 
@@ -250,8 +270,8 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
                         <span className="sr-only">Back to conversations</span>
                     </Button>
                     <Avatar className="h-10 w-10">
-                            <AvatarImage src={otherUser?.photoURL ?? undefined} />
-                            <AvatarFallback>{otherUser?.displayName?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                        <AvatarImage src={otherUser?.photoURL ?? undefined} alt={otherUser?.displayName ?? 'User'} />
+                        <AvatarFallback>{otherUser?.displayName?.split(" ").map(n => n[0]).join("") || 'U'}</AvatarFallback>
                     </Avatar>
                     <div>
                         <CardTitle>{otherUser?.displayName || 'Loading...'}</CardTitle>
@@ -259,25 +279,61 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
                 </div>
             </CardHeader>
             <CardContent className="p-0 flex-1 min-h-0">
-                 <ScrollArea className="h-full p-6" viewportRef={scrollAreaRef}>
-                     <div className="space-y-4">
-                        {messagesLoading && <div className="flex justify-center"><Loader2 className="animate-spin" /></div>}
-                        {messages?.map(msg => (
-                            <div key={msg.id} className={`flex items-end gap-2 ${msg.senderId === currentUser.uid ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`p-3 rounded-lg max-w-md ${msg.senderId === currentUser.uid ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                                    <p className="whitespace-pre-wrap">{msg.text}</p>
-                                </div>
+                 <ScrollArea className="h-full" viewportRef={scrollAreaRef}>
+                     <div className="p-4 md:p-6">
+                        {messagesLoading ? (
+                            <div className="space-y-4">
+                                <div className="flex items-end gap-2 justify-start"><Skeleton className="h-10 w-10 rounded-full" /><Skeleton className="h-10 w-48 rounded-xl" /></div>
+                                <div className="flex items-end gap-2 justify-end"><Skeleton className="h-10 w-32 rounded-xl" /></div>
+                                <div className="flex items-end gap-2 justify-end"><Skeleton className="h-16 w-64 rounded-xl" /></div>
+                                <div className="flex items-end gap-2 justify-start"><Skeleton className="h-10 w-10 rounded-full" /><Skeleton className="h-10 w-24 rounded-xl" /></div>
                             </div>
-                        ))}
+                        ) : messages.length === 0 ? (
+                            <div className="flex h-full flex-col items-center justify-center text-center p-4 min-h-[300px]">
+                                <MessageSquareText size={48} className="text-muted-foreground/50" />
+                                <h3 className="mt-4 text-lg font-semibold">No messages yet</h3>
+                                <p className="text-muted-foreground mt-1">Send the first message to start the conversation.</p>
+                            </div>
+                        ) : messages.map((msg, index) => {
+                            const isSender = msg.senderId === currentUser.uid;
+                            const prevMsg = messages[index - 1];
+                            const nextMsg = messages[index + 1];
+
+                            const isFirstInGroup = !prevMsg || prevMsg.senderId !== msg.senderId;
+                            const isLastInGroup = !nextMsg || nextMsg.senderId !== msg.senderId;
+                        
+                            return (
+                                <div key={msg.id} className={cn(
+                                    "flex items-end gap-2",
+                                    isSender ? "justify-end" : "justify-start",
+                                    isFirstInGroup ? "mt-4" : "mt-1",
+                                )}>
+                                    {!isSender && (
+                                        <Avatar className={cn("h-8 w-8", !isLastInGroup && "invisible")}>
+                                            <AvatarImage src={otherUser?.photoURL ?? undefined} alt={otherUser?.displayName ?? 'U'} />
+                                            <AvatarFallback>{otherUser?.displayName?.split(" ").map(n => n[0]).join("") || 'U'}</AvatarFallback>
+                                        </Avatar>
+                                    )}
+                                    <div className={cn(
+                                        "px-4 py-2 rounded-xl max-w-sm md:max-w-md",
+                                        isSender ? "bg-primary text-primary-foreground" : "bg-muted",
+                                        isSender && isLastInGroup && "rounded-br-sm",
+                                        !isSender && isLastInGroup && "rounded-bl-sm",
+                                    )}>
+                                        <p className="whitespace-pre-wrap">{msg.text}</p>
+                                    </div>
+                                </div>
+                            )
+                        })}
                     </div>
                 </ScrollArea>
             </CardContent>
-            <CardFooter className="border-t p-4">
+            <CardFooter className="border-t p-4 bg-background">
                  <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
                     <Textarea 
                         ref={textareaRef}
                         placeholder="Type your message..." 
-                        className="flex-1 resize-none max-h-32" 
+                        className="flex-1 resize-none max-h-32 bg-card" 
                         rows={1} 
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
