@@ -25,7 +25,7 @@ type FilterControlsProps = {
     keywords: string;
 }
 
-const homeTypeOptions = ["House", "Apartment (Flat)", "Duplex", "Terrace"];
+const homeTypeOptions = ["House", "Apartment (Flat)", "Duplex", "Terrace", "Bungalow", "Commercial"];
 const featureOptions = [
     { id: "furnished", label: "Furnished" },
     { id: "generator", label: "Generator" },

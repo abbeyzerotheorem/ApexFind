@@ -43,7 +43,11 @@ function SearchPageComponent() {
       let matches = true;
 
       if (listingType) {
-        matches = matches && property.listing_type === listingType;
+        if (listingType === 'buy') {
+            matches = matches && property.listing_type === 'sale';
+        } else { // for 'rent'
+            matches = matches && property.listing_type === 'rent';
+        }
       }
 
       if (searchQuery) {
