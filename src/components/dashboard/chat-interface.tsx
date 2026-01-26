@@ -136,6 +136,7 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
     const [newMessage, setNewMessage] = useState('');
     const [conversation, setConversation] = useState<Conversation | null>(null);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const messagesQuery = useMemo(() => {
         if (!firestore) return null;
@@ -168,17 +169,41 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
         fetchConvo();
     }, [firestore, conversationId]);
 
+    // Scroll to bottom on new messages
     useEffect(() => {
         if (scrollAreaRef.current) {
-            scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+            // A small delay can help ensure the DOM is fully updated before scrolling
+            setTimeout(() => {
+                if (scrollAreaRef.current) {
+                     scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+                }
+            }, 0);
         }
     }, [messages]);
 
+    // Auto-resize textarea logic
+    useEffect(() => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.style.height = 'auto'; // Reset height to recalculate
+            const scrollHeight = textarea.scrollHeight;
+            textarea.style.height = `${scrollHeight}px`;
+        }
+    }, [newMessage]);
+    
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!firestore || !newMessage.trim()) return;
-        await sendMessage(firestore, conversationId, currentUser.uid, newMessage);
-        setNewMessage('');
+        
+        const messageToSend = newMessage;
+        setNewMessage(''); // Clear input immediately for better UX
+
+        try {
+            await sendMessage(firestore, conversationId, currentUser.uid, messageToSend);
+        } catch (error) {
+            console.error("Failed to send message:", error);
+            setNewMessage(messageToSend); // If sending fails, restore the message for the user
+        }
     };
 
     const otherUser = conversation?.participantDetails?.find(p => p.uid !== currentUser.uid);
@@ -217,8 +242,9 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
             <CardFooter className="border-t p-4">
                  <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
                     <Textarea 
+                        ref={textareaRef}
                         placeholder="Type your message..." 
-                        className="flex-1 resize-none" 
+                        className="flex-1 resize-none max-h-32" 
                         rows={1} 
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
