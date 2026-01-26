@@ -1,6 +1,8 @@
 
 'use client';
 
+import { useState, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
@@ -29,6 +31,14 @@ const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lg
 
 
 export default function InsightsPage() {
+    const router = useRouter();
+    const [searchValue, setSearchValue] = useState('Lagos');
+
+    const handleSearch = (e: FormEvent) => {
+        e.preventDefault();
+        router.push(`/search?q=${searchValue}`);
+    };
+
     return (
         <div className="flex min-h-screen flex-col bg-background py-12 sm:py-16">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -40,8 +50,12 @@ export default function InsightsPage() {
                         Get the latest data, trends, and insights to make informed decisions about where to buy, sell, or rent your next home.
                     </p>
                     <div className="mt-8 mx-auto max-w-xl">
-                        <form className="flex flex-col sm:flex-row gap-4">
-                            <AutocompleteSearch allLocations={allLocations} initialValue="Lagos"/>
+                        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
+                            <AutocompleteSearch 
+                                allLocations={allLocations} 
+                                value={searchValue}
+                                onChange={setSearchValue}
+                            />
                             <Button size="lg" type="submit" className="h-12 font-medium">
                                 Search
                             </Button>
