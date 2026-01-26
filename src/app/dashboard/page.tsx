@@ -48,6 +48,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
@@ -182,10 +183,10 @@ function DashboardPageContent() {
   };
 
   const handleDeleteListing = async (id: string) => {
-    if (!firestore) return;
+    if (!firestore || !user) return;
     try {
       await deleteListing(firestore, id);
-      await queryClient.invalidateQueries({ queryKey: ['firestore-collection', `users/${user?.uid}/properties`] });
+      await queryClient.invalidateQueries({ queryKey: ['firestore-collection', `users/${user.uid}/properties`] });
     } catch (error) {
       console.error("Failed to delete listing", error);
       // In a real app, you'd show a toast notification here
