@@ -21,28 +21,44 @@ export default function ChatInterface({ initialConversationId }: { initialConver
     const firestore = useFirestore();
     const [activeConversationId, setActiveConversationId] = useState<string | null>(initialConversationId || null);
     const [mobileView, setMobileView] = useState<'list' | 'chat'>(initialConversationId ? 'chat' : 'list');
+    
+    const [conversations, setConversations] = useState<Conversation[]>([]);
+    const [conversationsLoading, setConversationsLoading] = useState(true);
 
-    // Get all conversations for the current user
-    const conversationsQuery = useMemo(() => {
-        if (!user || !firestore) return null;
-        // The orderBy was removed to prevent a missing-index error. Sorting is now done on the client.
-        return query(
+    // Get all conversations for the current user in real-time
+    useEffect(() => {
+        if (!user || !firestore) {
+            setConversationsLoading(false);
+            return;
+        }
+
+        const conversationsQuery = query(
             collection(firestore, 'conversations'),
             where('participants', 'array-contains', user.uid)
         );
-    }, [user, firestore]);
 
-    const { data: rawConversations, loading: conversationsLoading } = useCollection<Conversation>(conversationsQuery);
-    
-    const conversations = useMemo(() => {
-        if (!rawConversations) return undefined;
-        // Sort conversations by lastMessageAt descending
-        return [...rawConversations].sort((a, b) => {
-            const timeA = a.lastMessageAt?.toDate?.()?.getTime() || 0;
-            const timeB = b.lastMessageAt?.toDate()?.getTime() || 0;
-            return timeB - timeA;
+        const unsubscribe = onSnapshot(conversationsQuery, (querySnapshot) => {
+            const convos: Conversation[] = [];
+            querySnapshot.forEach((doc) => {
+                convos.push({ id: doc.id, ...doc.data() } as Conversation);
+            });
+            
+            // Sort conversations by lastMessageAt descending
+            convos.sort((a, b) => {
+                const timeA = a.lastMessageAt?.toDate?.().getTime() || 0;
+                const timeB = b.lastMessageAt?.toDate()?.getTime() || 0;
+                return timeB - timeA;
+            });
+
+            setConversations(convos);
+            setConversationsLoading(false);
+        }, (error) => {
+            console.error("Error fetching conversations:", error);
+            setConversationsLoading(false);
         });
-    }, [rawConversations]);
+
+        return () => unsubscribe();
+    }, [user, firestore]);
 
     useEffect(() => {
         if (!activeConversationId && conversations && conversations.length > 0) {
@@ -57,7 +73,7 @@ export default function ChatInterface({ initialConversationId }: { initialConver
         }
     }, [initialConversationId]);
     
-    if (userLoading || (conversationsLoading && !conversations)) {
+    if (userLoading || (conversationsLoading && conversations.length === 0)) {
         return <div className="flex items-center justify-center p-8 mt-8"><Loader2 className="animate-spin h-8 w-8" /></div>;
     }
 
@@ -135,38 +151,55 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
     const firestore = useFirestore();
     const [newMessage, setNewMessage] = useState('');
     const [conversation, setConversation] = useState<Conversation | null>(null);
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [messagesLoading, setMessagesLoading] = useState(true);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const messagesQuery = useMemo(() => {
-        if (!firestore) return null;
-        return query(
+    // Get messages in real-time
+    useEffect(() => {
+        if (!firestore) {
+            setMessagesLoading(false);
+            return;
+        };
+
+        const messagesQuery = query(
             collection(firestore, 'conversations', conversationId, 'messages'),
             orderBy('createdAt', 'asc')
         );
-    }, [firestore, conversationId]);
 
-    const { data: messages, loading: messagesLoading } = useCollection<Message>(messagesQuery);
+        const unsubscribe = onSnapshot(messagesQuery, (querySnapshot) => {
+            const newMessages: Message[] = [];
+            querySnapshot.forEach((doc) => {
+                newMessages.push({ id: doc.id, ...doc.data() } as Message);
+            });
+            setMessages(newMessages);
+            setMessagesLoading(false);
+        }, (error) => {
+            console.error("Error fetching messages:", error);
+            setMessagesLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [firestore, conversationId]);
     
     useEffect(() => {
         if (firestore && conversationId && currentUser.uid) {
             markConversationAsRead(firestore, conversationId, currentUser.uid);
         }
-    }, [firestore, conversationId, currentUser.uid]);
+    }, [firestore, conversationId, currentUser.uid, messages]); // Rerun when messages change to mark as read
 
+    // Get conversation details
     useEffect(() => {
-        const fetchConvo = async () => {
-            if (firestore) {
-                const convoRef = doc(firestore, 'conversations', conversationId);
-                const unsub = onSnapshot(convoRef, (doc) => {
-                     if (doc.exists()) {
-                        setConversation({ id: doc.id, ...doc.data() } as Conversation);
-                    }
-                });
-                return () => unsub();
+        if (!firestore) return;
+
+        const convoRef = doc(firestore, 'conversations', conversationId);
+        const unsubscribe = onSnapshot(convoRef, (doc) => {
+             if (doc.exists()) {
+                setConversation({ id: doc.id, ...doc.data() } as Conversation);
             }
-        }
-        fetchConvo();
+        });
+        return () => unsubscribe();
     }, [firestore, conversationId]);
 
     // Scroll to bottom on new messages
@@ -177,7 +210,7 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
                 if (scrollAreaRef.current) {
                      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
                 }
-            }, 0);
+            }, 100);
         }
     }, [messages]);
 
