@@ -1,20 +1,21 @@
 'use client';
 import { useState } from "react";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { List, Map, GalleryThumbnails } from "lucide-react";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { PropertyCard } from "@/components/property-card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { Property } from "@/types";
 
-type ViewMode = "list" | "map" | "gallery";
+const INITIAL_LOAD_COUNT = 9;
 
 export default function SearchResults({ properties }: { properties: Property[]}) {
-    const [viewMode, setViewMode] = useState<ViewMode>("map");
+    const [visibleCount, setVisibleCount] = useState(INITIAL_LOAD_COUNT);
+    
+    const handleLoadMore = () => {
+        setVisibleCount(prevCount => prevCount + INITIAL_LOAD_COUNT);
+    };
 
-    const mapImage = PlaceHolderImages.find((img) => img.id === "market-map");
+    const canLoadMore = visibleCount < properties.length;
     
     return (
         <div className="flex-grow">
@@ -23,63 +24,32 @@ export default function SearchResults({ properties }: { properties: Property[]})
                     <p className="text-sm text-muted-foreground">
                         {properties.length} homes
                     </p>
-                    <div className="flex items-center gap-2">
-                        <Button variant={viewMode === 'list' ? 'secondary': 'ghost'} size="icon" onClick={() => setViewMode('list')}>
-                            <List className="h-5 w-5" />
-                            <span className="sr-only">List View</span>
-                        </Button>
-                        <Button variant={viewMode === 'map' ? 'secondary': 'ghost'} size="icon" onClick={() => setViewMode('map')}>
-                            <Map className="h-5 w-5" />
-                            <span className="sr-only">Map View</span>
-                        </Button>
-                        <Button variant={viewMode === 'gallery' ? 'secondary': 'ghost'} size="icon" onClick={() => setViewMode('gallery')}>
-                            <GalleryThumbnails className="h-5 w-5" />
-                            <span className="sr-only">Gallery View</span>
-                        </Button>
-                    </div>
                 </div>
 
-                <div className={cn("grid", viewMode === 'map' && 'grid-cols-1 lg:grid-cols-2 gap-8')}>
-                    <div className={cn(viewMode === 'map' && 'max-h-[calc(100vh-250px)]')}>
-                        <ScrollArea className={cn(viewMode === 'map' && "h-full")}>
-                             {properties.length > 0 ? (
-                                <div className={cn(
-                                    "grid gap-6",
-                                    viewMode === 'list' && "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
-                                    viewMode === 'map' && "grid-cols-1",
-                                    viewMode === 'gallery' && "grid-cols-1 md:grid-cols-2"
-                                )}>
-                                    {properties.map((property) => (
-                                        <PropertyCard key={property.id} property={property} viewMode={viewMode}/>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center h-full py-24">
-                                    <h3 className="text-2xl font-semibold">No results found</h3>
-                                    <p className="text-muted-foreground">Try adjusting your search or filters.</p>
-                                </div>
-                            )}
-                        </ScrollArea>
-                    </div>
-                    {viewMode === 'map' && mapImage && (
-                        <div className="relative hidden lg:block rounded-lg overflow-hidden max-h-[calc(100vh-250px)]">
-                            <Image
-                                src={mapImage.imageUrl}
-                                alt={mapImage.description}
-                                data-ai-hint={mapImage.imageHint}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 1023px) 0vw, 50vw"
-                            />
-                        </div>
-                    )}
+                <div>
+                    <ScrollArea>
+                         {properties.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {properties.slice(0, visibleCount).map((property) => (
+                                    <PropertyCard key={property.id} property={property} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full py-24">
+                                <h3 className="text-2xl font-semibold">No results found</h3>
+                                <p className="text-muted-foreground">Try adjusting your search or filters.</p>
+                            </div>
+                        )}
+                    </ScrollArea>
                 </div>
 
-                {properties.length > 0 && <div className="mt-12 text-center">
-                    <Button size="lg" variant="outline">
-                        Load More
-                    </Button>
-                </div>}
+                {canLoadMore && (
+                    <div className="mt-12 text-center">
+                        <Button size="lg" variant="outline" onClick={handleLoadMore}>
+                            Load More
+                        </Button>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -31,11 +31,15 @@ function SearchPageComponent() {
   const homeTypes = searchParams.get('homeTypes') ? searchParams.get('homeTypes')!.split(',') : [];
   const listingType = searchParams.get('type');
   const features = searchParams.get('features') ? searchParams.get('features')!.split(',') : [];
+  const minSqft = searchParams.get('minSqft') ? parseInt(searchParams.get('minSqft')!) : 0;
+  const maxSqft = searchParams.get('maxSqft') ? parseInt(searchParams.get('maxSqft')!) : 0;
+  const keywords = searchParams.get('keywords');
+  const sort = searchParams.get('sort') || 'relevant';
 
   const filteredProperties = useMemo(() => {
     if (!allProperties) return [];
 
-    return allProperties.filter(property => {
+    let filtered = allProperties.filter(property => {
       let matches = true;
 
       if (listingType) {
@@ -63,22 +67,43 @@ function SearchPageComponent() {
         matches = matches && homeTypes.includes(property.home_type);
       }
       if (features.length > 0) {
-          if (features.includes('furnished') && !property.is_furnished) {
-              matches = false;
-          }
-          if (features.includes('generator') && !property.power_supply?.toLowerCase().includes('generator')) {
-              matches = false;
-          }
-          if (features.includes('borehole') && !property.water_supply?.toLowerCase().includes('borehole')) {
-              matches = false;
-          }
-          if (features.includes('gated') && !property.security_type?.includes('Gated Estate')) {
-              matches = false;
-          }
+          if (features.includes('furnished') && !property.is_furnished) matches = false;
+          if (features.includes('generator') && !property.power_supply?.toLowerCase().includes('generator')) matches = false;
+          if (features.includes('borehole') && !property.water_supply?.toLowerCase().includes('borehole')) matches = false;
+          if (features.includes('gated') && !property.security_type?.includes('Gated Estate')) matches = false;
+      }
+      if (minSqft) {
+          matches = matches && property.sqft >= minSqft;
+      }
+      if (maxSqft) {
+          matches = matches && property.sqft <= maxSqft;
+      }
+      if (keywords) {
+          matches = matches && (property.description?.toLowerCase().includes(keywords.toLowerCase()) || property.address.toLowerCase().includes(keywords.toLowerCase()));
       }
       return matches;
     });
-  }, [allProperties, searchQuery, minPrice, maxPrice, beds, baths, homeTypes, listingType, features]);
+
+    // Sorting logic
+    switch (sort) {
+        case 'newest':
+            filtered.sort((a, b) => (b.createdAt?.toDate?.().getTime() || 0) - (a.createdAt?.toDate?.().getTime() || 0));
+            break;
+        case 'price-low-high':
+            filtered.sort((a, b) => a.price - b.price);
+            break;
+        case 'price-high-low':
+            filtered.sort((a, b) => b.price - a.price);
+            break;
+        case 'relevant':
+        default:
+            // No sort for relevance, uses default Firestore order (or can be enhanced)
+            break;
+    }
+
+    return filtered;
+
+  }, [allProperties, searchQuery, minPrice, maxPrice, beds, baths, homeTypes, listingType, features, minSqft, maxSqft, keywords, sort]);
   
   return (
     <>
@@ -92,6 +117,10 @@ function SearchPageComponent() {
           baths={baths || 'any'}
           homeTypes={homeTypes}
           features={features}
+          minSqft={minSqft}
+          maxSqft={maxSqft}
+          keywords={keywords || ''}
+          sort={sort}
           propertyCount={filteredProperties.length}
         />
       </div>

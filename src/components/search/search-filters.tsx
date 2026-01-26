@@ -44,6 +44,10 @@ type SearchFiltersProps = {
   baths: string;
   homeTypes: string[];
   features: string[];
+  minSqft: number;
+  maxSqft: number;
+  keywords: string;
+  sort: string;
   propertyCount: number;
 };
 
@@ -56,6 +60,10 @@ export default function SearchFilters({
   baths,
   homeTypes,
   features,
+  minSqft,
+  maxSqft,
+  keywords,
+  sort: initialSort,
   propertyCount
 }: SearchFiltersProps) {
     const router = useRouter();
@@ -65,7 +73,6 @@ export default function SearchFilters({
     const firestore = useFirestore();
 
     const [searchQuery, setSearchQuery] = React.useState(initialSearchQuery);
-    const [sort, setSort] = React.useState("relevant");
     const listingType = searchParams.get('type') || 'buy';
 
     const [showSaveSearchDialog, setShowSaveSearchDialog] = React.useState(false);
@@ -73,12 +80,29 @@ export default function SearchFilters({
     const [searchName, setSearchName] = React.useState('');
     const [isSaving, setIsSaving] = React.useState(false);
     
+    const createQueryString = React.useCallback(
+      (name: string, value: string) => {
+        const params = new URLSearchParams(searchParams.toString())
+        if (value) {
+            params.set(name, value)
+        } else {
+            params.delete(name);
+        }
+        return params.toString()
+      },
+      [searchParams]
+    )
+
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const newParams = new URLSearchParams(searchParams.toString());
-        newParams.set('q', searchQuery);
-        router.push(`${pathname}?${newParams.toString()}`);
+        router.push(`${pathname}?${createQueryString('q', searchQuery)}`);
     };
+
+    const handleSortChange = (value: string) => {
+        if (value) {
+            router.push(`${pathname}?${createQueryString('sort', value)}`);
+        }
+    }
 
 
     const handleSaveSearchClick = () => {
@@ -106,20 +130,9 @@ export default function SearchFilters({
 
     const handleTypeChange = (value: string) => {
         if (value) {
-            const newParams = new URLSearchParams(searchParams.toString());
-            newParams.set('type', value);
-            router.push(`${pathname}?${newParams.toString()}`);
+            router.push(`${pathname}?${createQueryString('type', value)}`);
         }
     }
-
-    const createQueryString = React.useCallback(
-      (name: string, value: string) => {
-        const params = new URLSearchParams(searchParams.toString())
-        params.set(name, value)
-        return params.toString()
-      },
-      [searchParams]
-    )
 
     return (
       <>
@@ -156,11 +169,11 @@ export default function SearchFilters({
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="sm">
                                     <span>Sort by: </span>
-                                    <span className="font-semibold ml-1 capitalize">{sort.replace('-', ' ')}</span>
+                                    <span className="font-semibold ml-1 capitalize">{initialSort.replace('-', ' ')}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                <DropdownMenuRadioGroup value={sort} onValueChange={setSort}>
+                                <DropdownMenuRadioGroup value={initialSort} onValueChange={handleSortChange}>
                                     <DropdownMenuRadioItem value="relevant">Relevant</DropdownMenuRadioItem>
                                     <DropdownMenuRadioItem value="newest">Newest</DropdownMenuRadioItem>
                                     <DropdownMenuRadioItem value="price-low-high">Price (Low-High)</DropdownMenuRadioItem>
@@ -187,6 +200,9 @@ export default function SearchFilters({
                                 baths={baths}
                                 homeTypes={homeTypes}
                                 features={features}
+                                minSqft={minSqft}
+                                maxSqft={maxSqft}
+                                keywords={keywords}
                             />
                           </SheetContent>
                         </Sheet>

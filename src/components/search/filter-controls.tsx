@@ -20,6 +20,9 @@ type FilterControlsProps = {
     baths: string;
     homeTypes: string[];
     features: string[];
+    minSqft: number;
+    maxSqft: number;
+    keywords: string;
 }
 
 const homeTypeOptions = ["House", "Apartment (Flat)", "Duplex", "Terrace"];
@@ -36,7 +39,10 @@ export function FilterControls({
     beds: initialBeds, 
     baths: initialBaths, 
     homeTypes: initialHomeTypes,
-    features: initialFeatures 
+    features: initialFeatures,
+    minSqft: initialMinSqft,
+    maxSqft: initialMaxSqft,
+    keywords: initialKeywords,
 }: FilterControlsProps) {
     const router = useRouter();
     const pathname = usePathname();
@@ -48,6 +54,10 @@ export function FilterControls({
     const [baths, setBaths] = React.useState(initialBaths);
     const [selectedHomeTypes, setSelectedHomeTypes] = React.useState<string[]>(initialHomeTypes);
     const [selectedFeatures, setSelectedFeatures] = React.useState<string[]>(initialFeatures);
+    const [minSqft, setMinSqft] = React.useState(initialMinSqft);
+    const [maxSqft, setMaxSqft] = React.useState(initialMaxSqft);
+    const [keywords, setKeywords] = React.useState(initialKeywords);
+
 
     const handlePriceChange = (value: number[]) => {
         setMinPrice(value[0]);
@@ -70,41 +80,15 @@ export function FilterControls({
     
     const applyFilters = () => {
         const params = new URLSearchParams(searchParams.toString());
-        if (minPrice > 0) {
-            params.set('minPrice', String(minPrice));
-        } else {
-            params.delete('minPrice');
-        }
-
-        if (maxPrice < 500000000) {
-            params.set('maxPrice', String(maxPrice));
-        } else {
-            params.delete('maxPrice');
-        }
-
-        if (beds !== 'any') {
-            params.set('beds', beds);
-        } else {
-            params.delete('beds');
-        }
-
-        if (baths !== 'any') {
-            params.set('baths', baths);
-        } else {
-            params.delete('baths');
-        }
-
-        if (selectedHomeTypes.length > 0) {
-            params.set('homeTypes', selectedHomeTypes.join(','));
-        } else {
-            params.delete('homeTypes');
-        }
-        
-        if (selectedFeatures.length > 0) {
-            params.set('features', selectedFeatures.join(','));
-        } else {
-            params.delete('features');
-        }
+        if (minPrice > 0) params.set('minPrice', String(minPrice)); else params.delete('minPrice');
+        if (maxPrice < 500000000) params.set('maxPrice', String(maxPrice)); else params.delete('maxPrice');
+        if (beds !== 'any') params.set('beds', beds); else params.delete('beds');
+        if (baths !== 'any') params.set('baths', baths); else params.delete('baths');
+        if (selectedHomeTypes.length > 0) params.set('homeTypes', selectedHomeTypes.join(',')); else params.delete('homeTypes');
+        if (selectedFeatures.length > 0) params.set('features', selectedFeatures.join(',')); else params.delete('features');
+        if (minSqft > 0) params.set('minSqft', String(minSqft)); else params.delete('minSqft');
+        if (maxSqft > 0) params.set('maxSqft', String(maxSqft)); else params.delete('maxSqft');
+        if (keywords) params.set('keywords', keywords); else params.delete('keywords');
 
         router.push(`${pathname}?${params.toString()}`);
     }
@@ -117,6 +101,9 @@ export function FilterControls({
         params.delete('baths');
         params.delete('homeTypes');
         params.delete('features');
+        params.delete('minSqft');
+        params.delete('maxSqft');
+        params.delete('keywords');
         router.push(`${pathname}?${params.toString()}`);
     }
 
@@ -207,31 +194,17 @@ export function FilterControls({
                 <AccordionItem value="sqft">
                     <AccordionTrigger>Square Feet</AccordionTrigger>
                     <AccordionContent>
-                        <div className="flex gap-2">
-                            <Input placeholder="Min" />
-                            <Input placeholder="Max" />
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="lot-size">
-                    <AccordionTrigger>Plot Size (sqm)</AccordionTrigger>
-                    <AccordionContent>
-                        <Input placeholder="e.g. 1000 sqm" />
-                    </AccordionContent>
-                </AccordionItem>
-                 <AccordionItem value="year-built">
-                    <AccordionTrigger>Year Built</AccordionTrigger>
-                    <AccordionContent>
-                        <div className="flex gap-2">
-                            <Input placeholder="Min" />
-                            <Input placeholder="Max" />
+                        <div className="flex gap-2 items-center">
+                            <Input placeholder="Min" type="number" value={minSqft || ''} onChange={(e) => setMinSqft(Number(e.target.value))} />
+                            <span>-</span>
+                            <Input placeholder="Max" type="number" value={maxSqft || ''} onChange={(e) => setMaxSqft(Number(e.target.value))} />
                         </div>
                     </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="keywords">
                     <AccordionTrigger>Keywords</AccordionTrigger>
                     <AccordionContent>
-                        <Input placeholder="e.g. serviced apartment" />
+                        <Input placeholder="e.g. serviced apartment, ocean view" value={keywords} onChange={(e) => setKeywords(e.target.value)}/>
                     </AccordionContent>
                 </AccordionItem>
             </Accordion>
