@@ -15,6 +15,13 @@ function mapPropertyTypeToHomeType(propertyType: string): string {
   return mapping[lowerCaseType] || propertyType;
 }
 
+function capitalize(str: string): string {
+    if (!str) return '';
+    // Capitalize the first letter and make the rest lowercase.
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -39,12 +46,15 @@ export async function POST(request: Request) {
     }
     
     const home_type_for_query = mapPropertyTypeToHomeType(propertyType);
+    const capitalizedCity = capitalize(city);
+    const capitalizedState = capitalize(state);
+
 
     // Step 1: Get comparable properties from Firebase
     const comparablesSnapshot = await adminDb
       .collection('properties')
-      .where('city', '==', city)
-      .where('state', '==', state)
+      .where('city', '==', capitalizedCity)
+      .where('state', '==', capitalizedState)
       .where('home_type', '==', home_type_for_query)
       .where('beds', '>=', Math.max(1, (bedrooms || 2) - 1))
       .where('beds', '<=', (bedrooms || 2) + 1)
