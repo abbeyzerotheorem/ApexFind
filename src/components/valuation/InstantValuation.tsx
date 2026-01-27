@@ -1,10 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Search, Calculator, MapPin, Home, Bed, Bath, Square, TrendingUp, X } from 'lucide-react'
+import { useState } from 'react'
+import { Calculator, MapPin, Home, Bed, Bath, Square, TrendingUp } from 'lucide-react'
 import { formatNaira } from '@/lib/naira-formatter'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 
 const NIGERIAN_STATES = [
@@ -44,6 +48,10 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
   })
 
   const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+  
+  const handleSelectChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
@@ -103,31 +111,31 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
   return (
     <div className="max-w-4xl mx-auto p-6 md:p-8">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-          <Calculator className="text-green-600" size={32} />
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
+          <Calculator className="text-primary" size={32} />
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-foreground mb-2">
           Get Instant Property Valuation
         </h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Get a data-driven estimate of your Nigerian property's value
         </p>
       </div>
 
       {/* Progress Steps */}
       <div className="flex items-center justify-between mb-10 relative">
-        <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 -translate-y-1/2 z-0"></div>
+        <div className="absolute top-1/2 left-0 right-0 h-1 bg-border -translate-y-1/2 z-0"></div>
         
         {[1, 2, 3].map((stepNumber) => (
           <div key={stepNumber} className="flex flex-col items-center relative z-10 text-center">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors duration-300 ${
               step >= stepNumber 
-                ? 'bg-green-600 text-white' 
-                : 'bg-gray-200 text-gray-500'
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-muted text-muted-foreground'
             }`}>
               {stepNumber}
             </div>
-            <span className="text-xs sm:text-sm font-medium">
+            <span className="text-xs sm:text-sm font-medium text-foreground">
               {stepNumber === 1 ? 'Details' : 
                stepNumber === 2 ? 'Review' : 
                'Report'}
@@ -140,116 +148,95 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
       {step === 1 && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-2">
+              <Label htmlFor="address">
                 <MapPin className="inline w-4 h-4 mr-1" />
                 Property Address
-              </label>
-              <input
+              </Label>
+              <Input
+                id="address"
                 type="text"
                 value={formData.address}
                 onChange={(e) => handleInputChange('address', e.target.value)}
                 placeholder="e.g., 12 Admiralty Way, Lekki"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                City
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
                 type="text"
                 value={formData.city}
                 onChange={(e) => handleInputChange('city', e.target.value)}
                 placeholder="e.g., Lagos"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                State
-              </label>
-              <select
-                value={formData.state}
-                onChange={(e) => handleInputChange('state', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-              >
-                {NIGERIAN_STATES.map(state => (
-                  <option key={state} value={state}>{state}</option>
-                ))}
-              </select>
+            <div className="space-y-2">
+              <Label htmlFor="state">State</Label>
+               <Select value={formData.state} onValueChange={(v) => handleSelectChange('state', v)}>
+                  <SelectTrigger id="state">
+                    <SelectValue placeholder="Select state" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {NIGERIAN_STATES.map(state => (
+                      <SelectItem key={state} value={state}>{state}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-2">
+              <Label htmlFor="propertyType">
                 <Home className="inline w-4 h-4 mr-1" />
                 Property Type
-              </label>
-              <select
-                value={formData.propertyType}
-                onChange={(e) => handleInputChange('propertyType', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-              >
-                {PROPERTY_TYPES.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
+              </Label>
+               <Select value={formData.propertyType} onValueChange={(v) => handleSelectChange('propertyType', v)}>
+                  <SelectTrigger id="propertyType">
+                    <SelectValue placeholder="Select property type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                     {PROPERTY_TYPES.map(type => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-2">
+              <Label>
                 <Bed className="inline w-4 h-4 mr-1" />
                 Bedrooms
-              </label>
+              </Label>
               <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => handleInputChange('bedrooms', Math.max(1, formData.bedrooms - 1))}
-                  className="p-2 border rounded-lg hover:bg-gray-50"
-                >
-                  -
-                </button>
+                <Button variant="outline" size="icon" onClick={() => handleInputChange('bedrooms', Math.max(1, formData.bedrooms - 1))}>-</Button>
                 <span className="text-xl font-semibold">{formData.bedrooms}</span>
-                <button
-                  onClick={() => handleInputChange('bedrooms', formData.bedrooms + 1)}
-                  className="p-2 border rounded-lg hover:bg-gray-50"
-                >
-                  +
-                </button>
+                <Button variant="outline" size="icon" onClick={() => handleInputChange('bedrooms', formData.bedrooms + 1)}>+</Button>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-2">
+              <Label>
                 <Bath className="inline w-4 h-4 mr-1" />
                 Bathrooms
-              </label>
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => handleInputChange('bathrooms', Math.max(1, formData.bathrooms - 1))}
-                  className="p-2 border rounded-lg hover:bg-gray-50"
-                >
-                  -
-                </button>
+              </Label>
+               <div className="flex items-center space-x-4">
+                <Button variant="outline" size="icon" onClick={() => handleInputChange('bathrooms', Math.max(1, formData.bathrooms - 1))}>-</Button>
                 <span className="text-xl font-semibold">{formData.bathrooms}</span>
-                <button
-                  onClick={() => handleInputChange('bathrooms', formData.bathrooms + 1)}
-                  className="p-2 border rounded-lg hover:bg-gray-50"
-                >
-                  +
-                </button>
+                <Button variant="outline" size="icon" onClick={() => handleInputChange('bathrooms', formData.bathrooms + 1)}>+</Button>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-2">
+              <Label htmlFor="size-range">
                 <Square className="inline w-4 h-4 mr-1" />
                 Size (m²)
-              </label>
+              </Label>
               <input
+                id="size-range"
                 type="range"
                 min="50"
                 max="1000"
@@ -258,7 +245,7 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
                 onChange={(e) => handleInputChange('size', parseInt(e.target.value))}
                 className="w-full"
               />
-              <div className="flex justify-between text-sm text-gray-600 mt-2">
+              <div className="flex justify-between text-sm text-muted-foreground mt-2">
                 <span>50</span>
                 <span className="font-semibold">{formData.size}</span>
                 <span>1000</span>
@@ -266,11 +253,10 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Year Built
-            </label>
+          <div className="space-y-2">
+            <Label htmlFor="year-range">Year Built</Label>
             <input
+              id="year-range"
               type="range"
               min="1950"
               max="2024"
@@ -279,7 +265,7 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
               onChange={(e) => handleInputChange('yearBuilt', parseInt(e.target.value))}
               className="w-full"
             />
-            <div className="flex justify-between text-sm text-gray-600 mt-2">
+            <div className="flex justify-between text-sm text-muted-foreground mt-2">
               <span>1950</span>
               <span className="font-semibold">{formData.yearBuilt}</span>
               <span>2024</span>
@@ -287,79 +273,66 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Amenities
-            </label>
+            <Label className="block mb-3">Amenities</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {AMENITIES.map(amenity => (
-                <label
-                  key={amenity}
-                  className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                    formData.amenities.includes(amenity)
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:bg-gray-50'
-                  }`}
-                >
-                  <input
-                    type="checkbox"
+                 <div key={amenity} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`amenity-${amenity}`}
                     checked={formData.amenities.includes(amenity)}
-                    onChange={() => handleAmenityToggle(amenity)}
-                    className="mr-3"
+                    onCheckedChange={() => handleAmenityToggle(amenity)}
                   />
-                  <span className="text-sm">{amenity}</span>
-                </label>
+                  <Label htmlFor={`amenity-${amenity}`} className="font-normal text-sm">{amenity}</Label>
+                </div>
               ))}
             </div>
           </div>
 
-          <button
-            onClick={() => setStep(2)}
-            className="w-full py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-lg"
-          >
+          <Button onClick={() => setStep(2)} size="lg" className="w-full font-semibold text-lg">
             Continue to Review
-          </button>
+          </Button>
         </div>
       )}
 
       {/* Step 2: Review & Estimate */}
       {step === 2 && (
         <div className="space-y-6">
-          <div className="bg-gray-50 p-6 rounded-xl">
+          <div className="bg-muted/50 p-6 rounded-xl">
             <h3 className="text-lg font-semibold mb-4">Review Your Property Details</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-600">Address</p>
+                <p className="text-sm text-muted-foreground">Address</p>
                 <p className="font-medium">{formData.address}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Location</p>
+                <p className="text-sm text-muted-foreground">Location</p>
                 <p className="font-medium">{formData.city}, {formData.state}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Property Type</p>
+                <p className="text-sm text-muted-foreground">Property Type</p>
                 <p className="font-medium">{formData.propertyType}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Size</p>
+                <p className="text-sm text-muted-foreground">Size</p>
                 <p className="font-medium">{formData.size} square meters</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Bedrooms & Bathrooms</p>
+                <p className="text-sm text-muted-foreground">Bedrooms & Bathrooms</p>
                 <p className="font-medium">{formData.bedrooms} bd • {formData.bathrooms} ba</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Year Built</p>
+                <p className="text-sm text-muted-foreground">Year Built</p>
                 <p className="font-medium">{formData.yearBuilt}</p>
               </div>
             </div>
 
             {formData.amenities.length > 0 && (
               <div className="mt-4 pt-4 border-t">
-                <p className="text-sm text-gray-600 mb-2">Amenities</p>
+                <p className="text-sm text-muted-foreground mb-2">Amenities</p>
                 <div className="flex flex-wrap gap-2">
                   {formData.amenities.map(amenity => (
-                    <span key={amenity} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                    <span key={amenity} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
                       {amenity}
                     </span>
                   ))}
@@ -368,11 +341,11 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
             )}
           </div>
 
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="p-4 bg-accent/10 border border-accent/20 rounded-lg">
             <div className="flex items-start gap-3">
-              <TrendingUp className="text-blue-600 mt-1" size={20} />
+              <TrendingUp className="text-accent mt-1" size={20} />
               <div>
-                <p className="text-sm text-blue-800">
+                <p className="text-sm text-accent-foreground">
                   <strong>Note:</strong> This is an automated estimate based on current market data in {formData.state}. 
                   For official valuation, consult a certified Nigerian valuer.
                 </p>
@@ -381,22 +354,17 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
           </div>
 
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700">{error}</p>
+            <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <p className="text-destructive">{error}</p>
             </div>
           )}
 
           <div className="flex gap-4">
-            <button
-              onClick={() => setStep(1)}
-              className="flex-1 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              Back
-            </button>
-            <button
+             <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>
+            <Button
               onClick={handleEstimate}
               disabled={loading}
-              className="flex-1 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+              className="flex-1"
             >
               {loading ? (
                 <span className="flex items-center justify-center">
@@ -404,7 +372,7 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
                   Calculating...
                 </span>
               ) : 'Get Instant Estimate'}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -413,25 +381,25 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
       {step === 3 && result && (
         <div className="space-y-8">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
-              <Calculator className="text-green-600" size={40} />
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-full mb-4">
+              <Calculator className="text-primary" size={40} />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-foreground mb-2">
               Your Property Valuation
             </h2>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Based on current Nigerian market data
             </p>
           </div>
 
           {/* Estimated Value */}
-          <div className="text-center p-8 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200">
-            <p className="text-sm text-gray-600 mb-2">ESTIMATED VALUE</p>
-            <p className="text-5xl font-bold text-gray-900 mb-2">
+          <div className="text-center p-8 bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl border border-primary/20">
+            <p className="text-sm text-muted-foreground mb-2">ESTIMATED VALUE</p>
+            <p className="text-5xl font-bold text-foreground mb-2">
               {formatNaira(result.estimatedValue)}
             </p>
-            <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full">
-              <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+            <div className="inline-flex items-center px-4 py-2 bg-primary/10 text-primary rounded-full font-medium">
+              <div className="w-3 h-3 bg-primary rounded-full mr-2"></div>
               {result.confidence >= 0.8 ? 'High' : 'Medium'} Confidence ({(result.confidence * 100).toFixed(0)}%)
             </div>
           </div>
@@ -441,15 +409,15 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
             <h3 className="text-lg font-semibold mb-4">Value Range</h3>
             <div className="flex justify-between items-center text-sm">
                 <span className="text-red-600 font-medium">Low: {formatNaira(result.range.low)}</span>
-                <span className="text-green-600 font-medium">High: {formatNaira(result.range.high)}</span>
+                <span className="text-primary font-medium">High: {formatNaira(result.range.high)}</span>
             </div>
-            <div className="relative h-3 bg-gray-200 rounded-full mt-2">
+            <div className="relative h-3 bg-muted rounded-full mt-2">
                 <div className="absolute top-0 bottom-0 bg-gradient-to-r from-red-200 via-yellow-200 to-green-200 rounded-full w-full"></div>
                 <div 
-                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-gray-800 rounded-full border-2 border-white shadow"
+                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-foreground rounded-full border-2 border-background shadow"
                     style={{ left: `${(result.estimatedValue - result.range.low) / (result.range.high - result.range.low) * 100}%` }}
                 >
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold whitespace-nowrap bg-gray-800 text-white px-2 py-0.5 rounded">
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold whitespace-nowrap bg-foreground text-background px-2 py-0.5 rounded">
                         Estimate
                     </div>
                 </div>
@@ -461,10 +429,10 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
               <AccordionItem value="insights">
                 <AccordionTrigger className="text-lg font-semibold">Market Insights</AccordionTrigger>
                 <AccordionContent className="pt-2">
-                     <div className="bg-white p-6 rounded-xl border">
+                     <div className="bg-background p-6 rounded-xl border">
                       <h4 className="font-semibold mb-3">Market Trend</h4>
-                      <p className="text-gray-700">{result.marketTrend}</p>
-                      <p className="text-sm text-gray-500 mt-2">
+                      <p className="text-foreground">{result.marketTrend}</p>
+                      <p className="text-sm text-muted-foreground mt-2">
                         Based on {result.comparablesCount} comparable properties
                       </p>
                     </div>
@@ -475,7 +443,7 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
                 <AccordionContent className="pt-2">
                      <div className="space-y-4">
                       {Object.entries(result.breakdown).map(([key, value]) => (
-                        <div key={key} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <div key={key} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                           <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
                           <span className="font-semibold">
                             {typeof value === 'number' ? formatNaira(value) : `${value}x`}
@@ -490,8 +458,8 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
                  <AccordionContent className="pt-2">
                     <ul className="space-y-2">
                         {result.nextSteps.map((step: string, index: number) => (
-                          <li key={index} className="flex items-center text-sm p-3 bg-gray-50 rounded-lg">
-                            <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                          <li key={index} className="flex items-center text-sm p-3 bg-muted/50 rounded-lg">
+                            <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
                             {step}
                           </li>
                         ))}
@@ -501,11 +469,11 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
             </Accordion>
 
           {/* Report ID & Actions */}
-          <div className="p-4 bg-gray-50 rounded-lg text-center">
-            <p className="text-sm text-gray-600 mb-2">
+          <div className="p-4 bg-muted/50 rounded-lg text-center">
+            <p className="text-sm text-muted-foreground mb-2">
               Report ID: <span className="font-mono font-medium">{result.reportId}</span>
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Save this ID for future reference or professional consultation
             </p>
           </div>
@@ -527,6 +495,7 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
               href={`https://wa.me/?text=${generateWhatsAppMessage()}`}
               target="_blank"
               rel="noopener noreferrer"
+              className="inline-block"
             >
               <Button size="lg" className="w-full bg-[#25D366] hover:bg-[#1EBE57]">Share on WhatsApp</Button>
             </a>

@@ -13,14 +13,14 @@ export default function SellPage() {
 
     return (
         <>
-            <div className="relative bg-white">
+            <div className="relative bg-background">
                  <div className="mx-auto max-w-7xl lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8">
                     <div className="px-6 pb-24 pt-10 sm:pb-32 lg:col-span-7 lg:px-0 lg:pb-56 lg:pt-48 xl:col-span-6">
                         <div className="mx-auto max-w-2xl lg:mx-0">
-                            <h1 className="mt-24 text-4xl font-bold tracking-tight text-gray-900 sm:mt-10 sm:text-6xl">
+                            <h1 className="mt-24 text-4xl font-bold tracking-tight text-foreground sm:mt-10 sm:text-6xl">
                                 What's my home worth?
                             </h1>
-                            <p className="mt-6 text-lg leading-8 text-gray-600">
+                            <p className="mt-6 text-lg leading-8 text-muted-foreground">
                                 Get Nigeria's most accurate home-value estimate, based on real market data. It's a great first step to figure out your next move.
                             </p>
                             <div className="mt-10 flex items-center gap-x-6">
@@ -30,14 +30,15 @@ export default function SellPage() {
                                     value={address}
                                     onChange={(e) => setAddress(e.target.value)}
                                     placeholder="Enter your property address"
-                                    className="w-full h-16 px-6 pr-40 text-lg border border-gray-400 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary text-gray-900"
+                                    className="w-full h-16 px-6 pr-40 text-lg border border-input bg-background rounded-xl focus:ring-2 focus:ring-ring focus:border-ring text-foreground"
                                   />
-                                  <button
+                                  <Button
                                     onClick={() => setShowValuation(true)}
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-semibold text-lg"
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-3 rounded-lg font-semibold text-lg"
+                                    size="lg"
                                   >
                                     Get Value
-                                  </button>
+                                  </Button>
                                 </div>
                             </div>
                         </div>
@@ -74,4 +75,3 @@ export default function SellPage() {
         </>
     );
 }
-
