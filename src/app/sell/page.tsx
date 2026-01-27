@@ -49,6 +49,8 @@ export default function SellPage() {
                             src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                             alt="Modern house"
                             fill
+                            priority
+                            sizes="(max-width: 1023px) 100vw, 50vw"
                         />
                     </div>
                 </div>

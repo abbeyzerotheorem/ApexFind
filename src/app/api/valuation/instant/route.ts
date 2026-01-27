@@ -56,17 +56,21 @@ export async function POST(request: Request) {
       .where('city', '==', capitalizedCity)
       .where('state', '==', capitalizedState)
       .where('home_type', '==', home_type_for_query)
-      .where('beds', '>=', Math.max(1, (bedrooms || 2) - 1))
-      .where('beds', '<=', (bedrooms || 2) + 1)
-      .orderBy('beds')
       .orderBy('createdAt', 'desc')
-      .limit(20)
+      .limit(50) // Fetch more to filter in-memory
       .get()
 
-    const comparables = comparablesSnapshot.docs.map(doc => ({
+    const allComparables = comparablesSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }))
+    }));
+
+    // In-memory filtering for bedrooms
+    const comparables = allComparables.filter(comp => 
+        (comp.beds >= Math.max(1, (bedrooms || 2) - 1)) &&
+        (comp.beds <= (bedrooms || 2) + 1)
+    ).slice(0, 20); // Limit to 20 after filtering
+
 
     // Step 2: Calculate value using Nigerian-specific algorithm
     const valuation = await estimateNigerianPropertyValue({
