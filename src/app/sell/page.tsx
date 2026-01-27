@@ -11,13 +11,29 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import allStatesWithLgas from "@/jsons/nigeria-states.json";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-// This is the shape of the API response
-type ValuationResponse = {
-    estimatedValue: number;
-    confidence: 'High' | 'Medium' | 'Low';
-    comparablesSummary: string;
-    valueRange: [number, number];
+type ValuationResult = {
+  estimatedValue: number;
+  confidence: number;
+  currency: string;
+  range: {
+    low: number;
+    high: number;
+  };
+  breakdown: {
+    basePrice: number;
+    locationMultiplier: number;
+    sizeValue: number;
+    bedroomValue: number;
+    ageAdjustment: number;
+    amenityValue: number;
+    marketTrendValue: number;
+  };
+  comparablesCount: number;
+  marketTrend: string;
+  nextSteps: string[];
+  reportId: string;
 }
 
 type FormValues = {
@@ -35,7 +51,7 @@ const stateOptions = allStatesWithLgas.map(s => s.name);
 
 
 export default function SellPage() {
-    const [estimation, setEstimation] = useState<ValuationResponse | null>(null);
+    const [estimation, setEstimation] = useState<ValuationResult | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -186,15 +202,30 @@ export default function SellPage() {
                             <CardContent>
                                 <p className="text-4xl font-bold text-primary">{formatNaira(estimation.estimatedValue)}</p>
                                 <p className="text-lg text-muted-foreground mt-1">
-                                    Value Range: {formatNaira(estimation.valueRange[0])} – {formatNaira(estimation.valueRange[1])}
+                                    Value Range: {formatNaira(estimation.range.low)} – {formatNaira(estimation.range.high)}
                                 </p>
                                 <div className="mt-4 space-y-2">
                                     <p className="text-sm">
                                         <span className="font-semibold">Confidence: </span> 
-                                        <span>{estimation.confidence}</span>
+                                        <span>{Math.round(estimation.confidence * 100)}%</span>
                                     </p>
-                                    <p className="text-sm text-muted-foreground">{estimation.comparablesSummary}</p>
+                                    <p className="text-sm text-muted-foreground">{estimation.marketTrend} (based on {estimation.comparablesCount} comparables)</p>
                                 </div>
+                                 <Accordion type="single" collapsible className="w-full mt-4">
+                                  <AccordionItem value="item-1">
+                                    <AccordionTrigger>View valuation breakdown</AccordionTrigger>
+                                    <AccordionContent>
+                                      <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
+                                        <li>Base Price/SQM: {formatNaira(estimation.breakdown.basePrice)}</li>
+                                        <li>Size Value: {formatNaira(estimation.breakdown.sizeValue)}</li>
+                                        <li>Bedroom Adjustment: {formatNaira(estimation.breakdown.bedroomValue)}</li>
+                                        <li>Age Adjustment: {formatNaira(estimation.breakdown.ageAdjustment)}</li>
+                                        <li>Amenity Adjustment: {formatNaira(estimation.breakdown.amenityValue)}</li>
+                                        <li>Market Trend Adjustment: {formatNaira(estimation.breakdown.marketTrendValue)}</li>
+                                      </ul>
+                                    </AccordionContent>
+                                  </AccordionItem>
+                                </Accordion>
                                 <p className="text-xs text-muted-foreground mt-4 pt-4 border-t">
                                     This is not an official appraisal. For a more accurate valuation, connect with a local real estate agent.
                                 </p>

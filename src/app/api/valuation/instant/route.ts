@@ -27,12 +27,13 @@ export async function POST(request: Request) {
     
     // Step 1: Get comparable properties from Firebase
     const comparablesSnapshot = await adminDb
-      .collection('properties') // Changed from 'listings'
+      .collection('properties')
       .where('city', '==', city)
       .where('state', '==', state)
       .where('home_type', '==', home_type)
       .where('beds', '>=', Math.max(1, (beds || 2) - 1))
       .where('beds', '<=', (beds || 2) + 1)
+      .orderBy('createdAt', 'desc')
       .limit(20)
       .get()
 
@@ -65,6 +66,7 @@ export async function POST(request: Request) {
       valuationData: valuation,
       ipAddress: request.headers.get('x-forwarded-for'),
       createdAt: new Date().toISOString(),
+      timestamp: Date.now()
     })
 
     return Response.json(valuation)

@@ -1,115 +1,229 @@
 
-// A simplified valuation model for Nigerian properties.
-// In a real-world scenario, this would be a much more complex model,
-// likely involving machine learning, but this serves as a good example.
+// A more detailed valuation model for Nigerian properties.
 
-interface ValuationInput {
+interface NigerianPropertyValuationInput {
+  address: string;
   city: string;
   state: string;
   propertyType: string;
   bedrooms: number;
   bathrooms: number;
   size: number; // in square meters
+  yearBuilt: number;
   amenities: string[];
-  comparables: any[]; // Array of comparable property documents from Firestore
+  comparables?: any[];
 }
 
-interface ValuationOutput {
+interface ValuationResult {
   estimatedValue: number;
-  confidence: 'High' | 'Medium' | 'Low';
-  comparablesSummary: string;
-  valueRange: [number, number];
+  confidence: number;
+  currency: string;
+  range: {
+    low: number;
+    high: number;
+  };
+  breakdown: {
+    basePrice: number;
+    locationMultiplier: number;
+    sizeValue: number;
+    bedroomValue: number;
+    ageAdjustment: number;
+    amenityValue: number;
+    marketTrendValue: number;
+  };
+  comparablesCount: number;
+  marketTrend: string;
+  nextSteps: string[];
+  reportId: string;
 }
 
-const NIGERIA_CITY_TIERS: Record<string, 'Tier 1' | 'Tier 2' | 'Tier 3'> = {
-  // Tier 1: Highest Value
-  'lagos': 'Tier 1',
-  'abuja': 'Tier 1',
-  // Tier 2: High Value
-  'port harcourt': 'Tier 2',
-  'ibadan': 'Tier 2',
-  'kano': 'Tier 2',
-  // Tier 3: Standard Value
-  'enugu': 'Tier 3',
-  'kaduna': 'Tier 3',
-  'benin city': 'Tier 3',
-  'owerri': 'Tier 3'
+// Nigerian location-based pricing (per square meter)
+const NIGERIAN_LOCATION_PRICES: Record<string, number> = {
+  // Lagos
+  'lekki': 350000,
+  'victoria island': 500000,
+  'ikoyi': 450000,
+  'ikeja': 280000,
+  'surulere': 250000,
+  'ajah': 200000,
+  'yaba': 220000,
+  'gbagada': 180000,
+  
+  // Abuja
+  'maitama': 420000,
+  'asokoro': 450000,
+  'wuse': 300000,
+  'garki': 250000,
+  'jabi': 200000,
+  
+  // Port Harcourt
+  'port harcourt gra': 280000,
+  'g.r.a': 280000,
+  'diobu': 150000,
+  
+  // Other major cities
+  'ibadan': 150000,
+  'kano': 120000,
+  'benin': 130000,
+  'owerri': 140000,
+  'enugu': 130000,
+  'aba': 110000,
 };
 
-const TIER_MULTIPLIERS = {
-  'Tier 1': 1.5,
-  'Tier 2': 1.1,
-  'Tier 3': 0.9
-};
-
-const PROPERTY_TYPE_MULTIPLIERS: Record<string, number> = {
-  'duplex': 1.4,
-  'house': 1.2,
-  'terrace': 1.1,
-  'apartment (flat)': 1.0,
-  'bungalow': 0.9,
-  'commercial': 1.3,
-};
-
-
-export async function estimateNigerianPropertyValue(input: ValuationInput): Promise<ValuationOutput> {
-  const { city, propertyType, bedrooms, bathrooms, size, comparables } = input;
-
-  if (comparables.length < 3) {
-    return {
-      estimatedValue: 0,
-      confidence: 'Low',
-      comparablesSummary: 'Not enough comparable properties found in your area to provide a reliable estimate. A manual appraisal is recommended.',
-      valueRange: [0, 0]
-    };
-  }
-
-  // 1. Calculate average price per square meter from comparables
-  const totalSqft = comparables.reduce((acc, p) => acc + (p.sqft || 0), 0);
-  const totalPrice = comparables.reduce((acc, p) => acc + (p.price || 0), 0);
+export async function estimateNigerianPropertyValue(
+  input: NigerianPropertyValuationInput
+): Promise<ValuationResult> {
   
-  // Convert sqft to sqm for calculation if needed (1 sqm = 10.764 sqft)
-  const averagePricePerSqm = totalPrice / (totalSqft / 10.764);
+  const comparables = input.comparables || [];
 
-  if (!averagePricePerSqm || isNaN(averagePricePerSqm)) {
-    return {
-        estimatedValue: 0,
-        confidence: 'Low',
-        comparablesSummary: 'Could not determine a valid price from local comparables.',
-        valueRange: [0, 0]
-    };
-  }
-
-  // 2. Get a base value from the average price and property size
-  let estimatedValue = averagePricePerSqm * size;
+  // 1. Base price from location
+  const locationKey = Object.keys(NIGERIAN_LOCATION_PRICES).find(key => 
+    input.address.toLowerCase().includes(key) || 
+    input.city.toLowerCase().includes(key)
+  ) || 'lekki'; // Default to Lekki
   
-  // 3. Apply adjustments based on property features
-  const cityTier = NIGERIA_CITY_TIERS[city.toLowerCase()] || 'Tier 3';
-  estimatedValue *= TIER_MULTIPLIERS[cityTier];
-  
-  const typeMultiplier = PROPERTY_TYPE_MULTIPLIERS[propertyType.toLowerCase()] || 1.0;
-  estimatedValue *= typeMultiplier;
-  
-  // Adjust for bedrooms (using average as baseline)
-  const avgBedrooms = comparables.reduce((acc, p) => acc + (p.beds || 0), 0) / comparables.length;
-  if (bedrooms > avgBedrooms) {
-      estimatedValue *= (1 + (bedrooms - avgBedrooms) * 0.05); // +5% per extra bedroom
-  } else {
-      estimatedValue *= (1 - (avgBedrooms - bedrooms) * 0.04); // -4% per less bedroom
-  }
+  const basePricePerSqm = NIGERIAN_LOCATION_PRICES[locationKey];
 
-  // 4. Set confidence and summary
-  const confidence = comparables.length > 10 ? 'High' : 'Medium';
-  const comparablesSummary = `Based on ${comparables.length} similar properties recently sold or listed in ${city}.`;
+  // 2. Size value
+  const sizeValue = basePricePerSqm * input.size;
 
-  // 5. Create a value range (e.g., +/- 10%)
-  const lowerBound = Math.round(estimatedValue * 0.9 / 1000) * 1000;
-  const upperBound = Math.round(estimatedValue * 1.1 / 1000) * 1000;
+  // 3. Bedroom adjustment
+  const bedroomValue = calculateBedroomValue(input.bedrooms, sizeValue);
+
+  // 4. Age adjustment
+  const age = new Date().getFullYear() - input.yearBuilt;
+  const ageAdjustment = calculateAgeAdjustment(age, sizeValue);
+
+  // 5. Amenity value
+  const amenityValue = calculateAmenityValue(input.amenities);
+
+  // 6. Market trend from comparables
+  const { marketValue, confidence } = calculateFromComparables(comparables, input);
+
+  // 7. Calculate final value
+  const estimatedValue = Math.round(
+    sizeValue + 
+    bedroomValue + 
+    ageAdjustment + 
+    amenityValue + 
+    marketValue
+  );
+
+  // 8. Calculate range (±15%)
+  const range = {
+    low: Math.round(estimatedValue * 0.85),
+    high: Math.round(estimatedValue * 1.15)
+  };
+
+  // 9. Generate report ID
+  const reportId = `NG-VAL-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   return {
-    estimatedValue: Math.round(estimatedValue / 1000) * 1000, // Round to nearest 1000
-    confidence,
-    comparablesSummary,
-    valueRange: [lowerBound, upperBound]
+    estimatedValue,
+    confidence: Math.min(confidence + (comparables.length > 5 ? 0.2 : 0), 0.95),
+    currency: 'NGN',
+    range,
+    breakdown: {
+      basePrice: basePricePerSqm,
+      locationMultiplier: 1.0,
+      sizeValue: Math.round(sizeValue),
+      bedroomValue: Math.round(bedroomValue),
+      ageAdjustment: Math.round(ageAdjustment),
+      amenityValue: Math.round(amenityValue),
+      marketTrendValue: Math.round(marketValue)
+    },
+    comparablesCount: comparables.length,
+    marketTrend: getMarketTrend(comparables),
+    nextSteps: [
+      'Get professional valuation',
+      'Compare with recent sales',
+      'Consult local realtor',
+      'Check property documents'
+    ],
+    reportId
   };
+}
+
+// Helper functions
+function calculateBedroomValue(bedrooms: number, baseValue: number): number {
+  if (bedrooms <= 2) return baseValue * 0.1;
+  if (bedrooms === 3) return baseValue * 0.15;
+  if (bedrooms === 4) return baseValue * 0.2;
+  return baseValue * 0.25; // 5+ bedrooms
+}
+
+function calculateAgeAdjustment(age: number, baseValue: number): number {
+  if (age < 5) return baseValue * 0.1; // New properties premium
+  if (age < 10) return 0;
+  if (age < 20) return baseValue * -0.1; // 10-20% depreciation
+  if (age < 30) return baseValue * -0.2;
+  return baseValue * -0.3; // Old properties
+}
+
+function calculateAmenityValue(amenities: string[]): number {
+  const values: Record<string, number> = {
+    '24/7 Power Supply': 5000000,
+    'Borehole Water': 3000000,
+    'Swimming Pool': 8000000,
+    'Security Guards': 2000000,
+    'CCTV': 1500000,
+    'Electric Fence': 2500000,
+    'Garden': 2000000,
+    'Parking Space': 1000000,
+    'Maid Quarters': 3000000,
+    'Fully Furnished': 10000000,
+    'Smart Home': 5000000,
+    'Gym': 5000000
+  };
+  
+  return amenities.reduce((total, amenity) => {
+    return total + (values[amenity] || 0);
+  }, 0);
+}
+
+function calculateFromComparables(comparables: any[], input: NigerianPropertyValuationInput) {
+  if (comparables.length === 0) {
+    return { marketValue: 0, confidence: 0.6 };
+  }
+
+  // Calculate average price per square meter from comparables
+  const validComparables = comparables.filter(c => c.price && c.sqft);
+  
+  if (validComparables.length === 0) {
+    return { marketValue: 0, confidence: 0.6 };
+  }
+
+  const totalValue = validComparables.reduce((sum, comp) => {
+    const pricePerSqm = comp.price / ((comp.sqft / 10.764) || 1);
+    return sum + pricePerSqm;
+  }, 0);
+
+  const avgPricePerSqm = totalValue / validComparables.length;
+  const marketValue = avgPricePerSqm * input.size;
+  
+  // Confidence based on number and similarity of comparables
+  let confidence = 0.7;
+  if (validComparables.length >= 5) confidence = 0.85;
+  if (validComparables.length >= 10) confidence = 0.9;
+
+  return { marketValue, confidence };
+}
+
+function getMarketTrend(comparables: any[]): string {
+  if (comparables.length < 3) return 'Insufficient data';
+  
+  // Simple trend analysis based on listing dates and prices
+  const recent = comparables.slice(0, 3);
+  const older = comparables.slice(-3);
+  
+  const recentAvg = recent.reduce((sum, c) => sum + (c.price || 0), 0) / recent.length;
+  const olderAvg = older.reduce((sum, c) => sum + (c.price || 0), 0) / older.length;
+  
+  if (olderAvg === 0) return 'Insufficient data';
+
+  const change = ((recentAvg - olderAvg) / olderAvg) * 100;
+  
+  if (change > 5) return `Market is rising (+${change.toFixed(1)}%)`;
+  if (change < -5) return `Market is cooling (${change.toFixed(1)}%)`;
+  return 'Market is stable';
 }
