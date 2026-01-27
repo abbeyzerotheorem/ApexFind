@@ -62,7 +62,7 @@ export type ConversationParticipant = {
 };
 
 export type Conversation = {
-    id: string;
+    id:string;
     participants: string[];
     participantDetails: ConversationParticipant[];
     lastMessageText?: string;
@@ -80,3 +80,26 @@ export type SavedSearch = {
     newMatchCount: number;
     createdAt: any; // Firestore Timestamp
 };
+
+export interface ValuationResult {
+  estimatedValue: number;
+  confidence: number;
+  currency: string;
+  range: {
+    low: number;
+    high: number;
+  };
+  breakdown: {
+    basePrice: number;
+    locationMultiplier: number;
+    sizeValue: number;
+    bedroomValue: number;
+    ageAdjustment: number;
+    amenityValue: number;
+    marketTrendValue: number;
+  };
+  comparablesCount: number;
+  marketTrend: string;
+  nextSteps: string[];
+  reportId: string;
+}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Calculator, MapPin, Home, Bed, Bath, Square, TrendingUp } from 'lucide-react'
-import { formatNaira } from '@/lib/naira-formatter'
+import { formatNaira, formatUSD } from '@/lib/naira-formatter'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
+import type { ValuationResult } from '@/types'
 
 
 const NIGERIAN_STATES = [
@@ -33,7 +34,7 @@ const AMENITIES = [
 export default function InstantValuation({ address: initialAddress = '' }: { address?: string }) {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<ValuationResult | null>(null)
   const [error, setError] = useState('')
 
   const [formData, setFormData] = useState({
@@ -98,15 +99,22 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
 
   const generateWhatsAppMessage = () => {
     if (!result) return ''
+
+    const formattedValue = result.currency === 'USD' ? formatUSD(result.estimatedValue) : formatNaira(result.estimatedValue);
     
     const message = `🏡 *Property Valuation Report*\n\n` +
                    `📍 ${formData.address}, ${formData.city}\n` +
-                   `💰 Estimated Value: ${formatNaira(result.estimatedValue)}\n` +
+                   `💰 Estimated Value: ${formattedValue}\n` +
                    `📊 Confidence: ${(result.confidence * 100).toFixed(0)}%\n` +
                    `📈 Market Trend: ${result.marketTrend}\n\n` +
                    `🔗 View full report: ${window.location.origin}/valuation/${result.reportId}`
     
     return encodeURIComponent(message)
+  }
+
+  const formatCurrency = (value: number) => {
+      if (!result) return '';
+      return result.currency === 'USD' ? formatUSD(value) : formatNaira(value);
   }
 
   return (
@@ -343,8 +351,8 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
               <TrendingUp className="text-accent mt-1" size={20} />
               <div>
                 <p className="text-sm text-accent-foreground">
-                  <strong>Note:</strong> This is an automated estimate based on current market data in {formData.state}. 
-                  For official valuation, consult a certified Nigerian valuer.
+                  <strong>Note:</strong> This is an automated estimate based on market data. 
+                  For official valuation, consult a certified valuer.
                 </p>
               </div>
             </div>
@@ -385,7 +393,7 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
               Your Property Valuation
             </h2>
             <p className="text-muted-foreground">
-              Based on current Nigerian market data
+              Based on current market data
             </p>
           </div>
 
@@ -393,7 +401,7 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
           <div className="text-center p-8 bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl border border-primary/20">
             <p className="text-sm text-muted-foreground mb-2">ESTIMATED VALUE</p>
             <p className="text-5xl font-bold text-foreground mb-2">
-              {formatNaira(result.estimatedValue)}
+              {formatCurrency(result.estimatedValue)}
             </p>
             <div className="inline-flex items-center px-4 py-2 bg-primary/10 text-primary rounded-full font-medium">
               <div className="w-3 h-3 bg-primary rounded-full mr-2"></div>
@@ -407,22 +415,22 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                 <div>
                     <p className="text-sm text-muted-foreground">Low End</p>
-                    <p className="font-semibold text-lg">{formatNaira(result.range.low)}</p>
+                    <p className="font-semibold text-lg">{formatCurrency(result.range.low)}</p>
                 </div>
                 <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
                     <p className="text-sm text-primary font-medium">Likely Value</p>
-                    <p className="font-bold text-primary text-xl">{formatNaira(result.estimatedValue)}</p>
+                    <p className="font-bold text-primary text-xl">{formatCurrency(result.estimatedValue)}</p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">High End</p>
-                    <p className="font-semibold text-lg">{formatNaira(result.range.high)}</p>
+                    <p className="font-semibold text-lg">{formatCurrency(result.range.high)}</p>
                 </div>
             </div>
           </div>
 
 
           {/* Market Insights */}
-            <Accordion type="multiple" defaultValue={['breakdown']}>
+            <Accordion type="multiple" defaultValue={['insights']}>
               <AccordionItem value="insights">
                 <AccordionTrigger className="text-lg font-semibold">Market Insights</AccordionTrigger>
                 <AccordionContent className="pt-2">
@@ -432,21 +440,6 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
                       <p className="text-sm text-muted-foreground mt-2">
                         Based on {result.comparablesCount} comparable properties
                       </p>
-                    </div>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="breakdown">
-                <AccordionTrigger className="text-lg font-semibold">Value Breakdown</AccordionTrigger>
-                <AccordionContent className="pt-2">
-                     <div className="space-y-4">
-                      {Object.entries(result.breakdown).map(([key, value]) => (
-                        <div key={key} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                          <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                          <span className="font-semibold">
-                            {typeof value === 'number' ? formatNaira(value) : `${value}x`}
-                          </span>
-                        </div>
-                      ))}
                     </div>
                 </AccordionContent>
               </AccordionItem>
@@ -511,7 +504,7 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
             <p className="text-sm text-yellow-800">
               ⚠️ <strong>Disclaimer:</strong> This is an automated estimate for informational purposes only. 
               Not a substitute for professional valuation. Actual property value may vary based on market 
-              conditions, property condition, and other factors specific to Nigeria.
+              conditions, property condition, and other factors.
             </p>
           </div>
         </div>

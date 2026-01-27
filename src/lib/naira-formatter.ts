@@ -12,6 +12,19 @@ export function formatNaira(amount: number, includeDecimals: boolean = false): s
   return formatter.format(amount)
 }
 
+export function formatUSD(amount: number, includeDecimals: boolean = false): string {
+  if (isNaN(amount)) return '$0'
+  
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: includeDecimals ? 0 : 0,
+    maximumFractionDigits: includeDecimals ? 2 : 0,
+  })
+  
+  return formatter.format(amount)
+}
+
 export function formatNairaShort(amount: number): string {
   if (amount >= 1000000000) {
     return `₦${(amount / 1000000000).toFixed(1)}B`
