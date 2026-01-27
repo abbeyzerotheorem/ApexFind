@@ -10,6 +10,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Deny all client-side access to property valuations.
+    // This collection is managed by a server-side API route.
+    match /propertyValuations/{valuationId} {
+      allow read, write: if false;
+    }
+
     // Allow public read for user profiles to find agents.
     // Writes are still restricted to the user themselves.
     match /users/{userId} {
@@ -45,11 +51,8 @@ service cloud.firestore {
 
     // Rules for chat
     match /conversations/{conversationId} {
-      // Allow read/update if the user is a participant.
-      allow read, update: if request.auth != null && request.auth.uid in resource.data.participants;
-
-      // Allow a user to create a conversation if they are a participant in the new conversation.
-      allow create: if request.auth != null && request.auth.uid in request.resource.data.participants;
+      // Allow read/update/create if the user is a participant.
+      allow read, update, create: if request.auth != null && request.auth.uid in request.resource.data.participants;
 
       match /messages/{messageId} {
         // Allow reads if user is a participant of the parent conversation.

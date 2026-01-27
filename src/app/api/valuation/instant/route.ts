@@ -48,6 +48,7 @@ export async function POST(request: Request) {
       .where('home_type', '==', home_type_for_query)
       .where('beds', '>=', Math.max(1, (bedrooms || 2) - 1))
       .where('beds', '<=', (bedrooms || 2) + 1)
+      .orderBy('beds')
       .orderBy('createdAt', 'desc')
       .limit(20)
       .get()
@@ -79,6 +80,7 @@ export async function POST(request: Request) {
       estimatedValue: valuation.estimatedValue,
       inputData: body,
       valuationData: valuation,
+      reportId: valuation.reportId,
       ipAddress: request.headers.get('x-forwarded-for'),
       createdAt: new Date().toISOString(),
       timestamp: Date.now()

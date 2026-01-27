@@ -319,14 +319,37 @@
       "description": "An automated valuation of a property.",
       "type": "object",
       "properties": {
-          "address": { "type": "string" },
-          "city": { "type": "string" },
-          "state": { "type": "string" },
-          "estimatedValue": { "type": "number" },
-          "inputData": { "type": "object" },
-          "valuationData": { "type": "object" },
-          "ipAddress": { "type": "string" },
-          "createdAt": { "type": "string", "format": "date-time" }
+        "address": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "estimatedValue": {
+          "type": "number"
+        },
+        "inputData": {
+          "type": "object"
+        },
+        "valuationData": {
+          "type": "object"
+        },
+        "reportId": {
+          "type": "string"
+        },
+        "ipAddress": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "timestamp": {
+          "type": "number"
+        }
       }
     }
   },
