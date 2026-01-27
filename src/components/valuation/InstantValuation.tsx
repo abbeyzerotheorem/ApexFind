@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Slider } from '@/components/ui/slider'
 
 
 const NIGERIAN_STATES = [
@@ -235,15 +236,13 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
                 <Square className="inline w-4 h-4 mr-1" />
                 Size (m²)
               </Label>
-              <input
+              <Slider
                 id="size-range"
-                type="range"
-                min="50"
-                max="1000"
-                step="10"
-                value={formData.size}
-                onChange={(e) => handleInputChange('size', parseInt(e.target.value))}
-                className="w-full"
+                value={[formData.size]}
+                onValueChange={(v) => handleInputChange('size', v[0])}
+                max={1000}
+                min={50}
+                step={10}
               />
               <div className="flex justify-between text-sm text-muted-foreground mt-2">
                 <span>50</span>
@@ -255,15 +254,13 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
 
           <div className="space-y-2">
             <Label htmlFor="year-range">Year Built</Label>
-            <input
+            <Slider
               id="year-range"
-              type="range"
-              min="1950"
-              max="2024"
-              step="1"
-              value={formData.yearBuilt}
-              onChange={(e) => handleInputChange('yearBuilt', parseInt(e.target.value))}
-              className="w-full"
+              value={[formData.yearBuilt]}
+              onValueChange={(v) => handleInputChange('yearBuilt', v[0])}
+              max={2024}
+              min={1950}
+              step={1}
             />
             <div className="flex justify-between text-sm text-muted-foreground mt-2">
               <span>1950</span>
@@ -405,24 +402,24 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
           </div>
 
           {/* Value Range */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Value Range</h3>
-            <div className="flex justify-between items-center text-sm">
-                <span className="text-red-600 font-medium">Low: {formatNaira(result.range.low)}</span>
-                <span className="text-primary font-medium">High: {formatNaira(result.range.high)}</span>
-            </div>
-            <div className="relative h-3 bg-muted rounded-full mt-2">
-                <div className="absolute top-0 bottom-0 bg-gradient-to-r from-red-200 via-yellow-200 to-green-200 rounded-full w-full"></div>
-                <div 
-                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-foreground rounded-full border-2 border-background shadow"
-                    style={{ left: `${(result.estimatedValue - result.range.low) / (result.range.high - result.range.low) * 100}%` }}
-                >
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold whitespace-nowrap bg-foreground text-background px-2 py-0.5 rounded">
-                        Estimate
-                    </div>
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-center">Value Range</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                <div>
+                    <p className="text-sm text-muted-foreground">Low End</p>
+                    <p className="font-semibold text-lg">{formatNaira(result.range.low)}</p>
+                </div>
+                <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                    <p className="text-sm text-primary font-medium">Likely Value</p>
+                    <p className="font-bold text-primary text-xl">{formatNaira(result.estimatedValue)}</p>
+                </div>
+                <div>
+                    <p className="text-sm text-muted-foreground">High End</p>
+                    <p className="font-semibold text-lg">{formatNaira(result.range.high)}</p>
                 </div>
             </div>
           </div>
+
 
           {/* Market Insights */}
             <Accordion type="multiple" defaultValue={['breakdown']}>

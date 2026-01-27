@@ -13,7 +13,7 @@
 
 - Primary color: Calm blue (#64B5F6) to inspire confidence and reliability in property transactions.
 - Background color: Light gray (#F5F5F5), a desaturated near-tone of the primary hue, creates a clean, uncluttered backdrop.
-- Accent color: Muted green (#81C784) to highlight calls to action and important information, conveying growth and opportunity.
+- Accent color: Calm blue (#64B5F6) to highlight calls to action and important information, conveying growth and opportunity.
 - Body font: 'PT Sans' (sans-serif) for body text, chosen for its modern yet warm feel and readability. Headline font: 'Playfair' (serif) for headlines, lending an elegant, fashionable, high-end feel to the page. Use 'PT Sans' when 'Playfair' is used in long lines of text.
 - Use clear, simple icons to represent features like beds, baths, square footage, and property types, ensuring quick recognition and a polished look.
 - Employ a grid-based layout for property listings to maintain a clean, structured presentation. Ensure content is easily digestible and navigable.
