@@ -2,6 +2,19 @@
 import { adminDb } from '@/lib/firebase/admin'
 import { estimateNigerianPropertyValue } from '@/lib/valuation/nigeria-firebase'
 
+function mapPropertyTypeToHomeType(propertyType: string): string {
+  const mapping: { [key: string]: string } = {
+    'apartment': 'Apartment (Flat)',
+    'penthouse': 'Apartment (Flat)',
+    'terraced house': 'Terrace',
+    'detached house': 'House',
+    'semi-detached': 'Duplex', // Approximation
+  };
+  const lowerCaseType = propertyType.toLowerCase();
+  // Return the mapped value, or the original value if no mapping exists (for cases like 'Duplex', 'Bungalow')
+  return mapping[lowerCaseType] || propertyType;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -9,30 +22,32 @@ export async function POST(request: Request) {
       address, 
       city, 
       state, 
-      home_type, 
-      beds, 
-      baths, 
-      sqft, 
+      propertyType,
+      bedrooms,
+      bathrooms,
+      size,
       yearBuilt,
       amenities = [] 
     } = body
 
     // Validate required fields
-    if (!address || !city || !state || !home_type) {
+    if (!address || !city || !state || !propertyType) {
       return Response.json(
-        { error: 'Address, city, state, and home type are required' },
+        { error: 'Address, city, state, and property type are required' },
         { status: 400 }
       )
     }
     
+    const home_type_for_query = mapPropertyTypeToHomeType(propertyType);
+
     // Step 1: Get comparable properties from Firebase
     const comparablesSnapshot = await adminDb
       .collection('properties')
       .where('city', '==', city)
       .where('state', '==', state)
-      .where('home_type', '==', home_type)
-      .where('beds', '>=', Math.max(1, (beds || 2) - 1))
-      .where('beds', '<=', (beds || 2) + 1)
+      .where('home_type', '==', home_type_for_query)
+      .where('beds', '>=', Math.max(1, (bedrooms || 2) - 1))
+      .where('beds', '<=', (bedrooms || 2) + 1)
       .orderBy('createdAt', 'desc')
       .limit(20)
       .get()
@@ -47,10 +62,10 @@ export async function POST(request: Request) {
       address,
       city,
       state,
-      propertyType: home_type,
-      bedrooms: beds || 2,
-      bathrooms: baths || 2,
-      size: (sqft || 1000) / 10.764, // Convert sqft to sqm for the function
+      propertyType: propertyType,
+      bedrooms: bedrooms || 2,
+      bathrooms: bathrooms || 2,
+      size: size || 100, // expecting size in sqm
       yearBuilt: yearBuilt || 2000,
       amenities,
       comparables
