@@ -1,36 +1,82 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { estimatePropertyValue, type EstimateValueOutput } from '@/ai/property-value-flow';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { formatNaira } from '@/lib/naira-formatter';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import allStatesWithLgas from "@/jsons/nigeria-states.json";
+
+// This is the shape of the API response
+type ValuationResponse = {
+    estimatedValue: number;
+    confidence: 'High' | 'Medium' | 'Low';
+    comparablesSummary: string;
+    valueRange: [number, number];
+}
+
+type FormValues = {
+  address: string;
+  city: string;
+  state: string;
+  home_type: string;
+  beds: number;
+  baths: number;
+  sqft: number;
+}
+
+const homeTypeOptions = ["House", "Apartment (Flat)", "Duplex", "Terrace", "Bungalow", "Commercial"];
+const stateOptions = allStatesWithLgas.map(s => s.name);
+
 
 export default function SellPage() {
-    const [address, setAddress] = useState('');
-    const [estimation, setEstimation] = useState<EstimateValueOutput | null>(null);
+    const [estimation, setEstimation] = useState<ValuationResponse | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const handleGetEstimate = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!address.trim()) {
-            setError("Please enter a property address.");
-            return;
+    const { register, handleSubmit, control, watch, formState: { errors } } = useForm<FormValues>({
+        defaultValues: {
+            address: '',
+            city: 'Lagos',
+            state: 'Lagos',
+            home_type: 'House',
+            beds: 3,
+            baths: 2,
+            sqft: 1500
         }
+    });
+    
+    const selectedState = watch('state');
+    const cityOptions = allStatesWithLgas.find(s => s.name === selectedState)?.lgas || [];
 
+    const handleGetEstimate = async (data: FormValues) => {
         setIsLoading(true);
         setError(null);
         setEstimation(null);
 
         try {
-            const result = await estimatePropertyValue({ address });
+            const response = await fetch('/api/valuation/instant', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'An unexpected error occurred.');
+            }
+            
             setEstimation(result);
         } catch (err: any) {
-            setError(err.message || "An unexpected error occurred.");
+            setError(err.message);
             console.error(err);
         } finally {
             setIsLoading(false);
@@ -46,83 +92,116 @@ export default function SellPage() {
                             Sell Your Home with Confidence
                         </h1>
                         <p className="mt-6 max-w-2xl mx-auto text-lg text-muted-foreground">
-                            ApexFind provides you with the tools and insights you need to sell your home faster and for the best price.
+                            Get a data-driven valuation of your home's worth in today's market.
                         </p>
-                        <div className="mt-10 mx-auto max-w-xl">
-                            <form onSubmit={handleGetEstimate} className="flex flex-col sm:flex-row gap-4">
-                                <Input
-                                    type="text"
-                                    placeholder="Enter your home address"
-                                    className="h-12 text-base flex-grow"
-                                    value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                />
-                                <Button size="lg" type="submit" className="h-12 font-medium" disabled={isLoading}>
-                                    {isLoading ? <Loader2 className="animate-spin" /> : "Get Your Free Estimate"}
-                                </Button>
-                            </form>
-                            <p className="mt-4 text-sm text-muted-foreground">
-                                Get a data-driven estimate of your home's value, instantly.
-                            </p>
-                        </div>
-
-                        {error && (
-                             <Alert variant="destructive" className="mt-8 max-w-xl mx-auto text-left">
-                                <AlertTitle>Error</AlertTitle>
-                                <AlertDescription>{error}</AlertDescription>
-                            </Alert>
-                        )}
-                        
-                        {estimation && (
-                            <Card className="mt-8 max-w-xl mx-auto text-left">
-                                <CardHeader>
-                                    <CardTitle>Your ApexFind Estimate</CardTitle>
-                                    <CardDescription>Based on our AI analysis for: {address}</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-4xl font-bold text-primary">{formatNaira(estimation.estimatedValue)}</p>
-                                    <div className="mt-4 space-y-2">
-                                        <p className="text-sm">
-                                            <span className="font-semibold">Confidence: </span> 
-                                            <span>{estimation.confidence}</span>
-                                        </p>
-                                        <p className="text-sm text-muted-foreground">{estimation.comparablesSummary}</p>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground mt-4 pt-4 border-t">
-                                        This is an AI-generated estimate and not an official appraisal. For a more accurate valuation, connect with a local real estate agent.
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        )}
-
                     </div>
                 </div>
             </section>
             
             <section className="py-20 sm:py-24">
-                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-                            Why Sell with ApexFind?
-                        </h2>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-                        <div>
-                            <h3 className="text-2xl font-semibold">Maximum Exposure</h3>
-                            <p className="mt-2 text-muted-foreground">Your listing will be seen by millions of potential buyers on our platform.</p>
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-semibold">Expert Guidance</h3>
-                            <p className="mt-2 text-muted-foreground">Connect with top-rated local agents who know your market inside and out.</p>
-                        </div>
-                         <div>
-                            <h3 className="text-2xl font-semibold">Powerful Tools</h3>
-                            <p className="mt-2 text-muted-foreground">From pricing assistance to market trend analysis, we've got you covered.</p>
-                        </div>
-                    </div>
-                     <div className="mt-16 text-center">
-                         <Button size="lg" variant="outline">Find a Seller's Agent</Button>
-                    </div>
+                 <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Get Your Free Home Estimate</CardTitle>
+                            <CardDescription>Provide some details about your property for a more accurate valuation.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             <form onSubmit={handleSubmit(handleGetEstimate)} className="grid gap-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="address">Street Address</Label>
+                                    <Input id="address" placeholder="e.g., 123 Main Street" {...register('address')} />
+                                </div>
+                                <div className="grid sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="state">State</Label>
+                                        <Controller name="state" control={control} render={({ field }) => (
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    {stateOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        )} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="city">City / LGA</Label>
+                                         <Controller name="city" control={control} render={({ field }) => (
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    {cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        )} />
+                                    </div>
+                                </div>
+                                 <div className="grid sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="home_type">Home Type</Label>
+                                        <Controller name="home_type" control={control} render={({ field }) => (
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    {homeTypeOptions.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        )} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="sqft">Size (sqft)</Label>
+                                        <Input id="sqft" type="number" placeholder="e.g., 1500" {...register('sqft')} />
+                                    </div>
+                                </div>
+                                 <div className="grid sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="beds">Bedrooms</Label>
+                                        <Input id="beds" type="number" {...register('beds')} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="baths">Bathrooms</Label>
+                                        <Input id="baths" type="number" {...register('baths')} />
+                                    </div>
+                                </div>
+                                
+                                <Button size="lg" type="submit" className="w-full h-12 font-medium" disabled={isLoading}>
+                                    {isLoading ? <Loader2 className="animate-spin" /> : "Get My Estimate"}
+                                </Button>
+                            </form>
+                        </CardContent>
+                    </Card>
+                    
+                    {error && (
+                         <Alert variant="destructive" className="mt-8">
+                            <AlertTitle>Error</AlertTitle>
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                    )}
+                    
+                    {estimation && (
+                        <Card className="mt-8 text-left">
+                            <CardHeader>
+                                <CardTitle>Your ApexFind Estimate</CardTitle>
+                                <CardDescription>This is a data-driven estimate based on market trends and comparable properties.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-4xl font-bold text-primary">{formatNaira(estimation.estimatedValue)}</p>
+                                <p className="text-lg text-muted-foreground mt-1">
+                                    Value Range: {formatNaira(estimation.valueRange[0])} – {formatNaira(estimation.valueRange[1])}
+                                </p>
+                                <div className="mt-4 space-y-2">
+                                    <p className="text-sm">
+                                        <span className="font-semibold">Confidence: </span> 
+                                        <span>{estimation.confidence}</span>
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">{estimation.comparablesSummary}</p>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-4 pt-4 border-t">
+                                    This is not an official appraisal. For a more accurate valuation, connect with a local real estate agent.
+                                </p>
+                                <Button className="mt-6">Find a Seller's Agent</Button>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </section>
         </>
