@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -54,7 +55,7 @@ export default function SellPage() {
 
             {showValuation && (
               <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm" onClick={() => setShowValuation(false)}>
-                <div className="bg-background rounded-2xl max-w-4xl w-full max-h-[90vh] relative" onClick={(e) => e.stopPropagation()}>
+                <div className="bg-background rounded-2xl max-w-4xl w-full max-h-[90vh] relative flex flex-col" onClick={(e) => e.stopPropagation()}>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -64,7 +65,7 @@ export default function SellPage() {
                     <X className="h-5 w-5" />
                     <span className="sr-only">Close valuation</span>
                   </Button>
-                  <div className="h-full overflow-y-auto rounded-2xl">
+                  <div className="overflow-y-auto">
                      <InstantValuation address={address} />
                   </div>
                 </div>
@@ -73,3 +74,4 @@ export default function SellPage() {
         </>
     );
 }
+
