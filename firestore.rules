@@ -16,6 +16,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Deny all client-side access to analytics events.
+    // This collection is managed by a server-side API route.
+    match /analytics_events/{eventId} {
+      allow read, write: if false;
+    }
+
     // Allow public read for user profiles to find agents.
     // Writes are still restricted to the user themselves.
     match /users/{userId} {
