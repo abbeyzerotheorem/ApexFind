@@ -8,7 +8,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/',
     '/search',
     '/sell',
-    '/rentals',
     '/mortgage',
     '/agents',
     '/insights',

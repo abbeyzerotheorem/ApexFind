@@ -29,16 +29,9 @@ const publicNavLinks = [
 // Links for registered customers are the same as public
 const customerNavLinks = publicNavLinks;
 
-// Links for registered agents
+// Links for registered agents, they see the same as customers but without the "Find Agents" link.
 const agentNavLinks = publicNavLinks
-  .filter(link => link.name !== 'Find Agents') // Agents don't need to find other agents
-  .map(link => {
-    // We change the "Rent" link (for seekers) to a "Manage Rentals" link (for landlords)
-    if (link.name === 'Rent') {
-      return { name: "Manage Rentals", href: "/rentals" };
-    }
-    return link;
-  });
+  .filter(link => link.name !== 'Find Agents');
 
 
 export default function Header() {
