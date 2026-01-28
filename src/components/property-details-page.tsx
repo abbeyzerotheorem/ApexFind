@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PropertyCard } from '@/components/property-card';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { MediaGallery } from '@/components/property/media-gallery';
 import { formatNaira } from '@/lib/naira-formatter';
 import { Badge } from '@/components/ui/badge';
@@ -36,9 +35,10 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
   const firestore = useFirestore();
   const { user } = useUser();
   const router = useRouter();
-  const mapImage = PlaceHolderImages.find((img) => img.id === "market-map");
   const [isSaved, setIsSaved] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
+  const [geocodingLoading, setGeocodingLoading] = useState(true);
 
   const propertyRef = useMemo(() => {
       if (!firestore) return null;
@@ -46,6 +46,36 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
   }, [firestore, id]);
 
   const { data: property, loading } = useDoc(propertyRef);
+
+  useEffect(() => {
+    if (property && property.address) {
+        const fetchCoordinates = async () => {
+            try {
+                setGeocodingLoading(true);
+                const fullAddress = `${property.address}, ${property.city}, ${property.state}`;
+                const response = await fetch(`/api/nigeria/geocode?address=${encodeURIComponent(fullAddress)}`);
+                if (!response.ok) {
+                    throw new Error('Geocoding request failed');
+                }
+                const data = await response.json();
+                if (data.coordinates) {
+                    setCoordinates(data.coordinates);
+                } else {
+                    setCoordinates(null);
+                }
+            } catch (error) {
+                console.error("Failed to fetch coordinates", error);
+                setCoordinates(null);
+            } finally {
+                setGeocodingLoading(false);
+            }
+        };
+        fetchCoordinates();
+    } else if (!loading) {
+        // If there's no property or address after loading, stop loading.
+        setGeocodingLoading(false);
+    }
+  }, [property, loading]);
 
   const savedHomeRef = useMemo(() => {
       if (!user || !firestore || !property) return null;
@@ -127,8 +157,8 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
     },
     "geo": {
       "@type": "GeoCoordinates",
-      "latitude": "0.0", // Placeholder
-      "longitude": "0.0" // Placeholder
+      "latitude": coordinates?.lat || "0.0",
+      "longitude": coordinates?.lng || "0.0"
     },
     "numberOfRooms": property.beds,
     "numberOfBathroomsTotal": property.baths,
@@ -257,24 +287,33 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                {/* Map & Neighborhood */}
                 <div className="mt-12">
                     <h2 className="text-2xl font-bold text-foreground">Location</h2>
-                    {mapImage && (
-                        <div className="mt-4 relative h-96 w-full overflow-hidden rounded-lg">
-                            <Image
-                                src={mapImage.imageUrl}
-                                alt={mapImage.description}
-                                data-ai-hint={mapImage.imageHint}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 1023px) 100vw, 66vw"
-                            />
-                             <div className="absolute bottom-4 left-4 rounded-lg bg-background p-3 shadow-lg">
-                                <div className="flex items-center gap-2">
-                                    <MapPin className="h-5 w-5 text-primary" />
-                                    <p className="font-semibold text-foreground">{property.address}</p>
-                                </div>
+                    <div className="mt-4 relative h-96 w-full overflow-hidden rounded-lg border bg-muted">
+                        {geocodingLoading ? (
+                            <div className="flex items-center justify-center h-full">
+                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : coordinates ? (
+                            <iframe
+                                width="100%"
+                                height="100%"
+                                frameBorder="0"
+                                scrolling="no"
+                                src={`https://www.openstreetmap.org/export/embed.html?bbox=${coordinates.lng - 0.01}%2C${coordinates.lat - 0.01}%2C${coordinates.lng + 0.01}%2C${coordinates.lat + 0.01}&layer=mapnik&marker=${coordinates.lat}%2C${coordinates.lng}`}
+                                className="absolute inset-0"
+                            ></iframe>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full text-center">
+                                <MapPin className="h-10 w-10 text-muted-foreground" />
+                                <p className="mt-2 text-muted-foreground">Map data not available for this location.</p>
+                            </div>
+                        )}
+                         <div className="absolute bottom-4 left-4 rounded-lg bg-background p-3 shadow-lg">
+                            <div className="flex items-center gap-2">
+                                <MapPin className="h-5 w-5 text-primary" />
+                                <p className="font-semibold text-foreground">{property.address}</p>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
 
             </div>
