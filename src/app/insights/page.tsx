@@ -1,20 +1,23 @@
-
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
-import { PlaceHolderProperties } from "@/lib/placeholder-properties";
 import { PropertyCard } from "@/components/property-card";
 import AgentPromotion from "@/components/agent-promotion";
 import { Utensils, GraduationCap, TramFront, Wallet } from "lucide-react";
 import Image from "next/image";
+import Link from 'next/link';
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import AutocompleteSearch from "@/components/autocomplete-search";
 import allStatesWithLgas from "@/jsons/nigeria-states.json";
 import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, query, where, limit, orderBy } from 'firebase/firestore';
+import type { Property } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const marketData = [
     { month: "Jan", price: 140000000 },
@@ -25,14 +28,26 @@ const marketData = [
     { month: "Jun", price: 160000000 },
 ];
 
-const featuredProperties = PlaceHolderProperties.slice(0, 3);
 const neighborhoodImage = PlaceHolderImages.find((img) => img.id === "property-1");
 const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lgas]);
 
 
 export default function InsightsPage() {
     const router = useRouter();
+    const firestore = useFirestore();
     const [searchValue, setSearchValue] = useState('Lagos');
+
+    const featuredPropertiesQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'properties'),
+            where('city', '==', 'Lagos'),
+            orderBy('createdAt', 'desc'),
+            limit(3)
+        );
+    }, [firestore]);
+
+    const { data: featuredProperties, loading: propertiesLoading } = useCollection<Property>(featuredPropertiesQuery);
 
     const handleSearch = (e: FormEvent) => {
         e.preventDefault();
@@ -123,6 +138,7 @@ export default function InsightsPage() {
                             </ResponsiveContainer>
                         </CardContent>
                     </Card>
+                    <p className="text-xs text-muted-foreground text-center mt-2">Note: Market data shown is for illustrative purposes for the Lagos area.</p>
                 </section>
                 
                 <section className="mt-20 bg-secondary py-16 rounded-lg">
@@ -220,14 +236,24 @@ export default function InsightsPage() {
                             Browse a selection of popular properties currently on the market.
                         </p>
                     </div>
-                    <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {featuredProperties.map((p) => (
-                            <PropertyCard key={p.id} property={p} />
-                        ))}
-                    </div>
-                    <div className="mt-12 text-center">
-                         <Button size="lg">See More Homes</Button>
-                    </div>
+                    {propertiesLoading ? (
+                        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                            {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-96 w-full" />)}
+                        </div>
+                    ) : (
+                        <>
+                            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                {featuredProperties?.map((p) => (
+                                    <PropertyCard key={p.id} property={p} />
+                                ))}
+                            </div>
+                            <div className="mt-12 text-center">
+                                 <Button size="lg" asChild>
+                                    <Link href="/search?q=Lagos">See More Homes in Lagos</Link>
+                                 </Button>
+                            </div>
+                        </>
+                    )}
                 </section>
 
                  <section className="mt-20">
