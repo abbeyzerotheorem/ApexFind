@@ -54,6 +54,38 @@
           "type": "string",
           "format": "date-time",
           "description": "The timestamp when the user account was created."
+        },
+        "preferences": {
+          "type": "object",
+          "description": "The user's saved property preferences.",
+          "properties": {
+            "locations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "propertyTypes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "budgetRange": {
+              "type": "string"
+            },
+            "alertFrequency": {
+              "type": "string"
+            },
+            "savedSearches": {
+              "type": "boolean"
+            }
+          }
+        },
+        "preferencesCompletedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the user completed the preferences flow."
         }
       },
       "required": [
