@@ -17,7 +17,6 @@ import { useDoc, useFirestore, useUser } from '@/firebase';
 import { useMemo, useState, useEffect } from 'react';
 import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
-import { PlaceHolderProperties } from '@/lib/placeholder-properties';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,8 +27,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-const similarProperties = PlaceHolderProperties.slice(1, 4);
 
 export default function PropertyDetailsPage({ id }: { id: string }) {
   const firestore = useFirestore();
@@ -138,8 +135,7 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
   }
   
   const propertyImages = [
-      property.imageUrl,
-      ...PlaceHolderProperties.map(p => p.imageUrl).slice(1, 4)
+      property.imageUrl
   ];
   
   const jsonLd = {
@@ -347,16 +343,6 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
               </div>
             </div>
           </div>
-
-           {/* Similar Homes */}
-            <div className="mt-16">
-                <h2 className="text-3xl font-bold text-foreground">Similar Homes</h2>
-                 <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {similarProperties.map((p) => (
-                        <PropertyCard key={p.id} property={p} />
-                    ))}
-                </div>
-            </div>
         </div>
         <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
           <AlertDialogContent>
