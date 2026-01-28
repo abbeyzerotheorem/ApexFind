@@ -46,8 +46,8 @@ const nextConfig: NextConfig = {
     ],
   },
   env: {
-    CRON_SECRET: 'YOUR_VERY_SECRET_KEY_HERE',
-    NEXT_PUBLIC_SITE_URL: 'http://localhost:9002',
+    CRON_SECRET: 'ks8Ea9s2ZpXqG7nC3v5B',
+    NEXT_PUBLIC_SITE_URL: 'https://apex-find.vercel.app/',
     NEXT_PUBLIC_SITE_NAME: 'ApexFind',
   },
 };
