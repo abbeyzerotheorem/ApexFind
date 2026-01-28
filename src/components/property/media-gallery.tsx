@@ -36,6 +36,7 @@ export function MediaGallery({ images, propertyAddress }: { images: string[], pr
                             fill
                             className="cursor-pointer object-cover"
                             priority
+                            sizes="(max-width: 767px) 100vw, 66vw"
                             onClick={() => openGalleryAtIndex(currentIndex)}
                         />
                      </DialogTrigger>
@@ -58,6 +59,7 @@ export function MediaGallery({ images, propertyAddress }: { images: string[], pr
                                     alt={`Property thumbnail ${index + 2} for ${propertyAddress}`}
                                     fill
                                     className="object-cover"
+                                    sizes="25vw"
                                 />
                                 {index === 3 && images.length > 5 && (
                                     <div className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/50" onClick={() => openGalleryAtIndex(4)}>
@@ -77,6 +79,7 @@ export function MediaGallery({ images, propertyAddress }: { images: string[], pr
                             alt={`Property image ${currentIndex + 1} of ${propertyAddress}`}
                             fill
                             className="object-contain"
+                            sizes="90vw"
                         />
                     </div>
                     <Button
