@@ -1,6 +1,7 @@
+
 'use client';
 
-import { Suspense, useMemo } from 'react';
+import { Suspense, useMemo, useEffect } from 'react';
 import { useSearchParams } from "next/navigation";
 import SearchResults from "@/components/search/search-results";
 import SearchFilters from "@/components/search/search-filters";
@@ -15,6 +16,27 @@ const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lg
 function SearchPageComponent() {
   const searchParams = useSearchParams();
   const firestore = useFirestore();
+
+  useEffect(() => {
+    const trackSearch = async () => {
+        const searchQuery = searchParams.get('q');
+        if (searchQuery) {
+            await fetch('/api/analytics/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    event: 'search_performed',
+                    data: { q: searchQuery, params: searchParams.toString() }
+                })
+            });
+        }
+    };
+
+    // We only want to track when the search query is present
+    if (searchParams.get('q')) {
+        trackSearch();
+    }
+  }, [searchParams]);
 
   const propertiesQuery = useMemo(() => {
     if (!firestore) return null;

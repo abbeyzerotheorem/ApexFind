@@ -1,22 +1,28 @@
+
 'use server';
 
 import { adminDb } from '@/lib/firebase/admin';
+import { getAuth } from 'firebase-admin/auth';
 import { NextRequest, NextResponse } from 'next/server';
 
-// This should be a more secure, admin-only secret in a real app
-const ADMIN_SECRET = process.env.CRON_SECRET || 'supersecret';
-
 export async function GET(request: NextRequest) {
-    const { searchParams } = new URL(request.url);
-    const secret = searchParams.get('secret');
-
-    // Protect this endpoint with a secret key
-    if (secret !== ADMIN_SECRET) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     try {
-        // Get events for popular locations from searches
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return NextResponse.json({ error: 'Unauthorized: No token provided' }, { status: 401 });
+        }
+        
+        const idToken = authHeader.split('Bearer ')[1];
+        const decodedToken = await getAuth().verifyIdToken(idToken);
+        const uid = decodedToken.uid;
+
+        // Check user role
+        const userDoc = await adminDb.collection('users').doc(uid).get();
+        if (!userDoc.exists || userDoc.data()?.role !== 'agent') {
+             return NextResponse.json({ error: 'Forbidden: User is not an agent' }, { status: 403 });
+        }
+
+        // --- Analytics Logic ---
         const searchEventsSnapshot = await adminDb.collection('analytics_events')
             .where('event_type', '==', 'search_performed')
             .get();
@@ -47,6 +53,9 @@ export async function GET(request: NextRequest) {
         });
 
     } catch (error: any) {
+        if (error.code === 'auth/id-token-expired' || error.code === 'auth/argument-error') {
+            return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
+        }
         console.error('Error in analytics stats route:', error);
         return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
     }

@@ -1,12 +1,13 @@
+
 'use client';
 
 import { useEffect, useState, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
-import { Loader2, Heart, User as UserIcon, History, Home as HomeIcon, BarChart2, MoreHorizontal, Pencil, Trash2, Eye, Users, TrendingUp, Filter } from "lucide-react";
+import { Loader2, Heart, User as UserIcon, History, Home as HomeIcon, BarChart2, MoreHorizontal, Pencil, Trash2, Eye, Users, TrendingUp, Filter, MapPin } from "lucide-react";
 import { doc, collection, query, where, orderBy, limit } from "firebase/firestore";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -48,7 +49,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
@@ -114,6 +114,25 @@ function DashboardPageContent() {
 
   const { data: agentListings, loading: listingsLoading } = useCollection<Property>(propertiesQuery);
   
+  // Agent analytics state
+  const { data: analyticsStats, isLoading: analyticsLoading } = useQuery({
+      queryKey: ['analytics-stats', user?.uid],
+      queryFn: async () => {
+          if (!user) return null;
+          const token = await user.getIdToken();
+          const response = await fetch('/api/analytics/stats', {
+              headers: {
+                  'Authorization': `Bearer ${token}`
+              }
+          });
+          if (!response.ok) {
+              throw new Error('Failed to fetch analytics');
+          }
+          return response.json();
+      },
+      enabled: !!user && userProfile?.role === 'agent',
+  });
+
   // Client-side sorting
   const sortedAgentListings = useMemo(() => {
     if (!agentListings) return [];
@@ -377,35 +396,27 @@ function DashboardPageContent() {
                     </TabsContent>
                     <TabsContent value="performance">
                         <div className="mt-8 space-y-8">
-                            <div className="grid gap-6 md:grid-cols-3">
+                           {analyticsLoading ? <Skeleton className="h-96 w-full" /> : (
+                            <>
+                             <div className="grid gap-6 md:grid-cols-2">
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+                                        <CardTitle className="text-sm font-medium">Total Searches Tracked</CardTitle>
                                         <Eye className="h-4 w-4 text-muted-foreground" />
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold">12,834</div>
-                                        <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+                                        <div className="text-2xl font-bold">{analyticsStats?.processedEvents || 0}</div>
+                                        <p className="text-xs text-muted-foreground">Across the entire platform</p>
                                     </CardContent>
                                 </Card>
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
-                                        <Users className="h-4 w-4 text-muted-foreground" />
+                                        <CardTitle className="text-sm font-medium">Unique Locations Searched</CardTitle>
+                                        <MapPin className="h-4 w-4 text-muted-foreground" />
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold">152</div>
-                                        <p className="text-xs text-muted-foreground">+18.3% from last month</p>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-                                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold">1.2%</div>
-                                        <p className="text-xs text-muted-foreground">+0.2% from last month</p>
+                                        <div className="text-2xl font-bold">{analyticsStats?.topLocations?.length || 0}</div>
+                                        <p className="text-xs text-muted-foreground">In the top 100 events</p>
                                     </CardContent>
                                 </Card>
                             </div>
@@ -413,51 +424,61 @@ function DashboardPageContent() {
                             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-7">
                                 <Card className="lg:col-span-4">
                                     <CardHeader>
-                                        <CardTitle>Listing Views</CardTitle>
-                                        <CardDescription>Total views across all your listings in the last 6 months.</CardDescription>
+                                        <CardTitle>Top Searched Locations</CardTitle>
+                                        <CardDescription>
+                                            {analyticsStats?.topLocations?.length > 0 ? 'The most popular locations users are searching for.' : 'No search data available yet.'}
+                                        </CardDescription>
                                     </CardHeader>
-                                    <CardContent className="pl-2">
-                                        <ResponsiveContainer width="100%" height={350}>
-                                            <LineChart data={viewsData}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="month" stroke="#888888" fontSize={12} tickLine={false} axisLine={false}/>
-                                                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value / 1000}k`} />
-                                                <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
-                                                <Line type="monotone" dataKey="views" stroke="hsl(var(--primary))" strokeWidth={2} activeDot={{ r: 8 }} />
-                                            </LineChart>
-                                        </ResponsiveContainer>
+                                    <CardContent>
+                                        {analyticsStats?.topLocations?.length > 0 ? (
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>Location</TableHead>
+                                                        <TableHead className="text-right">Search Count</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {analyticsStats.topLocations.map((loc: {location: string, count: number}) => (
+                                                        <TableRow key={loc.location}>
+                                                            <TableCell className="font-medium capitalize">{loc.location}</TableCell>
+                                                            <TableCell className="text-right">{loc.count}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        ) : (
+                                            <div className="text-center text-muted-foreground p-8">
+                                                <p>Start tracking 'search_performed' events to see data here.</p>
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                                 <Card className="lg:col-span-3">
                                     <CardHeader>
-                                        <CardTitle>Top Listings</CardTitle>
-                                        <CardDescription>Your most viewed properties.</CardDescription>
+                                        <CardTitle>Market Insights</CardTitle>
+                                        <CardDescription>AI-generated summary of market trends.</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>Property</TableHead>
-                                                    <TableHead className="text-right">Views</TableHead>
-                                                    <TableHead className="text-right">Leads</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {sortedAgentListings?.slice(0, 5).map((listing, index) => (
-                                                    <TableRow key={listing.id}>
-                                                        <TableCell>
-                                                            <div className="font-medium truncate max-w-40">{listing.address}</div>
-                                                            <div className="text-xs text-muted-foreground">{listing.city}</div>
-                                                        </TableCell>
-                                                        <TableCell className="text-right">{(4382 - index * 621).toLocaleString()}</TableCell>
-                                                        <TableCell className="text-right">{Math.round(65 - index * 9.5)}</TableCell>
-                                                    </TableRow>
+                                        {analyticsStats?.marketInsights?.length > 0 ? (
+                                            <ul className="space-y-2 text-sm text-muted-foreground">
+                                                {analyticsStats.marketInsights.map((insight: string, index: number) => (
+                                                    <li key={index} className="flex items-start gap-2">
+                                                        <TrendingUp className="h-4 w-4 mt-1 flex-shrink-0 text-primary" />
+                                                        <span>{insight}</span>
+                                                    </li>
                                                 ))}
-                                            </TableBody>
-                                        </Table>
+                                            </ul>
+                                        ) : (
+                                             <div className="text-center text-muted-foreground p-8">
+                                                <p>No insights to display.</p>
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </div>
+                           </>
+                           )}
                         </div>
                     </TabsContent>
                 </Tabs>
