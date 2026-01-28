@@ -86,6 +86,34 @@
           "type": "string",
           "format": "date-time",
           "description": "The timestamp when the user completed the preferences flow."
+        },
+        "onboarding": {
+          "type": "object",
+          "description": "Tracks the user's onboarding status.",
+          "properties": {
+            "completed": {
+              "type": "boolean",
+              "description": "Whether the user has completed the entire onboarding flow."
+            },
+            "completedAt": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Timestamp when the user completed onboarding."
+            },
+            "stepsCompleted": {
+              "type": "number",
+              "description": "The number of onboarding steps the user has seen."
+            },
+            "preferencesSet": {
+              "type": "boolean",
+              "description": "Whether the user has set their initial preferences."
+            }
+          }
+        },
+        "lastLogin": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the user's last login."
         }
       },
       "required": [
