@@ -13,18 +13,47 @@ import { useUser } from '@/firebase';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
+import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
+import UserPreferences from '@/components/onboarding/UserPreferences';
 
 export default function AuthPage() {
     const { user, loading } = useUser();
     const router = useRouter();
 
+    const [flowState, setFlowState] = useState({
+        userId: '',
+        showOnboarding: false,
+        showPreferences: false,
+    });
+
     useEffect(() => {
-        if (!loading && user) {
+        if (!loading && user && !flowState.showOnboarding && !flowState.showPreferences) {
             router.push('/dashboard');
         }
-    }, [user, loading, router]);
+    }, [user, loading, router, flowState]);
 
-    if (loading || user) {
+    const handleSignupSuccess = (uid: string) => {
+        setFlowState({ userId: uid, showOnboarding: true, showPreferences: false });
+    };
+    
+    const handleOnboardingComplete = () => {
+        setFlowState(prev => ({ ...prev, showOnboarding: false, showPreferences: true }));
+    };
+
+    const handlePreferencesComplete = () => {
+        setFlowState({ userId: '', showOnboarding: false, showPreferences: false });
+        router.push('/dashboard');
+    };
+
+    const handleSkipAll = () => {
+        if (flowState.userId) {
+            localStorage.setItem(`apexfind_onboarding_${flowState.userId}`, 'true');
+            localStorage.setItem(`apexfind_preferences_${flowState.userId}`, 'true');
+        }
+        router.push('/dashboard');
+    };
+
+    if (loading || (user && !flowState.showOnboarding && !flowState.showPreferences)) {
         return (
             <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -32,6 +61,28 @@ export default function AuthPage() {
             </div>
         );
     }
+    
+    if (flowState.showOnboarding && flowState.userId) {
+        return (
+          <>
+            <OnboardingFlow 
+              userId={flowState.userId} 
+              onComplete={handleOnboardingComplete}
+            />
+            <button
+              onClick={handleSkipAll}
+              className="fixed bottom-8 right-8 px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 z-[100]"
+            >
+              Skip to Dashboard
+            </button>
+          </>
+        )
+    }
+
+    if (flowState.showPreferences && flowState.userId) {
+        return <UserPreferences userId={flowState.userId} onComplete={handlePreferencesComplete} />
+    }
+
 
     return (
         <div className="flex min-h-screen flex-col bg-background">
@@ -45,7 +96,7 @@ export default function AuthPage() {
                         <SignInForm />
                     </TabsContent>
                     <TabsContent value="signup">
-                        <SignUpForm />
+                        <SignUpForm onSignupSuccess={handleSignupSuccess} />
                     </TabsContent>
                 </Tabs>
             </main>
@@ -227,8 +278,7 @@ function SignInForm() {
     );
 }
 
-function SignUpForm() {
-  const router = useRouter();
+function SignUpForm({ onSignupSuccess }: { onSignupSuccess: (uid: string) => void }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -241,10 +291,8 @@ function SignUpForm() {
     setMessage('');
     setIsError(false);
     try {
-        await signInWithGoogle();
-        setMessage('Signed in successfully! Redirecting...');
-        router.push('/dashboard');
-        router.refresh();
+        const userCredential = await signInWithGoogle();
+        onSignupSuccess(userCredential.user.uid);
     } catch (error: any) {
         setIsError(true);
         setMessage(error.message);
@@ -257,8 +305,8 @@ function SignUpForm() {
     setIsError(false);
 
     try {
-        await signUp(name, email, password, role);
-        setMessage('Check your email for a confirmation link to complete your sign up. Note: This is a demo app, you might not receive an email.');
+        const userCredential = await signUp(name, email, password, role);
+        onSignupSuccess(userCredential.user.uid);
     } catch (error: any) {
         setIsError(true);
         if (error.code === 'auth/email-already-in-use') {
