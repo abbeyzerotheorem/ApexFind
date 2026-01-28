@@ -50,6 +50,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
@@ -59,7 +60,7 @@ import { deleteListing } from "@/lib/listings";
 import { Textarea } from "@/components/ui/textarea";
 import SavedSearches from "@/components/dashboard/saved-searches";
 import { getSafeImageUrl } from "@/lib/image-utils";
-import { Progress } from "../ui/progress";
+import { Progress } from "@/components/ui/progress";
 
 const viewsData = [
     { month: "Jan", views: 1200 },
@@ -141,8 +142,8 @@ function DashboardPageContent() {
   const sortedAgentListings = useMemo(() => {
     if (!agentListings) return [];
     return [...agentListings].sort((a, b) => {
-        const timeA = a.createdAt?.toDate?.()?.getTime() || 0;
-        const timeB = b.createdAt?.toDate?.()?.getTime() || 0;
+        const timeA = a.createdAt?.toDate?.().getTime() || 0;
+        const timeB = b.createdAt?.toDate?.().getTime() || 0;
         return timeB - timeA;
     });
   }, [agentListings]);
