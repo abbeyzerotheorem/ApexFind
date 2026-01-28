@@ -46,6 +46,8 @@ const nextConfig = {
   },
   env: {
     CRON_SECRET: 'YOUR_VERY_SECRET_KEY_HERE',
+    NEXT_PUBLIC_SITE_URL: 'http://localhost:9002',
+    NEXT_PUBLIC_SITE_NAME: 'ApexFind',
   },
 };
 

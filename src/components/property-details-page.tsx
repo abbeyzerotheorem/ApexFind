@@ -28,6 +28,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props} fill="currentColor">
+        <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.38 1.25 4.85L2.3 22l5.42-1.42c1.42.75 3.01 1.18 4.67 1.18h.01c5.46 0 9.91-4.45 9.91-9.91 0-5.47-4.45-9.92-9.91-9.92zM17.15 15.5c-.29-.14-1.71-.84-1.98-.94-.27-.1-.47-.15-.66.15-.2.3-.75.94-.92 1.13-.17.2-.34.22-.63.07-.29-.15-1.22-.45-2.32-1.43-.86-.77-1.43-1.72-1.6-2-.17-.29-.02-.44.13-.59.13-.13.3-.34.45-.51s.2-.3.3-.5c.1-.2.05-.37-.03-.52s-.66-1.6-1-2.18c-.22-.47-.45-.4-.63-.4-.18 0-.38.03-.58.03-.2 0-.52.07-.79.37s-1.03 1-1.26 2.4c-.23 1.4.1 2.8.23 3s1.24 2.37 3 3.52c1.76 1.15 3.03 1.54 4.09 1.8.35.1.66.07.9-.05.29-.12.92-1.07 1.22-1.45.3-.38.3-.7.2-1.08z" />
+    </svg>
+);
+
+
 export default function PropertyDetailsPage({ id }: { id: string }) {
   const firestore = useFirestore();
   const { user } = useUser();
@@ -36,6 +43,7 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
   const [geocodingLoading, setGeocodingLoading] = useState(true);
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
 
   const propertyRef = useMemo(() => {
       if (!firestore) return null;
@@ -113,13 +121,30 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
     if (!user) {
         setShowAuthDialog(true);
     }
-    // For now, a logged in user just gets a console log.
-    // A real app would open a scheduling modal or submit the form.
     else {
         console.log("Protected action triggered by logged-in user.");
-        // In a real app, you would handle form submission here.
     }
   };
+
+  const handleShareOnWhatsApp = async () => {
+    if (!property) return;
+    setIsGeneratingLink(true);
+    try {
+        const response = await fetch('/api/whatsapp/generate-link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ property })
+        });
+        if (!response.ok) throw new Error('Failed to generate link');
+        const data = await response.json();
+        window.open(data.link, '_blank');
+    } catch (error) {
+        console.error("WhatsApp share failed:", error);
+    } finally {
+        setIsGeneratingLink(false);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -184,7 +209,6 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
           <div className="mt-8 grid grid-cols-1 gap-12 lg:grid-cols-3">
             <div className="lg:col-span-2">
               
-              {/* Summary & Action Bar */}
               <div className="rounded-lg border bg-card p-6 shadow-sm">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
@@ -200,6 +224,9 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                     <div className="flex flex-shrink-0 gap-2">
                         <Button variant="outline" size="icon" onClick={handleToggleSave} aria-label={isSaved ? "Unsave property" : "Save property"}>
                             <Heart className={cn("h-5 w-5", isSaved && "fill-destructive text-destructive")} />
+                        </Button>
+                        <Button variant="outline" size="icon" onClick={handleShareOnWhatsApp} disabled={isGeneratingLink}>
+                            {isGeneratingLink ? <Loader2 className="animate-spin" /> : <WhatsAppIcon className="h-5 w-5" />}
                         </Button>
                         <Button variant="outline" size="icon"><Share2 className="h-5 w-5" /></Button>
                     </div>
@@ -241,7 +268,6 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                 </div>
               </div>
 
-              {/* Description */}
               <div className="mt-8">
                 <h2 className="text-2xl font-bold text-foreground">About this home</h2>
                 <p className="mt-4 text-base leading-relaxed text-muted-foreground">
@@ -255,7 +281,6 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                 </div>
               </div>
 
-              {/* Detailed Facts & Features */}
               <div className="mt-12">
                 <h2 className="text-2xl font-bold text-foreground">Facts and features</h2>
                 <Accordion type="multiple" defaultValue={['property-facts']} className="mt-4 w-full">
@@ -280,7 +305,6 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                 </Accordion>
               </div>
 
-               {/* Map & Neighborhood */}
                 <div className="mt-12">
                     <h2 className="text-2xl font-bold text-foreground">Location</h2>
                     <div className="mt-4 relative h-96 w-full overflow-hidden rounded-lg border bg-muted">
@@ -314,7 +338,6 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
 
             </div>
 
-            {/* Contact Agent Form */}
             <div className="lg:col-span-1">
               <div className="sticky top-24 rounded-lg border bg-card p-6 shadow-sm">
                 <h3 className="text-xl font-bold text-foreground">Contact Agent</h3>
