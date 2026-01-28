@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/s
 import { Menu, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/lib/auth";
 import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
@@ -44,7 +44,7 @@ export default function Header() {
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
   
-  const { data: userProfile } = useDoc<{ role?: 'customer' | 'agent' }>(userDocRef);
+  const { data: userProfile } = useDoc<{ role?: 'customer' | 'agent', displayName?: string, photoURL?: string }>(userDocRef);
 
   const conversationsQuery = useMemo(() => {
       if (!user || !firestore) return null;
@@ -81,7 +81,9 @@ export default function Header() {
     return customerNavLinks;
   }, [user, userProfile]);
 
-  const userInitial = user?.displayName?.[0] || user?.email?.[0] || 'A';
+  const displayName = userProfile?.displayName || user?.displayName;
+  const displayPhotoURL = userProfile?.photoURL || user?.photoURL;
+  const userInitial = displayName?.[0] || user?.email?.[0] || 'A';
 
 
   return (
@@ -129,6 +131,7 @@ export default function Header() {
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                                 <Avatar className="h-10 w-10">
+                                    <AvatarImage src={displayPhotoURL || ''} alt={displayName || ''} />
                                     <AvatarFallback>{userInitial.toUpperCase()}</AvatarFallback>
                                 </Avatar>
                             </Button>
@@ -136,7 +139,7 @@ export default function Header() {
                         <DropdownMenuContent className="w-56" align="end" forceMount>
                             <DropdownMenuLabel className="font-normal">
                             <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-medium leading-none">{user.displayName || 'My Account'}</p>
+                                <p className="text-sm font-medium leading-none">{displayName || 'My Account'}</p>
                                 <p className="text-xs leading-none text-muted-foreground">
                                 {user.email}
                                 </p>
