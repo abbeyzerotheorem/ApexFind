@@ -3,6 +3,7 @@
 
 import { getAuth, updateProfile } from 'firebase/auth';
 import { doc, setDoc, type Firestore } from 'firebase/firestore';
+import { uploadToCloudinary } from './cloudinary';
 
 interface UserProfileData {
     displayName?: string;
@@ -12,6 +13,33 @@ interface UserProfileData {
     specialties?: string[];
     languages?: string[];
 }
+
+export async function uploadProfilePicture(
+    file: File,
+    userId: string,
+    onProgress: (progress: number | null) => void
+): Promise<string> {
+    if (!file) {
+        throw new Error("No file provided for upload.");
+    }
+     if (!userId) {
+        throw new Error("User ID is required for image upload.");
+    }
+
+    const folder = `profile-pictures/${userId}`;
+    
+    try {
+        const result = await uploadToCloudinary(file, (progress) => {
+            onProgress(progress);
+        }, folder);
+        return result.optimizedUrl; 
+    } catch (error) {
+        onProgress(null);
+        console.error("Cloudinary upload failed:", error);
+        throw error;
+    }
+}
+
 
 /**
  * Updates the user's profile in Firebase Authentication and their document in Firestore.

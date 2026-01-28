@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState, useMemo, Suspense } from "react";
@@ -20,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { updateUserProfile } from "@/lib/user";
+import { updateUserProfile, uploadProfilePicture } from "@/lib/user";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from 'next/link';
 import ViewedHistory from "@/components/dashboard/viewed-history";
@@ -49,7 +50,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
@@ -59,6 +59,7 @@ import { deleteListing } from "@/lib/listings";
 import { Textarea } from "@/components/ui/textarea";
 import SavedSearches from "@/components/dashboard/saved-searches";
 import { getSafeImageUrl } from "@/lib/image-utils";
+import { Progress } from "../ui/progress";
 
 const viewsData = [
     { month: "Jan", views: 1200 },
@@ -85,6 +86,7 @@ function DashboardPageContent() {
   const [languages, setLanguages] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   const userDocRef = useMemo(() => {
     if (!user || !firestore) return null;
@@ -127,7 +129,8 @@ function DashboardPageContent() {
               }
           });
           if (!response.ok) {
-              throw new Error('Failed to fetch analytics');
+              const errorData = await response.json();
+              throw new Error(errorData.error || 'Failed to fetch analytics');
           }
           return response.json();
       },
@@ -175,6 +178,31 @@ function DashboardPageContent() {
     }
   }, [user, userLoading, router]);
 
+  const handleProfileImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploadProgress(0);
+    setIsSaving(true);
+    setSaveMessage('Uploading...');
+    try {
+      const downloadURL = await uploadProfilePicture(file, user.uid, (progress) => {
+        setUploadProgress(progress);
+      });
+      setPhotoURL(downloadURL);
+      setUploadProgress(100);
+      setSaveMessage('Upload complete! Save profile to apply changes.');
+      setTimeout(() => {
+          setUploadProgress(null);
+      }, 5000);
+    } catch (error: any) {
+        setSaveMessage(`Upload failed: ${error.message}`);
+        setUploadProgress(null);
+    } finally {
+        setIsSaving(false);
+    }
+  };
+
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !firestore) return;
@@ -184,10 +212,10 @@ function DashboardPageContent() {
     try {
         const profileData: any = {
             displayName,
-            phoneNumber
+            phoneNumber,
+            photoURL
         };
         if (userProfile?.role === 'agent') {
-            profileData.photoURL = photoURL;
             profileData.about = about;
             profileData.specialties = specialties.split(',').map(s => s.trim()).filter(Boolean);
             profileData.languages = languages.split(',').map(s => s.trim()).filter(Boolean);
@@ -368,8 +396,28 @@ function DashboardPageContent() {
                                                 <Input id="phone" type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="e.g. +234 801 234 5678"/>
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="photoURL">Profile Picture URL</Label>
-                                                <Input id="photoURL" type="url" value={photoURL} onChange={(e) => setPhotoURL(e.target.value)} placeholder="https://example.com/your-image.jpg"/>
+                                                <Label>Profile Picture</Label>
+                                                <div className="flex items-center gap-4">
+                                                    <Avatar className="h-20 w-20">
+                                                        <AvatarImage src={photoURL} alt={displayName} />
+                                                        <AvatarFallback>{displayName?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex-grow">
+                                                        <Input 
+                                                            id="photo-upload" 
+                                                            type="file" 
+                                                            onChange={handleProfileImageUpload} 
+                                                            accept="image/*" 
+                                                            disabled={uploadProgress !== null}
+                                                        />
+                                                        {uploadProgress !== null && (
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            <Progress value={uploadProgress} className="w-full" />
+                                                            <span className="text-sm text-muted-foreground">{Math.round(uploadProgress)}%</span>
+                                                        </div>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="about">About Me</Label>
@@ -388,7 +436,7 @@ function DashboardPageContent() {
                                 </CardContent>
                                 <CardFooter className="flex-col items-start gap-2">
                                     <Button type="submit" disabled={isSaving}>
-                                        {isSaving ? "Saving..." : "Save Changes"}
+                                        {isSaving ? (uploadProgress !== null ? "Uploading..." : "Saving...") : "Save Changes"}
                                     </Button>
                                     {saveMessage && <p className="text-sm text-muted-foreground">{saveMessage}</p>}
                                 </CardFooter>
@@ -665,7 +713,3 @@ export default function DashboardPage() {
     </Suspense>
   );
 }
-
-    
-
-    
