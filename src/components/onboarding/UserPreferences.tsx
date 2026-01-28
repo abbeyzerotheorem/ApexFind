@@ -4,7 +4,6 @@
 import { useState } from 'react'
 import { MapPin, Home, TrendingUp, Bell, Check, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 
 // Import your preference illustrations
 const LocationIllustration = '/illustrations/preferences-locations.svg'
@@ -106,7 +105,6 @@ interface UserPreferencesProps {
 export default function UserPreferences({ userId, onComplete }: UserPreferencesProps) {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
   const [preferences, setPreferences] = useState({
     locations: [] as string[],
     propertyTypes: [] as string[],
@@ -158,8 +156,6 @@ export default function UserPreferences({ userId, onComplete }: UserPreferencesP
       // Call completion callback
       if (onComplete) {
         onComplete()
-      } else {
-        router.push('/dashboard')
       }
       
     } catch (error) {

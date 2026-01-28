@@ -50,7 +50,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
@@ -62,6 +61,7 @@ import SavedSearches from "@/components/dashboard/saved-searches";
 import { getSafeImageUrl } from "@/lib/image-utils";
 import { Progress } from "@/components/ui/progress";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
+import UserPreferences from "@/components/onboarding/UserPreferences";
 
 const viewsData = [
     { month: "Jan", views: 1200 },
@@ -90,6 +90,10 @@ function DashboardPageContent() {
   const [saveMessage, setSaveMessage] = useState('');
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
+  // Onboarding/Preferences Flow State
+  const [showPreferencesModal, setShowPreferencesModal] = useState(false);
+  const [showPreferencesPrompt, setShowPreferencesPrompt] = useState(false);
+
   const userDocRef = useMemo(() => {
     if (!user || !firestore) return null;
     return doc(firestore, 'users', user.uid);
@@ -103,6 +107,7 @@ function DashboardPageContent() {
     about?: string,
     specialties?: string[],
     languages?: string[],
+    preferencesCompletedAt?: string;
   }>(userDocRef);
 
   // Agent listings state
@@ -157,6 +162,38 @@ function DashboardPageContent() {
 
   const { data: firstAgentArr } = useCollection(firstAgentQuery);
   const linkedAgent = firstAgentArr?.[0];
+
+    // Effect to manage showing the preferences prompt for customers
+  useEffect(() => {
+    // Don't run until user profile is loaded and we know their role
+    if (profileLoading || !userProfile || !user || userProfile.role === 'agent') {
+      return;
+    }
+  
+    // If the modal is already open/opening, ensure the prompt is hidden.
+    if (showPreferencesModal) {
+      if (showPreferencesPrompt) setShowPreferencesPrompt(false);
+      return;
+    }
+  
+    // If preferences are already completed in the database, we're done.
+    if (userProfile.preferencesCompletedAt) {
+      if (showPreferencesPrompt) setShowPreferencesPrompt(false);
+      return;
+    }
+  
+    // Check localStorage flags
+    const onboardingDone = localStorage.getItem(`apexfind_onboarding_${user.uid}`) === 'true';
+    const preferencesSkippedOrDone = localStorage.getItem(`apexfind_preferences_${user.uid}`) === 'true';
+  
+    // If initial tour is done, but preferences are not, show the prompt.
+    if (onboardingDone && !preferencesSkippedOrDone) {
+      setShowPreferencesPrompt(true);
+    } else {
+      // Otherwise, ensure it's hidden
+      if (showPreferencesPrompt) setShowPreferencesPrompt(false);
+    }
+  }, [profileLoading, userProfile, user, showPreferencesModal]);
 
   useEffect(() => {
     if (user) {
@@ -544,13 +581,39 @@ function DashboardPageContent() {
   // Default to customer dashboard
   return (
     <>
-        <OnboardingFlow userId={user.uid} />
+        {userProfile?.role === 'customer' && (
+            <>
+                <OnboardingFlow userId={user.uid} onComplete={() => setShowPreferencesModal(true)} />
+                {showPreferencesModal && (
+                    <UserPreferences 
+                        userId={user.uid} 
+                        onComplete={() => {
+                            setShowPreferencesModal(false);
+                            setShowPreferencesPrompt(false);
+                        }} 
+                    />
+                )}
+            </>
+        )}
         <div className="flex flex-col flex-grow bg-background py-8 sm:py-12">
             <div className="mx-auto w-full max-w-7xl flex flex-col flex-grow px-4 sm:px-6 lg:px-8">
               <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                 My Dashboard
               </h1>
               <p className="mt-1 text-muted-foreground">Welcome back, {user.displayName || user.email}</p>
+              
+              {showPreferencesPrompt && (
+                  <Card className="my-6 bg-primary/10 border-primary/20">
+                      <CardHeader className="flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <CardTitle>Personalize Your Experience</CardTitle>
+                            <CardDescription>Tell us what you're looking for to get better recommendations.</CardDescription>
+                        </div>
+                        <Button onClick={() => setShowPreferencesModal(true)}>Set Preferences</Button>
+                      </CardHeader>
+                  </Card>
+              )}
+
               <Tabs defaultValue={initialTab} className="mt-8 flex flex-col flex-grow">
                 <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-3xl">
                   <TabsTrigger value="saved-homes">
