@@ -45,6 +45,9 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  env: {
+    CRON_SECRET: 'YOUR_VERY_SECRET_KEY_HERE',
+  },
 };
 
 export default nextConfig;

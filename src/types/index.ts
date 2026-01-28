@@ -79,6 +79,7 @@ export type SavedSearch = {
     alertFrequency: 'daily' | 'weekly' | 'instant' | 'never';
     newMatchCount: number;
     createdAt: any; // Firestore Timestamp
+    lastSentAt?: any; // Firestore Timestamp
 };
 
 export interface ValuationResult {

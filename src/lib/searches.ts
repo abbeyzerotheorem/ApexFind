@@ -73,6 +73,7 @@ export async function saveSearch(
             alertFrequency: 'daily',
             newMatchCount: 0,
             createdAt: serverTimestamp(),
+            lastSentAt: serverTimestamp(),
         });
     } catch(error) {
         console.error("Error saving search: ", error);
