@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Calculator, MapPin, Home, Bed, Bath, Square, TrendingUp } from 'lucide-react'
-import { formatNaira, formatUSD } from '@/lib/naira-formatter'
+import { formatNaira } from '@/lib/naira-formatter'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -100,7 +100,7 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
   const generateWhatsAppMessage = () => {
     if (!result) return ''
 
-    const formattedValue = result.currency === 'USD' ? formatUSD(result.estimatedValue) : formatNaira(result.estimatedValue);
+    const formattedValue = formatNaira(result.estimatedValue);
     
     const message = `🏡 *Property Valuation Report*\n\n` +
                    `📍 ${formData.address}, ${formData.city}\n` +
@@ -114,7 +114,7 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
 
   const formatCurrency = (value: number) => {
       if (!result) return '';
-      return result.currency === 'USD' ? formatUSD(value) : formatNaira(value);
+      return formatNaira(value);
   }
 
   return (
@@ -401,7 +401,7 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
           <div className="text-center p-8 bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl border border-primary/20">
             <p className="text-sm text-muted-foreground mb-2">ESTIMATED VALUE</p>
             <p className="text-5xl font-bold text-foreground mb-2">
-              {formatCurrency(result.estimatedValue)}
+              {formatNaira(result.estimatedValue)}
             </p>
             <div className="inline-flex items-center px-4 py-2 bg-primary/10 text-primary rounded-full font-medium">
               <div className="w-3 h-3 bg-primary rounded-full mr-2"></div>
@@ -415,21 +415,20 @@ export default function InstantValuation({ address: initialAddress = '' }: { add
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                 <div>
                     <p className="text-sm text-muted-foreground">Low End</p>
-                    <p className="font-semibold text-lg">{formatCurrency(result.range.low)}</p>
+                    <p className="font-semibold text-lg">{formatNaira(result.range.low)}</p>
                 </div>
                 <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
                     <p className="text-sm text-primary font-medium">Likely Value</p>
-                    <p className="font-bold text-primary text-xl">{formatCurrency(result.estimatedValue)}</p>
+                    <p className="font-bold text-primary text-xl">{formatNaira(result.estimatedValue)}</p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">High End</p>
-                    <p className="font-semibold text-lg">{formatCurrency(result.range.high)}</p>
+                    <p className="font-semibold text-lg">{formatNaira(result.range.high)}</p>
                 </div>
             </div>
           </div>
 
 
-          {/* Market Insights */}
             <Accordion type="multiple" defaultValue={['insights']}>
               <AccordionItem value="insights">
                 <AccordionTrigger className="text-lg font-semibold">Market Insights</AccordionTrigger>

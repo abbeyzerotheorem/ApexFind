@@ -1,6 +1,6 @@
 
 import { adminDb } from '@/lib/firebase/admin'
-import { getRentCastValuation } from '@/lib/valuation/rentcast';
+import { estimateNigerianPropertyValue } from '@/lib/valuation/nigeria-firebase';
 
 function capitalize(str: string): string {
     if (!str) return '';
@@ -29,13 +29,33 @@ export async function POST(request: Request) {
         { status: 400 }
       )
     }
+    
+    // Fetch comparable properties from Firebase
+    const comparablesSnapshot = await adminDb
+      .collection('properties')
+      .where('city', '==', capitalize(city))
+      .where('state', '==', capitalize(state))
+      .where('propertyType', '==', propertyType)
+      .orderBy('createdAt', 'desc')
+      .limit(20)
+      .get()
 
-    const valuation = await getRentCastValuation({
-      address: `${address}, ${city}, ${state}, Nigeria`,
+    const comparables = comparablesSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }))
+
+    const valuation = await estimateNigerianPropertyValue({
+      address,
+      city,
+      state,
       propertyType,
       bedrooms: bedrooms || 2,
       bathrooms: bathrooms || 2,
       size: size || 100, // expecting size in sqm
+      yearBuilt: yearBuilt || 2015,
+      amenities,
+      comparables
     });
 
     // Store valuation in Firebase for analytics

@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  env: {
-    RENTCAST_API_KEY: 'bf18901fc7ef48439b3e40cd08c076e2',
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
