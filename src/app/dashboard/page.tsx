@@ -61,6 +61,7 @@ import { Textarea } from "@/components/ui/textarea";
 import SavedSearches from "@/components/dashboard/saved-searches";
 import { getSafeImageUrl } from "@/lib/image-utils";
 import { Progress } from "@/components/ui/progress";
+import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 
 const viewsData = [
     { month: "Jan", views: 1200 },
@@ -261,125 +262,349 @@ function DashboardPageContent() {
 
   if (userProfile?.role === 'agent') {
     return (
+        <>
+            <OnboardingFlow userId={user.uid} />
+            <div className="flex flex-col flex-grow bg-background py-8 sm:py-12">
+                <div className="mx-auto w-full max-w-7xl flex flex-col flex-grow px-4 sm:px-6 lg:px-8">
+                  <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                    Agent Dashboard
+                  </h1>
+                  <p className="mt-1 text-muted-foreground">Welcome back, Agent {user.displayName || user.email}</p>
+                    <Tabs defaultValue={initialTab} className="mt-8 flex flex-col flex-grow">
+                        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 max-w-2xl">
+                            <TabsTrigger value="my-listings"><HomeIcon className="mr-2 h-4 w-4"/> My Listings</TabsTrigger>
+                            <TabsTrigger value="profile"><UserIcon className="mr-2 h-4 w-4"/> Profile</TabsTrigger>
+                            <TabsTrigger value="performance"><BarChart2 className="mr-2 h-4 w-4"/> Performance</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="my-listings">
+                            <Card className="mt-8">
+                                <CardHeader>
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                        <div>
+                                            <CardTitle>My Property Listings</CardTitle>
+                                            <CardDescription>You have {sortedAgentListings?.length || 0} active listings.</CardDescription>
+                                        </div>
+                                        <Button asChild>
+                                            <Link href="/dashboard/listings/new">+ Add New Listing</Link>
+                                        </Button>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="hidden sm:table-cell">Image</TableHead>
+                                                <TableHead>Property</TableHead>
+                                                <TableHead>Price</TableHead>
+                                                <TableHead className="hidden md:table-cell">Status</TableHead>
+                                                <TableHead>Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {sortedAgentListings?.map(property => (
+                                                <TableRow key={property.id}>
+                                                    <TableCell className="hidden sm:table-cell">
+                                                        <Image src={getSafeImageUrl(property.imageUrl, property.home_type)} alt={property.address || 'Property image'} width={100} height={60} className="rounded-md object-cover" />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="font-medium">{property.address}</div>
+                                                        <div className="text-sm text-muted-foreground">{property.beds} beds • {property.baths} baths</div>
+                                                    </TableCell>
+                                                    <TableCell>{formatNaira(property.price)}</TableCell>
+                                                    <TableCell className="hidden md:table-cell">
+                                                        <Badge variant={property.status === 'New' ? 'default' : 'secondary'}>{property.status || 'Active'}</Badge>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                      <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                          <Button variant="ghost" className="h-8 w-8 p-0">
+                                                            <span className="sr-only">Open menu</span>
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                          </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={`/dashboard/listings/${property.id}/edit`} className="w-full">
+                                                                    <Pencil className="mr-2 h-4 w-4" /> Edit Listing
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={`/property/${property.id}`} className="flex items-center w-full">
+                                                                    <Eye className="mr-2 h-4 w-4" /> View Details
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuSeparator />
+                                                             <AlertDialog>
+                                                                <AlertDialogTrigger asChild>
+                                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                                                        <Trash2 className="mr-2 h-4 w-4" /> Delete Listing
+                                                                    </DropdownMenuItem>
+                                                                </AlertDialogTrigger>
+                                                                <AlertDialogContent>
+                                                                    <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        This action cannot be undone. This will permanently delete the listing for "{property.address}".
+                                                                    </AlertDialogDescription>
+                                                                    </AlertDialogHeader>
+                                                                    <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                    <AlertDialogAction onClick={() => handleDeleteListing(property.id)}>Delete</AlertDialogAction>
+                                                                    </AlertDialogFooter>
+                                                                </AlertDialogContent>
+                                                            </AlertDialog>
+                                                        </DropdownMenuContent>
+                                                      </DropdownMenu>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                    {(!sortedAgentListings || sortedAgentListings.length === 0) && (
+                                      <div className="text-center p-8">
+                                        <h3 className="text-xl font-semibold">No listings yet.</h3>
+                                        <p className="text-muted-foreground mt-2">Get started by adding your first property.</p>
+                                        <Button asChild className="mt-4">
+                                           <Link href="/dashboard/listings/new">+ Add New Listing</Link>
+                                        </Button>
+                                      </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                        <TabsContent value="profile">
+                            <Card className="mt-8">
+                                <form onSubmit={handleProfileSave}>
+                                    <CardHeader>
+                                        <CardTitle>Agent Profile</CardTitle>
+                                        <CardDescription>This information will be displayed on your public agent page.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="grid gap-6">
+                                        {profileLoading ? (
+                                            <Skeleton className="h-64 w-full" />
+                                        ) : (
+                                            <>
+                                                <div className="grid sm:grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="name">Full Name</Label>
+                                                        <Input id="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="email">Email</Label>
+                                                        <Input id="email" type="email" value={user.email || ''} readOnly disabled />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="phone">Phone Number</Label>
+                                                    <Input id="phone" type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="e.g. +234 801 234 5678"/>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>Profile Picture</Label>
+                                                    <div className="flex items-center gap-4">
+                                                        <Avatar className="h-20 w-20">
+                                                            <AvatarImage src={photoURL} alt={displayName} />
+                                                            <AvatarFallback>{displayName?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="flex-grow">
+                                                            <Input 
+                                                                id="photo-upload" 
+                                                                type="file" 
+                                                                onChange={handleProfileImageUpload} 
+                                                                accept="image/*" 
+                                                                disabled={uploadProgress !== null}
+                                                            />
+                                                            {uploadProgress !== null && (
+                                                            <div className="flex items-center gap-2 mt-2">
+                                                                <Progress value={uploadProgress} className="w-full" />
+                                                                <span className="text-sm text-muted-foreground">{Math.round(uploadProgress)}%</span>
+                                                            </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="about">About Me</Label>
+                                                    <Textarea id="about" value={about} onChange={(e) => setAbout(e.target.value)} placeholder="Tell clients a little about yourself, your experience, and your approach." />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="specialties">Specialties</Label>
+                                                    <Input id="specialties" value={specialties} onChange={(e) => setSpecialties(e.target.value)} placeholder="Luxury Homes, First-time Buyers, Commercial (comma-separated)" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="languages">Languages</Label>
+                                                    <Input id="languages" value={languages} onChange={(e) => setLanguages(e.target.value)} placeholder="English, Yoruba, Igbo (comma-separated)" />
+                                                </div>
+                                            </>
+                                        )}
+                                    </CardContent>
+                                    <CardFooter className="flex-col items-start gap-2">
+                                        <Button type="submit" disabled={isSaving}>
+                                            {isSaving ? (uploadProgress !== null ? "Uploading..." : "Saving...") : "Save Changes"}
+                                        </Button>
+                                        {saveMessage && <p className="text-sm text-muted-foreground">{saveMessage}</p>}
+                                    </CardFooter>
+                                </form>
+                            </Card>
+                        </TabsContent>
+                        <TabsContent value="performance">
+                            <div className="mt-8 space-y-8">
+                               {analyticsLoading ? <Skeleton className="h-96 w-full" /> : (
+                                <>
+                                 <div className="grid gap-6 md:grid-cols-2">
+                                    <Card>
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardTitle className="text-sm font-medium">Total Searches Tracked</CardTitle>
+                                            <Eye className="h-4 w-4 text-muted-foreground" />
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-2xl font-bold">{analyticsStats?.processedEvents || 0}</div>
+                                            <p className="text-xs text-muted-foreground">Across the entire platform</p>
+                                        </CardContent>
+                                    </Card>
+                                    <Card>
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardTitle className="text-sm font-medium">Unique Locations Searched</CardTitle>
+                                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-2xl font-bold">{analyticsStats?.topLocations?.length || 0}</div>
+                                            <p className="text-xs text-muted-foreground">In the top 100 events</p>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+    
+                                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-7">
+                                    <Card className="lg:col-span-4">
+                                        <CardHeader>
+                                            <CardTitle>Top Searched Locations</CardTitle>
+                                            <CardDescription>
+                                                {analyticsStats?.topLocations?.length > 0 ? 'The most popular locations users are searching for.' : 'No search data available yet.'}
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            {analyticsStats?.topLocations?.length > 0 ? (
+                                                <Table>
+                                                    <TableHeader>
+                                                        <TableRow>
+                                                            <TableHead>Location</TableHead>
+                                                            <TableHead className="text-right">Search Count</TableHead>
+                                                        </TableRow>
+                                                    </TableHeader>
+                                                    <TableBody>
+                                                        {analyticsStats.topLocations.map((loc: {location: string, count: number}) => (
+                                                            <TableRow key={loc.location}>
+                                                                <TableCell className="font-medium capitalize">{loc.location}</TableCell>
+                                                                <TableCell className="text-right">{loc.count}</TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
+                                                </Table>
+                                            ) : (
+                                                <div className="text-center text-muted-foreground p-8">
+                                                    <p>Start tracking 'search_performed' events to see data here.</p>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                    <Card className="lg:col-span-3">
+                                        <CardHeader>
+                                            <CardTitle>Market Insights</CardTitle>
+                                            <CardDescription>AI-generated summary of market trends.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            {analyticsStats?.marketInsights?.length > 0 ? (
+                                                <ul className="space-y-2 text-sm text-muted-foreground">
+                                                    {analyticsStats.marketInsights.map((insight: string, index: number) => (
+                                                        <li key={index} className="flex items-start gap-2">
+                                                            <TrendingUp className="h-4 w-4 mt-1 flex-shrink-0 text-primary" />
+                                                            <span>{insight}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            ) : (
+                                                 <div className="text-center text-muted-foreground p-8">
+                                                    <p>No insights to display.</p>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                               </>
+                               )}
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+                </div>
+            </div>
+        </>
+    )
+  }
+
+  // Default to customer dashboard
+  return (
+    <>
+        <OnboardingFlow userId={user.uid} />
         <div className="flex flex-col flex-grow bg-background py-8 sm:py-12">
             <div className="mx-auto w-full max-w-7xl flex flex-col flex-grow px-4 sm:px-6 lg:px-8">
               <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                Agent Dashboard
+                My Dashboard
               </h1>
-              <p className="mt-1 text-muted-foreground">Welcome back, Agent {user.displayName || user.email}</p>
-                <Tabs defaultValue={initialTab} className="mt-8 flex flex-col flex-grow">
-                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 max-w-2xl">
-                        <TabsTrigger value="my-listings"><HomeIcon className="mr-2 h-4 w-4"/> My Listings</TabsTrigger>
-                        <TabsTrigger value="profile"><UserIcon className="mr-2 h-4 w-4"/> Profile</TabsTrigger>
-                        <TabsTrigger value="performance"><BarChart2 className="mr-2 h-4 w-4"/> Performance</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="my-listings">
-                        <Card className="mt-8">
-                            <CardHeader>
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                    <div>
-                                        <CardTitle>My Property Listings</CardTitle>
-                                        <CardDescription>You have {sortedAgentListings?.length || 0} active listings.</CardDescription>
-                                    </div>
-                                    <Button asChild>
-                                        <Link href="/dashboard/listings/new">+ Add New Listing</Link>
-                                    </Button>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="hidden sm:table-cell">Image</TableHead>
-                                            <TableHead>Property</TableHead>
-                                            <TableHead>Price</TableHead>
-                                            <TableHead className="hidden md:table-cell">Status</TableHead>
-                                            <TableHead>Actions</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {sortedAgentListings?.map(property => (
-                                            <TableRow key={property.id}>
-                                                <TableCell className="hidden sm:table-cell">
-                                                    <Image src={getSafeImageUrl(property.imageUrl, property.home_type)} alt={property.address || 'Property image'} width={100} height={60} className="rounded-md object-cover" />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="font-medium">{property.address}</div>
-                                                    <div className="text-sm text-muted-foreground">{property.beds} beds • {property.baths} baths</div>
-                                                </TableCell>
-                                                <TableCell>{formatNaira(property.price)}</TableCell>
-                                                <TableCell className="hidden md:table-cell">
-                                                    <Badge variant={property.status === 'New' ? 'default' : 'secondary'}>{property.status || 'Active'}</Badge>
-                                                </TableCell>
-                                                <TableCell>
-                                                  <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                      <Button variant="ghost" className="h-8 w-8 p-0">
-                                                        <span className="sr-only">Open menu</span>
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                      </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={`/dashboard/listings/${property.id}/edit`} className="w-full">
-                                                                <Pencil className="mr-2 h-4 w-4" /> Edit Listing
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={`/property/${property.id}`} className="flex items-center w-full">
-                                                                <Eye className="mr-2 h-4 w-4" /> View Details
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuSeparator />
-                                                         <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
-                                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
-                                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete Listing
-                                                                </DropdownMenuItem>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    This action cannot be undone. This will permanently delete the listing for "{property.address}".
-                                                                </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDeleteListing(property.id)}>Delete</AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-                                                    </DropdownMenuContent>
-                                                  </DropdownMenu>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                                {(!sortedAgentListings || sortedAgentListings.length === 0) && (
-                                  <div className="text-center p-8">
-                                    <h3 className="text-xl font-semibold">No listings yet.</h3>
-                                    <p className="text-muted-foreground mt-2">Get started by adding your first property.</p>
-                                    <Button asChild className="mt-4">
-                                       <Link href="/dashboard/listings/new">+ Add New Listing</Link>
-                                    </Button>
-                                  </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                    <TabsContent value="profile">
-                        <Card className="mt-8">
+              <p className="mt-1 text-muted-foreground">Welcome back, {user.displayName || user.email}</p>
+              <Tabs defaultValue={initialTab} className="mt-8 flex flex-col flex-grow">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-3xl">
+                  <TabsTrigger value="saved-homes">
+                    <Heart className="mr-2 h-4 w-4" />
+                    Saved Homes
+                  </TabsTrigger>
+                  <TabsTrigger value="saved-searches">
+                    <Filter className="mr-2 h-4 w-4" />
+                    Saved Searches
+                  </TabsTrigger>
+                  <TabsTrigger value="viewed-history">
+                    <History className="mr-2 h-4 w-4" />
+                    Viewed History
+                  </TabsTrigger>
+                  <TabsTrigger value="profile">
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    Profile
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="saved-homes">
+                    <SavedHomes />
+                </TabsContent>
+                <TabsContent value="saved-searches">
+                    <SavedSearches />
+                </TabsContent>
+                <TabsContent value="viewed-history">
+                    <ViewedHistory />
+                </TabsContent>
+                 <TabsContent value="profile">
+                     <div className="mt-8 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                        <Card className="lg:col-span-2">
                             <form onSubmit={handleProfileSave}>
                                 <CardHeader>
-                                    <CardTitle>Agent Profile</CardTitle>
-                                    <CardDescription>This information will be displayed on your public agent page.</CardDescription>
+                                    <CardTitle>Personal Information</CardTitle>
+                                    <CardDescription>Update your name and contact details.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="grid gap-6">
                                     {profileLoading ? (
-                                        <Skeleton className="h-64 w-full" />
+                                        <>
+                                            <div className="grid sm:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Skeleton className="h-4 w-20" />
+                                                    <Skeleton className="h-10 w-full" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Skeleton className="h-4 w-20" />
+                                                    <Skeleton className="h-10 w-full" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-4 w-28" />
+                                                <Skeleton className="h-10 w-full" />
+                                            </div>
+                                        </>
                                     ) : (
                                         <>
                                             <div className="grid sm:grid-cols-2 gap-4">
@@ -396,308 +621,90 @@ function DashboardPageContent() {
                                                 <Label htmlFor="phone">Phone Number</Label>
                                                 <Input id="phone" type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="e.g. +234 801 234 5678"/>
                                             </div>
-                                            <div className="space-y-2">
-                                                <Label>Profile Picture</Label>
-                                                <div className="flex items-center gap-4">
-                                                    <Avatar className="h-20 w-20">
-                                                        <AvatarImage src={photoURL} alt={displayName} />
-                                                        <AvatarFallback>{displayName?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
-                                                    </Avatar>
-                                                    <div className="flex-grow">
-                                                        <Input 
-                                                            id="photo-upload" 
-                                                            type="file" 
-                                                            onChange={handleProfileImageUpload} 
-                                                            accept="image/*" 
-                                                            disabled={uploadProgress !== null}
-                                                        />
-                                                        {uploadProgress !== null && (
-                                                        <div className="flex items-center gap-2 mt-2">
-                                                            <Progress value={uploadProgress} className="w-full" />
-                                                            <span className="text-sm text-muted-foreground">{Math.round(uploadProgress)}%</span>
-                                                        </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="about">About Me</Label>
-                                                <Textarea id="about" value={about} onChange={(e) => setAbout(e.target.value)} placeholder="Tell clients a little about yourself, your experience, and your approach." />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="specialties">Specialties</Label>
-                                                <Input id="specialties" value={specialties} onChange={(e) => setSpecialties(e.target.value)} placeholder="Luxury Homes, First-time Buyers, Commercial (comma-separated)" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="languages">Languages</Label>
-                                                <Input id="languages" value={languages} onChange={(e) => setLanguages(e.target.value)} placeholder="English, Yoruba, Igbo (comma-separated)" />
-                                            </div>
                                         </>
                                     )}
                                 </CardContent>
                                 <CardFooter className="flex-col items-start gap-2">
                                     <Button type="submit" disabled={isSaving}>
-                                        {isSaving ? (uploadProgress !== null ? "Uploading..." : "Saving...") : "Save Changes"}
+                                        {isSaving ? "Saving..." : "Save Changes"}
                                     </Button>
                                     {saveMessage && <p className="text-sm text-muted-foreground">{saveMessage}</p>}
                                 </CardFooter>
                             </form>
                         </Card>
-                    </TabsContent>
-                    <TabsContent value="performance">
-                        <div className="mt-8 space-y-8">
-                           {analyticsLoading ? <Skeleton className="h-96 w-full" /> : (
-                            <>
-                             <div className="grid gap-6 md:grid-cols-2">
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">Total Searches Tracked</CardTitle>
-                                        <Eye className="h-4 w-4 text-muted-foreground" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold">{analyticsStats?.processedEvents || 0}</div>
-                                        <p className="text-xs text-muted-foreground">Across the entire platform</p>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">Unique Locations Searched</CardTitle>
-                                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold">{analyticsStats?.topLocations?.length || 0}</div>
-                                        <p className="text-xs text-muted-foreground">In the top 100 events</p>
-                                    </CardContent>
-                                </Card>
-                            </div>
-
-                            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-7">
-                                <Card className="lg:col-span-4">
-                                    <CardHeader>
-                                        <CardTitle>Top Searched Locations</CardTitle>
-                                        <CardDescription>
-                                            {analyticsStats?.topLocations?.length > 0 ? 'The most popular locations users are searching for.' : 'No search data available yet.'}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        {analyticsStats?.topLocations?.length > 0 ? (
-                                            <Table>
-                                                <TableHeader>
-                                                    <TableRow>
-                                                        <TableHead>Location</TableHead>
-                                                        <TableHead className="text-right">Search Count</TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {analyticsStats.topLocations.map((loc: {location: string, count: number}) => (
-                                                        <TableRow key={loc.location}>
-                                                            <TableCell className="font-medium capitalize">{loc.location}</TableCell>
-                                                            <TableCell className="text-right">{loc.count}</TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </Table>
-                                        ) : (
-                                            <div className="text-center text-muted-foreground p-8">
-                                                <p>Start tracking 'search_performed' events to see data here.</p>
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                                <Card className="lg:col-span-3">
-                                    <CardHeader>
-                                        <CardTitle>Market Insights</CardTitle>
-                                        <CardDescription>AI-generated summary of market trends.</CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        {analyticsStats?.marketInsights?.length > 0 ? (
-                                            <ul className="space-y-2 text-sm text-muted-foreground">
-                                                {analyticsStats.marketInsights.map((insight: string, index: number) => (
-                                                    <li key={index} className="flex items-start gap-2">
-                                                        <TrendingUp className="h-4 w-4 mt-1 flex-shrink-0 text-primary" />
-                                                        <span>{insight}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                             <div className="text-center text-muted-foreground p-8">
-                                                <p>No insights to display.</p>
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            </div>
-                           </>
-                           )}
-                        </div>
-                    </TabsContent>
-                </Tabs>
-            </div>
-        </div>
-    )
-  }
-
-  // Default to customer dashboard
-  return (
-    <div className="flex flex-col flex-grow bg-background py-8 sm:py-12">
-        <div className="mx-auto w-full max-w-7xl flex flex-col flex-grow px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            My Dashboard
-          </h1>
-          <p className="mt-1 text-muted-foreground">Welcome back, {user.displayName || user.email}</p>
-          <Tabs defaultValue={initialTab} className="mt-8 flex flex-col flex-grow">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-3xl">
-              <TabsTrigger value="saved-homes">
-                <Heart className="mr-2 h-4 w-4" />
-                Saved Homes
-              </TabsTrigger>
-              <TabsTrigger value="saved-searches">
-                <Filter className="mr-2 h-4 w-4" />
-                Saved Searches
-              </TabsTrigger>
-              <TabsTrigger value="viewed-history">
-                <History className="mr-2 h-4 w-4" />
-                Viewed History
-              </TabsTrigger>
-              <TabsTrigger value="profile">
-                <UserIcon className="mr-2 h-4 w-4" />
-                Profile
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="saved-homes">
-                <SavedHomes />
-            </TabsContent>
-            <TabsContent value="saved-searches">
-                <SavedSearches />
-            </TabsContent>
-            <TabsContent value="viewed-history">
-                <ViewedHistory />
-            </TabsContent>
-             <TabsContent value="profile">
-                 <div className="mt-8 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                    <Card className="lg:col-span-2">
-                        <form onSubmit={handleProfileSave}>
+    
+                        <Card>
                             <CardHeader>
-                                <CardTitle>Personal Information</CardTitle>
-                                <CardDescription>Update your name and contact details.</CardDescription>
+                                <CardTitle>Your Agent</CardTitle>
+                                 <CardDescription>Your primary contact for your home search.</CardDescription>
                             </CardHeader>
-                            <CardContent className="grid gap-6">
-                                {profileLoading ? (
-                                    <>
-                                        <div className="grid sm:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Skeleton className="h-4 w-20" />
-                                                <Skeleton className="h-10 w-full" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Skeleton className="h-4 w-20" />
-                                                <Skeleton className="h-10 w-full" />
-                                            </div>
+                            <CardContent>
+                                {linkedAgent ? (
+                                    <div className="flex items-center gap-4">
+                                         <Avatar className="h-16 w-16">
+                                            <AvatarImage src={linkedAgent.photoURL ?? undefined} alt={linkedAgent.displayName ?? "Agent"} />
+                                            <AvatarFallback>{linkedAgent.displayName?.split(" ").map((n: string) => n[0]).join("")}</AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <p className="font-bold">{linkedAgent.displayName}</p>
                                         </div>
-                                        <div className="space-y-2">
-                                            <Skeleton className="h-4 w-28" />
-                                            <Skeleton className="h-10 w-full" />
-                                        </div>
-                                    </>
+                                    </div>
                                 ) : (
-                                    <>
-                                        <div className="grid sm:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="name">Full Name</Label>
-                                                <Input id="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="email">Email</Label>
-                                                <Input id="email" type="email" value={user.email || ''} readOnly disabled />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="phone">Phone Number</Label>
-                                            <Input id="phone" type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="e.g. +234 801 234 5678"/>
-                                        </div>
-                                    </>
+                                    <div className="text-center text-muted-foreground py-4">
+                                        <p>No linked agent.</p>
+                                        <Button variant="link" size="sm" asChild>
+                                            <Link href="/agents">Find an agent</Link>
+                                        </Button>
+                                    </div>
                                 )}
                             </CardContent>
-                            <CardFooter className="flex-col items-start gap-2">
-                                <Button type="submit" disabled={isSaving}>
-                                    {isSaving ? "Saving..." : "Save Changes"}
-                                </Button>
-                                {saveMessage && <p className="text-sm text-muted-foreground">{saveMessage}</p>}
+                             <CardFooter>
+                                <Button variant="outline" className="w-full">Change Agent</Button>
                             </CardFooter>
-                        </form>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Your Agent</CardTitle>
-                             <CardDescription>Your primary contact for your home search.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {linkedAgent ? (
-                                <div className="flex items-center gap-4">
-                                     <Avatar className="h-16 w-16">
-                                        <AvatarImage src={linkedAgent.photoURL ?? undefined} alt={linkedAgent.displayName ?? "Agent"} />
-                                        <AvatarFallback>{linkedAgent.displayName?.split(" ").map((n: string) => n[0]).join("")}</AvatarFallback>
-                                    </Avatar>
+                        </Card>
+    
+                        <Card className="lg:col-span-3">
+                            <CardHeader>
+                                <CardTitle>Communication Preferences</CardTitle>
+                                <CardDescription>Manage how we get in touch with you.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                 <div className="flex items-center justify-between rounded-lg border p-4">
                                     <div>
-                                        <p className="font-bold">{linkedAgent.displayName}</p>
+                                        <Label htmlFor="sms-notifications" className="font-medium">SMS Notifications</Label>
+                                        <p className="text-sm text-muted-foreground">Receive important updates via text message.</p>
                                     </div>
+                                    <Switch id="sms-notifications" />
                                 </div>
-                            ) : (
-                                <div className="text-center text-muted-foreground py-4">
-                                    <p>No linked agent.</p>
-                                    <Button variant="link" size="sm" asChild>
-                                        <Link href="/agents">Find an agent</Link>
-                                    </Button>
+                                <div className="space-y-2 rounded-lg border p-4">
+                                     <p className="font-medium">Email Notifications</p>
+                                     <div className="space-y-2 pl-2">
+                                        <div className="flex items-center gap-2">
+                                            <Checkbox id="email-saved-searches" defaultChecked />
+                                            <Label htmlFor="email-saved-searches" className="font-normal">Saved Search Alerts</Label>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Checkbox id="email-market-news" defaultChecked />
+                                            <Label htmlFor="email-market-news" className="font-normal">Market News & Insights</Label>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Checkbox id="email-partner-offers" />
+                                            <Label htmlFor="email-partner-offers" className="font-normal">Relevant Partner Offers</Label>
+                                        </div>
+                                     </div>
                                 </div>
-                            )}
-                        </CardContent>
-                         <CardFooter>
-                            <Button variant="outline" className="w-full">Change Agent</Button>
-                        </CardFooter>
-                    </Card>
-
-                    <Card className="lg:col-span-3">
-                        <CardHeader>
-                            <CardTitle>Communication Preferences</CardTitle>
-                            <CardDescription>Manage how we get in touch with you.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                             <div className="flex items-center justify-between rounded-lg border p-4">
-                                <div>
-                                    <Label htmlFor="sms-notifications" className="font-medium">SMS Notifications</Label>
-                                    <p className="text-sm text-muted-foreground">Receive important updates via text message.</p>
-                                </div>
-                                <Switch id="sms-notifications" />
-                            </div>
-                            <div className="space-y-2 rounded-lg border p-4">
-                                 <p className="font-medium">Email Notifications</p>
-                                 <div className="space-y-2 pl-2">
-                                    <div className="flex items-center gap-2">
-                                        <Checkbox id="email-saved-searches" defaultChecked />
-                                        <Label htmlFor="email-saved-searches" className="font-normal">Saved Search Alerts</Label>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Checkbox id="email-market-news" defaultChecked />
-                                        <Label htmlFor="email-market-news" className="font-normal">Market News & Insights</Label>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Checkbox id="email-partner-offers" />
-                                        <Label htmlFor="email-partner-offers" className="font-normal">Relevant Partner Offers</Label>
-                                    </div>
-                                 </div>
-                            </div>
-                        </CardContent>
-                        <CardFooter>
-                            <Button>Update Preferences</Button>
-                        </CardFooter>
-                    </Card>
-
-                </div>
-            </TabsContent>
-          </Tabs>
+                            </CardContent>
+                            <CardFooter>
+                                <Button>Update Preferences</Button>
+                            </CardFooter>
+                        </Card>
+    
+                    </div>
+                </TabsContent>
+              </Tabs>
+            </div>
         </div>
-    </div>
+    </>
   );
 }
 
