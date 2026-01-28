@@ -9,8 +9,7 @@ import {
     serverTimestamp,
     type Firestore 
 } from 'firebase/firestore';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { getApp } from 'firebase/app';
+import { uploadToCloudinary } from './cloudinary';
 import type { Property } from '@/types';
 
 type PropertyFormData = Omit<Property, 'id' | 'agentId' | 'createdAt' | 'updatedAt'>;
@@ -23,37 +22,23 @@ export async function uploadPropertyImage(
     if (!file) {
         throw new Error("No file provided for upload.");
     }
-    if (!userId) {
+     if (!userId) {
         throw new Error("User ID is required for image upload.");
     }
 
-    const app = getApp();
-    const storage = getStorage(app);
-    const storageRef = ref(storage, `properties/${userId}/${Date.now()}-${file.name}`);
-
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    return new Promise((resolve, reject) => {
-        uploadTask.on('state_changed',
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                onProgress(progress);
-            },
-            (error) => {
-                console.error("Firebase Storage upload failed:", error);
-                onProgress(null);
-                reject(error);
-            },
-            () => {
-                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                    resolve(downloadURL);
-                }).catch(error => {
-                    console.error("Failed to get download URL:", error);
-                    reject(error);
-                });
-            }
-        );
-    });
+    const folder = `nigeria-properties/${userId}`;
+    
+    try {
+        const result = await uploadToCloudinary(file, (progress) => {
+            onProgress(progress);
+        }, folder);
+        // Using an optimized URL for better performance
+        return result.optimizedUrl; 
+    } catch (error) {
+        onProgress(null);
+        console.error("Cloudinary upload failed:", error);
+        throw error;
+    }
 }
 
 
