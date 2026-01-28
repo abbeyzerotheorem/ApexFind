@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
@@ -6,7 +7,16 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-xl font-bold mb-4">ApexFind</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <Image
+                src="/ApexFindlogo.png"
+                alt="ApexFind Logo"
+                width={28}
+                height={28}
+                className="h-7 w-7"
+              />
+              <span className="text-xl font-bold">ApexFind</span>
+            </div>
             <p className="text-muted-foreground">
               Your trusted partner in finding the perfect home.
             </p>
