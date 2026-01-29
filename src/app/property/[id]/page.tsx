@@ -1,5 +1,5 @@
 import PropertyDetailsPage from '@/components/property-details-page';
 
-export default async function Page({ params }: { params: { id: string } }) {
-  return <PropertyDetailsPage id={params.id} />;
+export default async function Page(props: { params: { id: string } }) {
+  return <PropertyDetailsPage id={props.params.id} />;
 }
