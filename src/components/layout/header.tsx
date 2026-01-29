@@ -14,6 +14,17 @@ import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
 import { doc, collection, query, where } from 'firebase/firestore';
 import type { Conversation } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 
 // Links for non-registered users and customers
@@ -151,9 +162,25 @@ export default function Header() {
                                 <Link href="/dashboard?tab=profile">Profile</Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={handleSignOut}>
-                            Sign out
-                            </DropdownMenuItem>
+                             <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                        Sign out
+                                    </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure you want to sign out?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            You will be returned to the homepage and will need to sign in again to access your dashboard.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={handleSignOut}>Sign Out</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </>
@@ -209,9 +236,23 @@ export default function Header() {
                         </>
                    )}
                   {user ? (
-                      <SheetClose asChild>
-                        <Button onClick={handleSignOut} variant="outline">Sign Out</Button>
-                      </SheetClose>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="outline" className="justify-start">Sign Out</Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure you want to sign out?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    You will be returned to the homepage and will need to sign in again to access your dashboard.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleSignOut}>Sign Out</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                   ) : (
                     <SheetClose asChild>
                       <Button asChild>
