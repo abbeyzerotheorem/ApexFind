@@ -23,10 +23,14 @@ service cloud.firestore {
     }
 
     // Allow public read for user profiles to find agents.
-    // Writes are still restricted to the user themselves.
+    // Writes are restricted.
     match /users/{userId} {
       allow read: if true;
-      allow write: if request.auth.uid == userId;
+      // Users can create and update their own profile.
+      allow create, update: if request.auth.uid == userId;
+      // Users can delete their own account, or an admin can delete any user.
+      allow delete: if request.auth.uid == userId || 
+                      (request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
 
       // Allow users to manage their own saved homes
       match /saved_homes/{propertyId} {

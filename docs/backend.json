@@ -47,7 +47,8 @@
           "description": "The role of the user, determining their permissions and dashboard view.",
           "enum": [
             "customer",
-            "agent"
+            "agent",
+            "admin"
           ]
         },
         "createdAt": {
