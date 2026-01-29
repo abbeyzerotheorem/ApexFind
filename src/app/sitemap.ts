@@ -1,3 +1,4 @@
+
 import { MetadataRoute } from 'next';
 import { adminDb } from '@/lib/firebase/admin';
 import type { Property } from '@/types';
@@ -21,17 +22,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: route === '/' ? 'daily' : 'weekly' as 'daily' | 'weekly',
     priority: route === '/' ? 1 : 0.8,
   }));
-
-  // Fetch properties from Firestore
-  const propertiesSnapshot = await adminDb.collection('properties').get();
-  const properties = propertiesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Property));
-
-  const propertyUrls = properties.map((property) => ({
-    url: `${baseUrl}/property/${property.id}`,
-    lastModified: property.updatedAt ? property.updatedAt.toDate() : new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: 0.7,
-  }));
   
   // Add Nigerian location pages
   const nigerianCities = [
@@ -45,6 +35,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: 'daily' as const,
     priority: 0.8
   }));
+
+  let propertyUrls: MetadataRoute.Sitemap = [];
+
+  try {
+    // Fetch properties from Firestore
+    const propertiesSnapshot = await adminDb.collection('properties').get();
+    const properties = propertiesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Property));
+
+    propertyUrls = properties.map((property) => ({
+      url: `${baseUrl}/property/${property.id}`,
+      lastModified: property.updatedAt ? property.updatedAt.toDate() : new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }));
+  } catch (error) {
+    console.warn(`
+      Could not generate dynamic property URLs for sitemap.xml.
+      This is likely because the FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set in the build environment.
+      The sitemap will be generated with static routes only.
+      Error: ${(error as Error).message}
+    `);
+  }
 
   return [...staticUrls, ...propertyUrls, ...cityUrls];
 }
