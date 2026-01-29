@@ -21,7 +21,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 type AgentUser = {
@@ -192,7 +191,7 @@ function AgentCard({ agent, currentUserRole }: { agent: AgentUser, currentUserRo
         reviewCount: 55,
     };
 
-    const canDelete = currentUserRole === 'agent' && user?.uid !== agent.id;
+    const canDelete = !!user && user.uid !== agent.id;
 
     return (
         <>
