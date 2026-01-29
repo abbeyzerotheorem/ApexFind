@@ -1,11 +1,13 @@
+
 'use client';
 import { useState, useMemo } from 'react';
-import { useCollection, useFirestore, useUser } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { useCollection, useFirestore, useUser, useDoc } from '@/firebase';
+import { collection, query, where, doc, deleteDoc } from 'firebase/firestore';
+import { useQueryClient } from '@tanstack/react-query';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
-import { Search, ChevronDown, Star, Loader2, Phone } from "lucide-react";
+import { Search, ChevronDown, Star, Loader2, Phone, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -19,6 +21,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 type AgentUser = {
@@ -31,12 +34,16 @@ type AgentUser = {
 
 export default function AgentSearchPage() {
     const firestore = useFirestore();
+    const { user } = useUser();
     const [searchTerm, setSearchTerm] = useState('');
     
     const agentsQuery = useMemo(() => {
         if (!firestore) return null;
         return query(collection(firestore, 'users'), where('role', '==', 'agent'));
     }, [firestore]);
+
+    const userProfileRef = useMemo(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
+    const { data: userProfile } = useDoc(userProfileRef);
 
     const { data: allAgents, loading } = useCollection<Omit<AgentUser, 'id'>>(agentsQuery);
 
@@ -111,7 +118,7 @@ export default function AgentSearchPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {loading && <div className="col-span-full flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin" /></div>}
                     {!loading && filteredAgents?.map(agent => (
-                        <AgentCard key={agent.id} agent={agent} />
+                        <AgentCard key={agent.id} agent={agent} currentUserRole={userProfile?.role} />
                     ))}
                     {!loading && (!filteredAgents || filteredAgents.length === 0) && (
                         <div className="col-span-full text-center py-12">
@@ -125,11 +132,13 @@ export default function AgentSearchPage() {
     )
 }
 
-function AgentCard({ agent }: { agent: AgentUser }) {
+function AgentCard({ agent, currentUserRole }: { agent: AgentUser, currentUserRole?: 'agent' | 'customer' }) {
     const { user } = useUser();
     const firestore = useFirestore();
     const router = useRouter();
+    const queryClient = useQueryClient();
     const [isContacting, setIsContacting] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [showAuthDialog, setShowAuthDialog] = useState(false);
     
     const handleContactAgent = async () => {
@@ -149,9 +158,23 @@ function AgentCard({ agent }: { agent: AgentUser }) {
             router.push(`/messages?convoId=${conversationId}`);
         } catch (error) {
             console.error("Failed to create conversation", error);
-            // In a real app, show a toast notification
         } finally {
             setIsContacting(false);
+        }
+    }
+
+    const handleDeleteAgent = async () => {
+        if (!firestore) return;
+        setIsDeleting(true);
+        try {
+            const agentDocRef = doc(firestore, 'users', agent.id);
+            await deleteDoc(agentDocRef);
+            // Invalidate queries to force a refetch of agent and property lists
+            await queryClient.invalidateQueries({ queryKey: ['firestore-collection'] });
+        } catch (error) {
+            console.error("Failed to delete agent:", error);
+        } finally {
+            setIsDeleting(false);
         }
     }
 
@@ -168,9 +191,11 @@ function AgentCard({ agent }: { agent: AgentUser }) {
         reviewCount: 55,
     };
 
+    const canDelete = currentUserRole === 'agent' && user?.uid !== agent.id;
+
     return (
         <>
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-lg">
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-lg flex flex-col">
                 <div className="p-6 text-center">
                     <Link href={`/agents/${agentProfile.id}`}>
                         <Avatar className="h-24 w-24 mx-auto mb-4">
@@ -196,11 +221,33 @@ function AgentCard({ agent }: { agent: AgentUser }) {
                         <p className="text-sm text-muted-foreground">Sales (24 mo)</p>
                     </div>
                 </div>
-                <div className="p-6">
+                <div className="p-6 mt-auto">
                      <Button className="w-full" onClick={handleContactAgent} disabled={isContacting}>
                         {isContacting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Phone className="mr-2 h-4 w-4"/>}
                         {isContacting ? 'Contacting...' : 'Contact Agent'}
                     </Button>
+                    {canDelete && (
+                         <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" className="w-full mt-2" disabled={isDeleting}>
+                                    {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Trash2 className="mr-2 h-4 w-4"/>}
+                                    {isDeleting ? 'Deleting...' : 'Delete Agent'}
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will permanently delete the agent's profile and all associated data. Their listings will be removed from the site. This action cannot be undone.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDeleteAgent}>Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    )}
                 </div>
             </div>
             <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
