@@ -31,7 +31,7 @@ export default function HeroSearch() {
       )}
       <div className="absolute inset-0 bg-black/50" />
       <div className="container relative z-10 mx-auto flex h-full flex-col items-center justify-center px-4 text-center sm:px-6 lg:px-8">
-        <h1 className="text-5xl font-bold text-white sm:text-6xl md:text-7xl">
+        <h1 className="text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl">
           Find Your Dream Property in Nigeria
         </h1>
         <p className="mt-4 max-w-2xl text-lg text-gray-200">

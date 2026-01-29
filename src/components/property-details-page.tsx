@@ -339,7 +339,7 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
             </div>
 
             <div className="lg:col-span-1">
-              <div className="sticky top-24 rounded-lg border bg-card p-6 shadow-sm">
+              <div className="lg:sticky top-24 rounded-lg border bg-card p-6 shadow-sm">
                 <h3 className="text-xl font-bold text-foreground">Contact Agent</h3>
                 <form className="mt-4 space-y-4" onSubmit={handleProtectedAction}>
                   <div>

@@ -155,7 +155,7 @@ export default function SearchFilters({
                         </form>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <ToggleGroup type="single" value={listingType} onValueChange={handleTypeChange} aria-label="Transaction Type">
                             <ToggleGroupItem value="buy" aria-label="For Sale">Buy</ToggleGroupItem>
                             <ToggleGroupItem value="rent" aria-label="For Rent">Rent</ToggleGroupItem>

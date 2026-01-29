@@ -673,7 +673,7 @@ function DashboardPageContent() {
               )}
 
               <Tabs defaultValue={initialTab} className="mt-8 flex flex-col flex-grow">
-                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-3xl">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 max-w-3xl">
                   <TabsTrigger value="saved-homes">
                     <Heart className="mr-2 h-4 w-4" />
                     Saved Homes

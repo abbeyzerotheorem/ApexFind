@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -23,23 +22,21 @@ export default function SellPage() {
                             <p className="mt-6 text-lg leading-8 text-muted-foreground">
                                 Get Nigeria's most accurate home-value estimate, based on real market data. It's a great first step to figure out your next move.
                             </p>
-                            <div className="mt-10 flex items-center gap-x-6">
-                                <div className="relative w-full">
-                                  <input
-                                    type="text"
-                                    value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                    placeholder="Enter your property address"
-                                    className="w-full h-16 px-6 pr-40 text-lg border border-input bg-background rounded-xl focus:ring-2 focus:ring-ring focus:border-ring text-foreground"
-                                  />
-                                  <Button
-                                    onClick={() => setShowValuation(true)}
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-3 rounded-lg font-semibold text-lg"
-                                    size="lg"
-                                  >
-                                    Get Value
-                                  </Button>
-                                </div>
+                            <div className="mt-10 flex flex-col sm:flex-row items-center gap-x-2 gap-y-3">
+                                <input
+                                type="text"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                placeholder="Enter your property address"
+                                className="w-full h-16 px-6 text-lg border border-input bg-background rounded-xl focus:ring-2 focus:ring-ring focus:border-ring text-foreground"
+                                />
+                                <Button
+                                onClick={() => setShowValuation(true)}
+                                className="w-full sm:w-auto px-8 py-3 rounded-lg font-semibold text-lg"
+                                size="lg"
+                                >
+                                Get Value
+                                </Button>
                             </div>
                         </div>
                     </div>
