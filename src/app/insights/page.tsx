@@ -48,6 +48,20 @@ export default function InsightsPage() {
 
     const { data: featuredProperties, loading: propertiesLoading } = useCollection<Property>(featuredPropertiesQuery);
 
+    const usersQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, "users"));
+    }, [firestore]);
+    const { data: allUsers, loading: usersLoading } = useCollection(usersQuery);
+
+    const loading = propertiesLoading || usersLoading;
+
+    const activeProperties = useMemo(() => {
+        if (!featuredProperties || !allUsers) return [];
+        const activeUserIds = new Set(allUsers.map(user => user.id));
+        return featuredProperties.filter(p => activeUserIds.has(p.agentId));
+    }, [featuredProperties, allUsers]);
+
     const handleSearch = (e: FormEvent) => {
         e.preventDefault();
         setDisplayLocation(searchValue);
@@ -251,16 +265,16 @@ export default function InsightsPage() {
                             Browse a selection of popular properties currently on the market.
                         </p>
                     </div>
-                    {propertiesLoading ? (
+                    {loading ? (
                         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-96 w-full" />)}
                         </div>
                     ) : (
                         <>
-                            {featuredProperties && featuredProperties.length > 0 ? (
+                            {activeProperties && activeProperties.length > 0 ? (
                                 <>
                                     <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                                        {featuredProperties?.map((p) => (
+                                        {activeProperties?.map((p) => (
                                             <PropertyCard key={p.id} property={p} />
                                         ))}
                                     </div>

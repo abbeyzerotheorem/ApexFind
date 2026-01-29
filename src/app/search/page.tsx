@@ -42,8 +42,15 @@ function SearchPageComponent() {
     if (!firestore) return null;
     return query(collection(firestore, "properties"));
   }, [firestore]);
+  const { data: allProperties, loading: propertiesLoading } = useCollection<Property>(propertiesQuery);
 
-  const { data: allProperties, loading } = useCollection<Property>(propertiesQuery);
+  const usersQuery = useMemo(() => {
+      if (!firestore) return null;
+      return query(collection(firestore, "users"));
+  }, [firestore]);
+  const { data: allUsers, loading: usersLoading } = useCollection(usersQuery);
+
+  const loading = propertiesLoading || usersLoading;
 
   const searchQuery = searchParams.get('q') || "";
   const minPrice = searchParams.get('minPrice') ? parseInt(searchParams.get('minPrice')!) : 0;
@@ -59,9 +66,15 @@ function SearchPageComponent() {
   const sort = searchParams.get('sort') || 'relevant';
 
   const filteredProperties = useMemo(() => {
-    if (!allProperties) return [];
+    if (loading || !allProperties || !allUsers) return [];
+
+    const activeUserIds = new Set(allUsers.map(user => user.id));
 
     let filtered = allProperties.filter(property => {
+      if (!activeUserIds.has(property.agentId)) {
+          return false;
+      }
+      
       let matches = true;
 
       if (listingType) {
@@ -129,7 +142,7 @@ function SearchPageComponent() {
 
     return filtered;
 
-  }, [allProperties, searchQuery, minPrice, maxPrice, beds, baths, homeTypes, listingType, features, minSqft, maxSqft, keywords, sort]);
+  }, [allProperties, allUsers, loading, searchQuery, minPrice, maxPrice, beds, baths, homeTypes, listingType, features, minSqft, maxSqft, keywords, sort]);
   
   return (
     <>
