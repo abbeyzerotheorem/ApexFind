@@ -448,11 +448,7 @@ export default function UserPreferences({ userId, onComplete }: UserPreferencesP
                     (step === 3 && !preferences.budgetRange) ||
                     loading
                   }
-                  className={`flex-1 px-8 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3 ${
-                    step === 3
-                      ? 'bg-gradient-to-r from-[#008751] to-emerald-600 hover:from-emerald-600 hover:to-[#008751] text-white shadow-lg hover:shadow-xl'
-                      : 'bg-gradient-to-r from-[#64B5F6] to-[#42A5F5] hover:from-[#42A5F5] hover:to-[#64B5F6] text-white shadow-lg hover:shadow-xl'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className="flex-1 px-8 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3 bg-gradient-to-r from-[#64B5F6] to-[#42A5F5] hover:from-[#42A5F5] hover:to-[#64B5F6] text-white shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <>
