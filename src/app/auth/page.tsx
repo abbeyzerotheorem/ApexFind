@@ -22,6 +22,7 @@ export default function AuthPage() {
 
     const [flowState, setFlowState] = useState({
         userId: '',
+        userRole: 'customer' as 'customer' | 'agent',
         showOnboarding: false,
         showPreferences: false,
     });
@@ -32,16 +33,21 @@ export default function AuthPage() {
         }
     }, [user, loading, router, flowState]);
 
-    const handleSignupSuccess = (uid: string) => {
-        setFlowState({ userId: uid, showOnboarding: true, showPreferences: false });
+    const handleSignupSuccess = (uid: string, role: 'customer' | 'agent') => {
+        setFlowState({ userId: uid, userRole: role, showOnboarding: true, showPreferences: false });
     };
     
     const handleOnboardingComplete = () => {
-        setFlowState(prev => ({ ...prev, showOnboarding: false, showPreferences: true }));
+        // Agents go straight to the dashboard, customers see preferences
+        if (flowState.userRole === 'agent') {
+            handleSkipAll();
+        } else {
+            setFlowState(prev => ({ ...prev, showOnboarding: false, showPreferences: true }));
+        }
     };
 
     const handlePreferencesComplete = () => {
-        setFlowState({ userId: '', showOnboarding: false, showPreferences: false });
+        setFlowState({ userId: '', userRole: 'customer', showOnboarding: false, showPreferences: false });
         router.push('/dashboard');
     };
 
@@ -66,7 +72,8 @@ export default function AuthPage() {
         return (
           <>
             <OnboardingFlow 
-              userId={flowState.userId} 
+              userId={flowState.userId}
+              role={flowState.userRole}
               onComplete={handleOnboardingComplete}
             />
             <button
@@ -278,7 +285,7 @@ function SignInForm() {
     );
 }
 
-function SignUpForm({ onSignupSuccess }: { onSignupSuccess: (uid: string) => void }) {
+function SignUpForm({ onSignupSuccess }: { onSignupSuccess: (uid: string, role: 'customer' | 'agent') => void }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -292,7 +299,7 @@ function SignUpForm({ onSignupSuccess }: { onSignupSuccess: (uid: string) => voi
     setIsError(false);
     try {
         const userCredential = await signInWithGoogle();
-        onSignupSuccess(userCredential.user.uid);
+        onSignupSuccess(userCredential.user.uid, 'customer'); // Google signups default to customer
     } catch (error: any) {
         setIsError(true);
         setMessage(error.message);
@@ -306,7 +313,7 @@ function SignUpForm({ onSignupSuccess }: { onSignupSuccess: (uid: string) => voi
 
     try {
         const userCredential = await signUp(name, email, password, role);
-        onSignupSuccess(userCredential.user.uid);
+        onSignupSuccess(userCredential.user.uid, role);
     } catch (error: any) {
         setIsError(true);
         if (error.code === 'auth/email-already-in-use') {

@@ -6,7 +6,7 @@ import { X, ArrowRight, Check } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
-const ONBOARDING_STEPS = [
+const CUSTOMER_ONBOARDING_STEPS = [
   {
     id: 'welcome',
     title: 'Welcome to ApexFind 🇳🇬',
@@ -67,17 +67,85 @@ const ONBOARDING_STEPS = [
       'Schedule property tours'
     ]
   }
-]
+];
+
+const AGENT_ONBOARDING_STEPS = [
+  {
+    id: 'agent-welcome',
+    title: 'Welcome, Agent!',
+    description: 'Start listing properties and connect with buyers and renters across Nigeria.',
+    illustration: '/illustrations/onboarding-agent-welcome.jpg',
+    alt: 'An illustration showing a real estate agent welcoming a client to a new home.',
+    features: [
+      'List unlimited properties',
+      'Build your professional brand',
+      'Gain valuable market insights'
+    ]
+  },
+  {
+    id: 'agent-profile',
+    title: 'Build Your Public Profile',
+    description: 'Create a compelling profile to attract clients. Add your photo, bio, and specialties.',
+    illustration: '/illustrations/onboarding-agent-profile.jpg',
+    alt: 'An illustration of an agent profile page with a photo, bio, and contact information.',
+    features: [
+      'Showcase your experience and sales',
+      'List your spoken languages',
+      'Build trust with potential clients'
+    ]
+  },
+  {
+    id: 'agent-listing',
+    title: 'List Properties with Ease',
+    description: 'Our intuitive form makes it simple to add and manage your property listings.',
+    illustration: '/illustrations/onboarding-agent-listing.jpg',
+    alt: 'An illustration of a simple property listing form on a screen.',
+    features: [
+      'Upload high-quality photos',
+      'Add detailed descriptions and amenities',
+      'Update status and price instantly'
+    ]
+  },
+  {
+    id: 'agent-performance',
+    title: 'Track Your Performance',
+    description: 'Your agent dashboard provides insights into listing views and market trends.',
+    illustration: '/illustrations/onboarding-agent-performance.jpg',
+    alt: 'An illustration of a dashboard with charts and graphs showing performance metrics.',
+    features: [
+      'Monitor views on your listings',
+      'See top searched locations',
+      'Understand what buyers are looking for'
+    ]
+  },
+  {
+    id: 'agent-chat',
+    title: 'Connect with Clients Directly',
+    description: 'Use our secure, built-in messaging to communicate with interested parties.',
+    illustration: '/illustrations/onboarding-agent-chat.jpg',
+    alt: 'An illustration of a chat interface between an agent and a client.',
+    features: [
+      'Receive inquiries in real-time',
+      'Schedule tours and meetings',
+      'Keep all communications in one place'
+    ]
+  }
+];
+
 
 interface OnboardingFlowProps {
-  userId: string
-  onComplete?: () => void
+  userId: string;
+  role?: 'customer' | 'agent';
+  onComplete?: () => void;
 }
 
-export default function OnboardingFlow({ userId, onComplete }: OnboardingFlowProps) {
+export default function OnboardingFlow({ userId, role = 'customer', onComplete }: OnboardingFlowProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [isOpen, setIsOpen] = useState(true)
   const router = useRouter()
+
+  const ONBOARDING_STEPS = role === 'agent' ? AGENT_ONBOARDING_STEPS : CUSTOMER_ONBOARDING_STEPS;
+  const headerTitle = role === 'agent' ? 'Agent Welcome' : 'Welcome to ApexFind';
 
   // Check if user has completed onboarding
   useEffect(() => {
@@ -143,7 +211,7 @@ export default function OnboardingFlow({ userId, onComplete }: OnboardingFlowPro
               <span className="text-white font-bold text-lg">A</span>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Welcome to ApexFind</h2>
+              <h2 className="text-xl font-bold text-gray-900">{headerTitle}</h2>
               <p className="text-sm text-gray-600">
                 Step {currentStep + 1} of {ONBOARDING_STEPS.length}
               </p>
@@ -252,7 +320,7 @@ export default function OnboardingFlow({ userId, onComplete }: OnboardingFlowPro
                   className="px-8 py-4 bg-gradient-to-r from-[#64B5F6] to-[#42A5F5] text-white rounded-xl hover:from-[#42A5F5] hover:to-[#64B5F6] font-semibold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 group"
                 >
                   <span className="text-lg">
-                    {isLastStep ? 'Start Finding Properties' : 'Continue'}
+                    {isLastStep ? (role === 'agent' ? 'Go to Dashboard' : 'Set Preferences') : 'Continue'}
                   </span>
                   {!isLastStep && (
                     <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />

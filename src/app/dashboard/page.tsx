@@ -300,7 +300,7 @@ function DashboardPageContent() {
   if (userProfile?.role === 'agent') {
     return (
         <>
-            <OnboardingFlow userId={user.uid} />
+            <OnboardingFlow userId={user.uid} role={userProfile.role} />
             <div className="flex flex-col flex-grow bg-background py-8 sm:py-12">
                 <div className="mx-auto w-full max-w-7xl flex flex-col flex-grow px-4 sm:px-6 lg:px-8">
                   <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
@@ -581,9 +581,17 @@ function DashboardPageContent() {
   // Default to customer dashboard
   return (
     <>
-        {userProfile?.role === 'customer' && (
+        {userProfile && (
             <>
-                <OnboardingFlow userId={user.uid} onComplete={() => setShowPreferencesModal(true)} />
+                <OnboardingFlow 
+                    userId={user.uid} 
+                    role={userProfile.role} 
+                    onComplete={() => {
+                        if (userProfile.role === 'customer') {
+                            setShowPreferencesModal(true)
+                        }
+                    }} 
+                />
                 {showPreferencesModal && (
                     <UserPreferences 
                         userId={user.uid} 
