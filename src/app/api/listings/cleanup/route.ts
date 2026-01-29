@@ -16,32 +16,42 @@ export async function GET(request: NextRequest) {
         const auth = getAuth();
         let deletedListingsCount = 0;
 
-        // 1. Get all user IDs from Firebase Auth
-        const allAuthUserIds = new Set<string>();
-        let pageToken;
-        do {
-            const listUsersResult = await auth.listUsers(1000, pageToken);
-            listUsersResult.users.forEach(userRecord => {
-                allAuthUserIds.add(userRecord.uid);
-            });
-            pageToken = listUsersResult.pageToken;
-        } while (pageToken);
-        
-        // 2. Get all unique agentIds from the properties collection
+        // 1. Get all unique agentIds from the properties collection
         const propertiesSnapshot = await adminDb.collection('properties').select('agentId').get();
         if (propertiesSnapshot.empty) {
             return NextResponse.json({ message: 'No properties to check.', deletedCount: 0 });
         }
-        const agentIdsInListings = [...new Set(propertiesSnapshot.docs.map(doc => doc.data().agentId))];
         
-        // 3. Find agent IDs that are in listings but not in Auth
-        const orphanedAgentIds = agentIdsInListings.filter(uid => !allAuthUserIds.has(uid));
+        const agentIdsInListings = [...new Set(propertiesSnapshot.docs.map(doc => doc.data().agentId).filter(Boolean))];
+        
+        // 2. Identify agent IDs that no longer exist in Firebase Auth
+        const orphanedAgentIds = new Set<string>();
+        const checkPromises = agentIdsInListings.map(async (uid) => {
+            try {
+                await auth.getUser(uid);
+                // User exists, do nothing.
+            } catch (error: any) {
+                // If the error code is 'user-not-found', the user has been deleted.
+                if (error.code === 'auth/user-not-found') {
+                    orphanedAgentIds.add(uid);
+                } else {
+                    // Log other errors but don't halt the process, might be transient.
+                    console.error(`Error checking agent UID ${uid}:`, error.message);
+                }
+            }
+        });
+        
+        // Wait for all checks to complete
+        await Promise.all(checkPromises);
 
-        // 4. If there are orphaned listings, delete them
-        if (orphanedAgentIds.length > 0) {
-            const chunkSize = 30; // Firestore 'in' query limit
-            for (let i = 0; i < orphanedAgentIds.length; i += chunkSize) {
-                const chunk = orphanedAgentIds.slice(i, i + chunkSize);
+        const orphanedIdsArray = Array.from(orphanedAgentIds);
+
+        // 3. If there are orphaned listings, delete them
+        if (orphanedIdsArray.length > 0) {
+            // Firestore 'in' query can handle up to 30 values.
+            const chunkSize = 30; 
+            for (let i = 0; i < orphanedIdsArray.length; i += chunkSize) {
+                const chunk = orphanedIdsArray.slice(i, i + chunkSize);
                 
                 const orphanedPropertiesQuery = adminDb.collection('properties').where('agentId', 'in', chunk);
                 const snapshot = await orphanedPropertiesQuery.get();
@@ -60,7 +70,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
             message: 'Orphaned listings cleanup completed.',
             checkedAgentIds: agentIdsInListings.length,
-            orphanedAgentCount: orphanedAgentIds.length,
+            orphanedAgentCount: orphanedIdsArray.length,
             deletedListingsCount,
         });
 
