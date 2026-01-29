@@ -11,7 +11,7 @@ const ONBOARDING_STEPS = [
     id: 'welcome',
     title: 'Welcome to ApexFind 🇳🇬',
     description: 'Your trusted partner for finding dream properties across Nigeria',
-    illustration: '/illustrations/onboarding-welcome.svg',
+    illustration: '/illustrations/onboarding-welcome.jpg',
     alt: 'ApexFind welcome illustration showing Nigerian architecture and happy home seekers',
     features: [
       'Search thousands of Nigerian properties',
@@ -23,7 +23,7 @@ const ONBOARDING_STEPS = [
     id: 'search',
     title: 'Find Your Perfect Home',
     description: 'Use our advanced filters to find properties in Lagos, Abuja, Port Harcourt, and beyond',
-    illustration: '/illustrations/onboarding-search.svg',
+    illustration: '/illustrations/onboarding-search.jpg',
     alt: 'Map of Nigeria with property search interface',
     features: [
       'Filter by location, price, and amenities',
@@ -35,7 +35,7 @@ const ONBOARDING_STEPS = [
     id: 'save',
     title: 'Save & Compare Properties',
     description: 'Easily save properties and compare features side by side',
-    illustration: '/illustrations/onboarding-compare.svg',
+    illustration: '/illustrations/onboarding-compare.jpg',
     alt: 'Property comparison dashboard with Nigerian listings',
     features: [
       'Save unlimited properties',
@@ -47,7 +47,7 @@ const ONBOARDING_STEPS = [
     id: 'alerts',
     title: 'Get Instant Alerts',
     description: 'Never miss a perfect property with our smart notification system',
-    illustration: '/illustrations/onboarding-alerts.svg',
+    illustration: '/illustrations/onboarding-alerts.jpg',
     alt: 'Smartphone showing Nigerian property alerts',
     features: [
       'Custom price range alerts',
@@ -59,7 +59,7 @@ const ONBOARDING_STEPS = [
     id: 'agents',
     title: 'Connect with Verified Agents',
     description: 'Work with trusted Nigerian real estate professionals',
-    illustration: '/illustrations/onboarding-agents.svg',
+    illustration: '/illustrations/onboarding-agents.jpg',
     alt: 'Verified Nigerian real estate agents with badges',
     features: [
       'All agents are verified',
@@ -178,8 +178,8 @@ export default function OnboardingFlow({ userId, onComplete }: OnboardingFlowPro
                   alt={step.alt}
                   className="object-contain w-full h-full"
                   priority
-                  width={300}
-                  height={300}
+                  fill
+                  sizes="(max-width: 1024px) 90vw, 50vw"
                 />
               </div>
               

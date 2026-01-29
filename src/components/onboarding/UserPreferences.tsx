@@ -6,9 +6,9 @@ import { MapPin, Home, TrendingUp, Bell, Check, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 
 // Import your preference illustrations
-const LocationIllustration = '/illustrations/preferences-locations.svg'
-const PropertyTypesIllustration = '/illustrations/preferences-types.svg'
-const BudgetIllustration = '/illustrations/preferences-budget.svg'
+const LocationIllustration = '/illustrations/preferences-locations.jpg'
+const PropertyTypesIllustration = '/illustrations/preferences-types.jpg'
+const BudgetIllustration = '/illustrations/preferences-budget.jpg'
 
 const NIGERIAN_LOCATIONS = [
   { 
@@ -227,8 +227,8 @@ export default function UserPreferences({ userId, onComplete }: UserPreferencesP
                   alt={`Onboarding step ${step} illustration`}
                   className="object-contain w-full h-full"
                   priority
-                  width={300}
-                  height={300}
+                  fill
+                  sizes="(max-width: 1024px) 90vw, 50vw"
                 />
               </div>
               
