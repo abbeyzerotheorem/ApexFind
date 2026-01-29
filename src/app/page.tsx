@@ -1,6 +1,8 @@
+import AgentPromotion from "@/components/agent-promotion";
 import HeroSearch from "@/components/hero-search";
 import HighlightedListings from "@/components/highlighted-listings";
 import HowItWorks from "@/components/how-it-works";
+import MarketInsights from "@/components/market-insights";
 import NewlyAddedListings from "@/components/newly-added-listings";
 import Link from "next/link";
 
@@ -40,6 +42,8 @@ export default function Home() {
       </section>
 
       <HowItWorks />
+      <AgentPromotion />
+      <MarketInsights />
     </>
   );
 }
