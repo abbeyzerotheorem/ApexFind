@@ -3,6 +3,10 @@
     {
       "path": "/api/alerts/check?secret=${CRON_SECRET}",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/listings/cleanup?secret=${CRON_SECRET}",
+      "schedule": "0 1 * * *"
     }
   ]
 }
