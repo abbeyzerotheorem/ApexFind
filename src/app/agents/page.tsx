@@ -169,8 +169,9 @@ function AgentCard({ agent, currentUserRole }: { agent: AgentUser, currentUserRo
         try {
             const agentDocRef = doc(firestore, 'users', agent.id);
             await deleteDoc(agentDocRef);
-            // Invalidate queries to force a refetch of agent and property lists
-            await queryClient.invalidateQueries({ queryKey: ['firestore-collection'] });
+            // This invalidates all queries that use the 'users' collection,
+            // forcing a refetch on the agents page and the homepage components.
+            await queryClient.invalidateQueries({ queryKey: ['firestore-collection', 'users'] });
         } catch (error) {
             console.error("Failed to delete agent:", error);
         } finally {
