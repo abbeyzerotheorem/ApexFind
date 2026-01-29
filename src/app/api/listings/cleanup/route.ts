@@ -16,27 +16,30 @@ export async function GET(request: NextRequest) {
         const auth = getAuth();
         let deletedListingsCount = 0;
 
-        // Get all unique agentIds from the properties collection
+        // 1. Get all user IDs from Firebase Auth
+        const allAuthUserIds = new Set<string>();
+        let pageToken;
+        do {
+            const listUsersResult = await auth.listUsers(1000, pageToken);
+            listUsersResult.users.forEach(userRecord => {
+                allAuthUserIds.add(userRecord.uid);
+            });
+            pageToken = listUsersResult.pageToken;
+        } while (pageToken);
+        
+        // 2. Get all unique agentIds from the properties collection
         const propertiesSnapshot = await adminDb.collection('properties').select('agentId').get();
         if (propertiesSnapshot.empty) {
             return NextResponse.json({ message: 'No properties to check.', deletedCount: 0 });
         }
         const agentIdsInListings = [...new Set(propertiesSnapshot.docs.map(doc => doc.data().agentId))];
-
-        // Verify which agents still exist in Firebase Auth
-        const checkPromises = agentIdsInListings.map(uid => 
-            auth.getUser(uid).then(() => uid).catch(() => null)
-        );
         
-        const results = await Promise.all(checkPromises);
-        const existingAgentIds = new Set(results.filter(uid => uid !== null));
+        // 3. Find agent IDs that are in listings but not in Auth
+        const orphanedAgentIds = agentIdsInListings.filter(uid => !allAuthUserIds.has(uid));
 
-        const orphanedAgentIds = agentIdsInListings.filter(uid => !existingAgentIds.has(uid));
-        
-        // If there are orphaned listings, delete them
+        // 4. If there are orphaned listings, delete them
         if (orphanedAgentIds.length > 0) {
-            // We have to do this in chunks because 'in' query has a limit of 30
-            const chunkSize = 30;
+            const chunkSize = 30; // Firestore 'in' query limit
             for (let i = 0; i < orphanedAgentIds.length; i += chunkSize) {
                 const chunk = orphanedAgentIds.slice(i, i + chunkSize);
                 
