@@ -203,7 +203,7 @@ export default function OnboardingFlow({ userId, role = 'customer', onComplete }
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl animate-slideUp">
+      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl animate-slideUp">
         {/* Header with close button */}
         <div className="p-6 border-b flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -236,96 +236,98 @@ export default function OnboardingFlow({ userId, role = 'customer', onComplete }
         </div>
 
         {/* Main content */}
-        <div className="p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Illustration column */}
-            <div className="relative">
-              <div className="relative h-64 lg:h-80 rounded-xl overflow-hidden bg-gradient-to-br from-[#64B5F6]/10 to-[#64B5F6]/5 p-8">
-                <Image
-                  src={step.illustration}
-                  alt={step.alt}
-                  className="object-contain w-full h-full"
-                  priority
-                  fill
-                  sizes="(max-width: 1024px) 90vw, 50vw"
-                />
-              </div>
-              
-              {/* Step indicator dots */}
-              <div className="flex justify-center gap-2 mt-8">
-                {ONBOARDING_STEPS.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentStep(index)}
-                    className={`w-2.5 h-2.5 rounded-full transition-all ${
-                      index === currentStep 
-                        ? 'bg-[#64B5F6] w-8' 
-                        : 'bg-gray-300 hover:bg-gray-400'
-                    }`}
-                    aria-label={`Go to step ${index + 1}`}
+        <div className="overflow-y-auto">
+          <div className="p-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              {/* Illustration column */}
+              <div className="relative">
+                <div className="relative h-64 lg:h-80 rounded-xl overflow-hidden bg-gradient-to-br from-[#64B5F6]/10 to-[#64B5F6]/5 p-8">
+                  <Image
+                    src={step.illustration}
+                    alt={step.alt}
+                    className="object-contain w-full h-full"
+                    priority
+                    fill
+                    sizes="(max-width: 1024px) 90vw, 50vw"
                   />
-                ))}
-              </div>
-            </div>
-
-            {/* Content column */}
-            <div className="space-y-8">
-              <div>
-                <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-                  {step.title}
-                </h3>
-                <p className="text-lg lg:text-xl text-gray-600 leading-relaxed">
-                  {step.description}
-                </p>
-              </div>
-
-              {/* Features list */}
-              <div className="space-y-4">
-                {step.features.map((feature, index) => (
-                  <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-[#64B5F6]/5 to-transparent">
-                    <div className="w-6 h-6 bg-[#64B5F6] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Check size={14} className="text-white" />
-                    </div>
-                    <span className="font-medium text-gray-800">{feature}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Nigerian context tip for first step */}
-              {currentStep === 0 && (
-                <div className="p-4 bg-gradient-to-r from-[#64B5F6]/10 to-[#008751]/10 border border-[#64B5F6]/20 rounded-xl">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">🇳🇬</span>
-                    <div>
-                      <p className="font-medium text-gray-800">Nigerian Focus</p>
-                      <p className="text-sm text-gray-600">
-                        We specialize in properties across all 36 states, with expertise in Lagos, Abuja, and Port Harcourt.
-                      </p>
-                    </div>
-                  </div>
                 </div>
-              )}
-
-              {/* Action buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <button
-                  onClick={handleSkip}
-                  className="px-8 py-4 border-2 border-gray-300 rounded-xl hover:bg-gray-50 font-semibold text-gray-700 transition-all hover:border-gray-400"
-                >
-                  {isLastStep ? 'Close' : 'Skip Tour'}
-                </button>
                 
-                <button
-                  onClick={handleNext}
-                  className="px-8 py-4 bg-gradient-to-r from-[#64B5F6] to-[#42A5F5] text-white rounded-xl hover:from-[#42A5F5] hover:to-[#64B5F6] font-semibold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 group"
-                >
-                  <span className="text-lg">
-                    {isLastStep ? (role === 'agent' ? 'Go to Dashboard' : 'Set Preferences') : 'Continue'}
-                  </span>
-                  {!isLastStep && (
-                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                  )}
-                </button>
+                {/* Step indicator dots */}
+                <div className="flex justify-center gap-2 mt-8">
+                  {ONBOARDING_STEPS.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentStep(index)}
+                      className={`w-2.5 h-2.5 rounded-full transition-all ${
+                        index === currentStep 
+                          ? 'bg-[#64B5F6] w-8' 
+                          : 'bg-gray-300 hover:bg-gray-400'
+                      }`}
+                      aria-label={`Go to step ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Content column */}
+              <div className="space-y-8">
+                <div>
+                  <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                    {step.title}
+                  </h3>
+                  <p className="text-lg lg:text-xl text-gray-600 leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+
+                {/* Features list */}
+                <div className="space-y-4">
+                  {step.features.map((feature, index) => (
+                    <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-[#64B5F6]/5 to-transparent">
+                      <div className="w-6 h-6 bg-[#64B5F6] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check size={14} className="text-white" />
+                      </div>
+                      <span className="font-medium text-gray-800">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Nigerian context tip for first step */}
+                {currentStep === 0 && (
+                  <div className="p-4 bg-gradient-to-r from-[#64B5F6]/10 to-[#008751]/10 border border-[#64B5F6]/20 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">🇳🇬</span>
+                      <div>
+                        <p className="font-medium text-gray-800">Nigerian Focus</p>
+                        <p className="text-sm text-gray-600">
+                          We specialize in properties across all 36 states, with expertise in Lagos, Abuja, and Port Harcourt.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Action buttons */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                  <button
+                    onClick={handleSkip}
+                    className="px-8 py-4 border-2 border-gray-300 rounded-xl hover:bg-gray-50 font-semibold text-gray-700 transition-all hover:border-gray-400"
+                  >
+                    {isLastStep ? 'Close' : 'Skip Tour'}
+                  </button>
+                  
+                  <button
+                    onClick={handleNext}
+                    className="px-8 py-4 bg-gradient-to-r from-[#64B5F6] to-[#42A5F5] text-white rounded-xl hover:from-[#42A5F5] hover:to-[#64B5F6] font-semibold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 group"
+                  >
+                    <span className="text-lg">
+                      {isLastStep ? (role === 'agent' ? 'Go to Dashboard' : 'Set Preferences') : 'Continue'}
+                    </span>
+                    {!isLastStep && (
+                      <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
