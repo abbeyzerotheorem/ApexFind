@@ -4,6 +4,8 @@
 import { useState } from 'react'
 import { MapPin, Home, TrendingUp, Bell, Check, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
+import { getFirestore, doc, setDoc } from 'firebase/firestore'
+
 
 // Import your preference illustrations
 const LocationIllustration = '/illustrations/preferences-locations.jpg'
@@ -135,20 +137,15 @@ export default function UserPreferences({ userId, onComplete }: UserPreferencesP
     setLoading(true)
     
     try {
-      // Save preferences to Firebase
-      const response = await fetch('/api/user/preferences', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          preferences,
-          completedAt: new Date().toISOString()
-        })
-      })
+      const db = getFirestore()
+      const userDocRef = doc(db, 'users', userId)
 
-      if (!response.ok) {
-        throw new Error('Failed to save preferences')
-      }
+      // Save preferences to Firebase directly from client
+      await setDoc(userDocRef, {
+        preferences,
+        preferencesCompletedAt: new Date().toISOString()
+      }, { merge: true })
+
 
       // Mark preferences as set
       localStorage.setItem(`apexfind_preferences_${userId}`, 'true')
