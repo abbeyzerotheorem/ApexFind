@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState, useMemo, Suspense } from "react";
@@ -230,7 +229,11 @@ function DashboardPageContent() {
         router.refresh();
     } catch (error: any) {
         console.error("Failed to delete account:", error);
-        alert("This is a sensitive operation and may require you to have signed in recently. If it fails, please sign out and sign back in before trying again.");
+        if (error.code === 'auth/requires-recent-login') {
+            alert("For your security, please sign out and sign back in before deleting your account.");
+        } else {
+            alert(`An error occurred: ${error.message}`);
+        }
         setIsDeleting(false);
     }
 };
