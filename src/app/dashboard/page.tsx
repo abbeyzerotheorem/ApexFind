@@ -6,9 +6,10 @@ import { useEffect, useState, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
 import { Loader2, Heart, User as UserIcon, History, Home as HomeIcon, BarChart2, MoreHorizontal, Pencil, Trash2, Eye, Users, TrendingUp, Filter, MapPin } from "lucide-react";
-import { doc, collection, query, where, orderBy, limit } from "firebase/firestore";
+import { doc, collection, query, where, orderBy, limit, deleteDoc } from "firebase/firestore";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { deleteUser, getAuth } from 'firebase/auth';
 
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { updateUserProfile, uploadProfilePicture } from "@/lib/user";
+import { updateUserProfile, uploadProfilePicture, deleteUserAccount } from "@/lib/user";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from 'next/link';
 import ViewedHistory from "@/components/dashboard/viewed-history";
@@ -62,6 +63,7 @@ import { getSafeImageUrl } from "@/lib/image-utils";
 import { Progress } from "@/components/ui/progress";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import UserPreferences from "@/components/onboarding/UserPreferences";
+import { signOut } from "@/lib/auth";
 
 const viewsData = [
     { month: "Jan", views: 1200 },
@@ -89,6 +91,7 @@ function DashboardPageContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Onboarding/Preferences Flow State
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
@@ -216,6 +219,21 @@ function DashboardPageContent() {
       router.push('/auth');
     }
   }, [user, userLoading, router]);
+
+  const handleDeleteAccount = async () => {
+    if (!user || !firestore) return;
+    setIsDeleting(true);
+    try {
+        await deleteUserAccount(firestore, user.uid, userProfile?.role);
+        await signOut();
+        router.push('/');
+        router.refresh();
+    } catch (error: any) {
+        console.error("Failed to delete account:", error);
+        alert("This is a sensitive operation and may require you to have signed in recently. If it fails, please sign out and sign back in before trying again.");
+        setIsDeleting(false);
+    }
+};
 
   const handleProfileImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -482,6 +500,35 @@ function DashboardPageContent() {
                                         {saveMessage && <p className="text-sm text-muted-foreground">{saveMessage}</p>}
                                     </CardFooter>
                                 </form>
+                            </Card>
+                            <Card className="mt-8 bg-destructive/10 border-destructive/20">
+                                <CardHeader>
+                                    <CardTitle className="text-destructive">Danger Zone</CardTitle>
+                                    <CardDescription className="text-destructive/80">
+                                        Permanently delete your account and all associated data, including your public agent profile and listings. This action cannot be undone.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive">Delete My Account</Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This will permanently delete your account, your public profile, and all of your property listings. This action cannot be undone.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={handleDeleteAccount} disabled={isDeleting}>
+                                                    {isDeleting ? 'Deleting...' : 'Yes, delete my account'}
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </CardContent>
                             </Card>
                         </TabsContent>
                         <TabsContent value="performance">
@@ -768,6 +815,36 @@ function DashboardPageContent() {
                             <CardFooter>
                                 <Button>Update Preferences</Button>
                             </CardFooter>
+                        </Card>
+
+                        <Card className="lg:col-span-3 bg-destructive/10 border-destructive/20">
+                            <CardHeader>
+                                <CardTitle className="text-destructive">Danger Zone</CardTitle>
+                                <CardDescription className="text-destructive/80">
+                                    Permanently delete your account and all associated data. This action cannot be undone.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="destructive">Delete My Account</Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This will permanently delete your account, saved homes, saved searches, and all other personal data. This action cannot be undone.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleDeleteAccount} disabled={isDeleting}>
+                                                {isDeleting ? 'Deleting...' : 'Yes, delete my account'}
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </CardContent>
                         </Card>
     
                     </div>

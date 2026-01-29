@@ -1,8 +1,8 @@
 
 'use client';
 
-import { getAuth, updateProfile } from 'firebase/auth';
-import { doc, setDoc, type Firestore } from 'firebase/firestore';
+import { getAuth, updateProfile, deleteUser } from 'firebase/auth';
+import { doc, setDoc, type Firestore, collection, query, where, getDocs, writeBatch, deleteDoc } from 'firebase/firestore';
 import { uploadToCloudinary } from './cloudinary';
 
 interface UserProfileData {
@@ -91,4 +91,54 @@ export async function updateUserProfile(
     }
 
     await Promise.all(tasks);
+}
+
+
+export async function deleteUserAccount(
+    firestore: Firestore,
+    userId: string,
+    userRole: 'customer' | 'agent' | undefined
+) {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+
+    if (!currentUser || currentUser.uid !== userId) {
+        throw new Error("User not authenticated or permission denied.");
+    }
+
+    const deleteSubcollection = async (subcollectionName: string) => {
+        const subcollectionRef = collection(firestore, 'users', userId, subcollectionName);
+        const snapshot = await getDocs(subcollectionRef);
+        if (snapshot.empty) return;
+        const batch = writeBatch(firestore);
+        snapshot.docs.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+    };
+
+    // If user is an agent, delete their properties from the top-level collection
+    if (userRole === 'agent') {
+        const propertiesRef = collection(firestore, 'properties');
+        const q = query(propertiesRef, where('agentId', '==', userId));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+            const batch = writeBatch(firestore);
+            snapshot.docs.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+        }
+    }
+    
+    // Delete user's subcollections
+    await Promise.all([
+        deleteSubcollection('saved_homes'),
+        deleteSubcollection('saved_searches'),
+        deleteSubcollection('viewed_properties'),
+    ]);
+
+    // Delete the main user document
+    const userDocRef = doc(firestore, 'users', userId);
+    await deleteDoc(userDocRef);
+
+    // Delete the user from Firebase Authentication
+    // This is the last and most sensitive step
+    await deleteUser(currentUser);
 }
