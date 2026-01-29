@@ -23,7 +23,7 @@ const CUSTOMER_ONBOARDING_STEPS = [
     id: 'search',
     title: 'Find Your Perfect Home',
     description: 'Use our advanced filters to find properties in Lagos, Abuja, Port Harcourt, and beyond',
-    illustration: '/illustrations/onboarding-search.jpg',
+    illustration: '/illustrations/onboarding-search.png',
     alt: 'Map of Nigeria with property search interface',
     features: [
       'Filter by location, price, and amenities',
@@ -35,7 +35,7 @@ const CUSTOMER_ONBOARDING_STEPS = [
     id: 'save',
     title: 'Save & Compare Properties',
     description: 'Easily save properties and compare features side by side',
-    illustration: '/illustrations/onboarding-compare.jpg',
+    illustration: '/illustrations/onboarding-compare.png',
     alt: 'Property comparison dashboard with Nigerian listings',
     features: [
       'Save unlimited properties',
