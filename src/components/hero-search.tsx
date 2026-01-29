@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -17,7 +18,7 @@ export default function HeroSearch() {
   const heroImage = PlaceHolderImages.find(p => p.id === 'hero-background');
 
   return (
-    <section className="relative flex h-[60vh] min-h-[400px] items-center justify-center pt-20 text-white">
+    <section className="relative flex h-[70vh] min-h-[500px] items-center justify-center pt-20 text-white">
       {heroImage && (
         <Image
           src={heroImage.imageUrl}
@@ -29,33 +30,29 @@ export default function HeroSearch() {
           sizes="100vw"
         />
       )}
-      <div className="absolute inset-0 bg-black/50" />
+      <div className="absolute inset-0 bg-black/60" />
       <div className="container relative z-10 mx-auto flex h-full flex-col items-center justify-center px-4 text-center sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl">
-          Find Your Dream Property in Nigeria
+        <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
+          The Smartest Way to Find a Home in Nigeria
         </h1>
-        <p className="mt-4 max-w-2xl text-lg text-gray-200">
-           Discover luxury apartments, family homes, and commercial properties across Lagos, Abuja, Port Harcourt, and more
+        <p className="mt-6 max-w-3xl text-lg text-gray-200 md:text-xl">
+           Access exclusive listings, data-driven insights, and top-rated agents—all in one place.
         </p>
 
-        <div className="mt-8 w-full max-w-4xl">
+        <div className="mt-10 w-full max-w-4xl">
           <SearchBar />
-           <div className="mt-6 flex flex-wrap justify-center items-center gap-3">
-            <span className="text-sm font-medium">Popular:</span>
-            <Link href="/search?q=Lekki" className="px-3 py-1 bg-white/10 rounded-full hover:bg-white/20 text-sm">
-              Lekki
-            </Link>
-            <Link href="/search?q=Ikeja" className="px-3 py-1 bg-white/10 rounded-full hover:bg-white/20 text-sm">
-              Ikeja
-            </Link>
-            <Link href="/search?q=Abuja" className="px-3 py-1 bg-white/10 rounded-full hover:bg-white/20 text-sm">
-              Abuja
-            </Link>
-            <Link href="/search?q=Port%20Harcourt" className="px-3 py-1 bg-white/10 rounded-full hover:bg-white/20 text-sm">
-              Port Harcourt
-            </Link>
-          </div>
         </div>
+        
+        <div className="mt-12 text-center">
+            <p className="text-sm font-semibold uppercase tracking-wider text-gray-400">As featured in</p>
+            <div className="mt-4 flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-gray-300">
+                <span className="font-medium">Business Day</span>
+                <span className="font-medium">TechCabal</span>
+                <span className="font-medium">The Guardian</span>
+                <span className="font-medium">BellaNaija</span>
+            </div>
+        </div>
+
       </div>
     </section>
   );
