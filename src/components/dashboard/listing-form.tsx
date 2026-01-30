@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -18,6 +19,7 @@ import { addListing, updateListing, uploadPropertyImage } from '@/lib/listings';
 import { Progress } from '../ui/progress';
 import Image from 'next/image';
 import { X } from 'lucide-react';
+import allNigerianStates from '@/jsons/nigeria-states.json';
 
 const propertySchema = z.object({
   address: z.string().min(1, 'Address is required'),
@@ -187,7 +189,22 @@ export default function ListingForm({ property }: ListingFormProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="state">State</Label>
-              <Input id="state" {...register('state')} />
+              <Controller
+                    name="state"
+                    control={control}
+                    render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger id="state">
+                                <SelectValue placeholder="Select state" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {allNigerianStates.map(state => (
+                                    <SelectItem key={state.code} value={state.name}>{state.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                />
               {errors.state && <p className="text-sm text-destructive">{errors.state.message}</p>}
             </div>
           </div>
