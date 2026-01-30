@@ -27,6 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { getOrCreateConversation } from '@/lib/chat';
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props} fill="currentColor">
@@ -44,6 +45,7 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
   const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
   const [geocodingLoading, setGeocodingLoading] = useState(true);
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+  const [isContacting, setIsContacting] = useState(false);
 
   const propertyRef = useMemo(() => {
       if (!firestore) return null;
@@ -51,6 +53,14 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
   }, [firestore, id]);
 
   const { data: property, loading } = useDoc(propertyRef);
+
+  const agentRef = useMemo(() => {
+      if (!firestore || !property) return null;
+      return doc(firestore, 'users', property.agentId);
+  }, [firestore, property]);
+
+  const { data: agent, loading: agentLoading } = useDoc(agentRef);
+
 
   useEffect(() => {
     if (property && property.address) {
@@ -116,13 +126,29 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
     }
   };
   
-  const handleProtectedAction = (e: React.MouseEvent | React.FormEvent) => {
+  const handleContactAgent = async (e: React.MouseEvent | React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
+    if (!user || !firestore) {
         setShowAuthDialog(true);
+        return;
     }
-    else {
-        console.log("Protected action triggered by logged-in user.");
+    if (!agent) {
+      console.error("Agent data not loaded yet.");
+      return;
+    }
+
+    setIsContacting(true);
+    try {
+        const conversationId = await getOrCreateConversation(
+            firestore,
+            { uid: user.uid, displayName: user.displayName, photoURL: user.photoURL },
+            { uid: agent.id, displayName: agent.displayName || null, photoURL: agent.photoURL || null }
+        );
+        router.push(`/messages?convoId=${conversationId}`);
+    } catch (error) {
+        console.error("Failed to create conversation", error);
+    } finally {
+        setIsContacting(false);
     }
   };
 
@@ -146,7 +172,7 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
   };
 
 
-  if (loading) {
+  if (loading || agentLoading) {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -263,8 +289,12 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                     </div>}
                 </div>
                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                    <Button size="lg" className="w-full sm:w-auto flex-1" onClick={handleProtectedAction}>Schedule a Tour</Button>
-                    <Button size="lg" variant="outline" className="w-full sm:w-auto flex-1" onClick={handleProtectedAction}>Contact Agent</Button>
+                    <Button size="lg" className="w-full sm:w-auto flex-1" onClick={handleContactAgent} disabled={isContacting}>
+                        {isContacting ? <Loader2 className="animate-spin" /> : 'Schedule a Tour'}
+                    </Button>
+                    <Button size="lg" variant="outline" className="w-full sm:w-auto flex-1" onClick={handleContactAgent} disabled={isContacting}>
+                         {isContacting ? <Loader2 className="animate-spin" /> : 'Contact Agent'}
+                    </Button>
                 </div>
               </div>
 
@@ -341,7 +371,7 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
             <div className="lg:col-span-1">
               <div className="lg:sticky top-24 rounded-lg border bg-card p-6 shadow-sm">
                 <h3 className="text-xl font-bold text-foreground">Contact Agent</h3>
-                <form className="mt-4 space-y-4" onSubmit={handleProtectedAction}>
+                <form className="mt-4 space-y-4" onSubmit={handleContactAgent}>
                   <div>
                     <Label htmlFor="name">Name</Label>
                     <Input id="name" type="text" placeholder="Your Name" defaultValue={user?.displayName ?? ''} />
@@ -358,7 +388,9 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                     <Label htmlFor="message">Message</Label>
                     <Textarea id="message" defaultValue={`I am interested in ${property.address}.`} />
                   </div>
-                  <Button type="submit" className="w-full">Contact Agent</Button>
+                  <Button type="submit" className="w-full" disabled={isContacting}>
+                    {isContacting ? <Loader2 className="animate-spin" /> : 'Contact Agent'}
+                  </Button>
                   <p className="text-center text-xs text-muted-foreground">
                     By pressing Contact Agent, you agree to our Terms of Use & Privacy Policy.
                   </p>
