@@ -74,7 +74,7 @@ export default function AboutPage() {
         )}
         <div className="absolute inset-0 bg-black/60" />
         <div className="relative z-10 p-4">
-          <h1 className="text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl">
+          <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl md:text-7xl">
             Reimagining Real Estate in Nigeria
           </h1>
           <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-200 md:text-xl">
