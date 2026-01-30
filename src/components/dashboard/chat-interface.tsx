@@ -1,7 +1,8 @@
+
 'use client';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useUser, useFirestore, useCollection } from '@/firebase';
-import { collection, query, where, orderBy, doc, onSnapshot } from 'firebase/firestore';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, query, where, orderBy, doc, onSnapshot, getDocs } from 'firebase/firestore';
 import type { Conversation, Message, User } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -21,16 +22,42 @@ export default function ChatInterface({ initialConversationId }: { initialConver
     const firestore = useFirestore();
     const [activeConversationId, setActiveConversationId] = useState<string | null>(initialConversationId || null);
     const [mobileView, setMobileView] = useState<'list' | 'chat'>(initialConversationId ? 'chat' : 'list');
-    
-    const conversationsQuery = useMemo(() => {
-        if (!user || !firestore) return null;
-        return query(
-            collection(firestore, 'conversations'),
-            where('participants', 'array-contains', user.uid)
-        );
-    }, [user, firestore]);
 
-    const { data: rawConversations, loading: conversationsLoading } = useCollection<Conversation>(conversationsQuery);
+    const [rawConversations, setRawConversations] = useState<Conversation[]>([]);
+    const [conversationsLoading, setConversationsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (userLoading) {
+            setConversationsLoading(true);
+            return;
+        }
+        if (!user || !firestore) {
+            setConversationsLoading(false);
+            return;
+        }
+
+        const fetchConversations = async () => {
+            setConversationsLoading(true);
+            setError(null);
+            try {
+                const conversationsQuery = query(
+                    collection(firestore, 'conversations'),
+                    where('participants', 'array-contains', user.uid)
+                );
+                const querySnapshot = await getDocs(conversationsQuery);
+                const convos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Conversation));
+                setRawConversations(convos);
+            } catch (e: any) {
+                console.error("Error fetching conversations:", e);
+                setError(e.message);
+            } finally {
+                setConversationsLoading(false);
+            }
+        };
+
+        fetchConversations();
+    }, [user, firestore, userLoading]);
 
     const conversations = useMemo(() => {
         if (!rawConversations) return [];
@@ -42,7 +69,6 @@ export default function ChatInterface({ initialConversationId }: { initialConver
     }, [rawConversations]);
 
     useEffect(() => {
-        // Only set active conversation if one isn't already set (e.g. from URL)
         if (!activeConversationId && conversations && conversations.length > 0) {
             setActiveConversationId(conversations[0].id);
         }
@@ -94,6 +120,14 @@ export default function ChatInterface({ initialConversationId }: { initialConver
     }
 
     if (!user) return null;
+
+    if (error) {
+        return (
+            <div className="flex items-center justify-center h-full bg-destructive/10 text-destructive text-center p-4 rounded-lg">
+                <p>Error loading conversations: {error}</p>
+            </div>
+        )
+    }
 
     return (
         <div className="md:grid md:grid-cols-3 lg:grid-cols-4 md:gap-8 h-full">
@@ -327,3 +361,5 @@ function MessageWindow({ conversation, currentUser, onBack }: { conversation: Co
         </Card>
     );
 }
+
+    
