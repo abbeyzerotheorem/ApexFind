@@ -61,10 +61,11 @@ service cloud.firestore {
 
     // Rules for chat
     match /conversations/{conversationId} {
-      // Allow get/update/create if the user is a participant.
-      allow get, update, create: if request.auth != null && request.auth.uid in resource.data.participants;
-      // Allow a user to list only conversations they are a participant in.
-      allow list: if request.auth != null && request.auth.uid in request.query.where.participants;
+      // Allow read (get, list), update, and create if the user is a participant.
+      // The 'list' operation is secured because the client-side query must use
+      // an 'array-contains' filter on the user's UID, which Firestore
+      // validates against this rule.
+      allow read, update, create: if request.auth != null && request.auth.uid in resource.data.participants;
 
       match /messages/{messageId} {
         // Allow reads if user is a participant of the parent conversation.
