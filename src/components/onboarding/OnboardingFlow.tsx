@@ -240,7 +240,7 @@ export default function OnboardingFlow({ userId, role = 'customer', onComplete }
           <div className="p-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               {/* Illustration column */}
-              <div className="relative">
+              <div key={`image-${currentStep}`} className="relative animate-fadeIn">
                 <div className="relative h-64 lg:h-80 rounded-xl overflow-hidden bg-gradient-to-br from-[#64B5F6]/10 to-[#64B5F6]/5 p-8">
                   <Image
                     src={step.illustration}
@@ -270,7 +270,7 @@ export default function OnboardingFlow({ userId, role = 'customer', onComplete }
               </div>
 
               {/* Content column */}
-              <div className="space-y-8">
+              <div key={`text-${currentStep}`} className="space-y-8 animate-slideUp">
                 <div>
                   <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
                     {step.title}
