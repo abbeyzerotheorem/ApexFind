@@ -1,6 +1,6 @@
 'use client';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, where, orderBy, doc, onSnapshot } from 'firebase/firestore';
 import type { Conversation, Message, User } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -22,43 +22,24 @@ export default function ChatInterface({ initialConversationId }: { initialConver
     const [activeConversationId, setActiveConversationId] = useState<string | null>(initialConversationId || null);
     const [mobileView, setMobileView] = useState<'list' | 'chat'>(initialConversationId ? 'chat' : 'list');
     
-    const [conversations, setConversations] = useState<Conversation[]>([]);
-    const [conversationsLoading, setConversationsLoading] = useState(true);
-
-    // Get all conversations for the current user in real-time
-    useEffect(() => {
-        if (!user || !firestore) {
-            setConversationsLoading(false);
-            return;
-        }
-
-        setConversationsLoading(true);
-        const conversationsQuery = query(
+    const conversationsQuery = useMemo(() => {
+        if (!user || !firestore) return null;
+        return query(
             collection(firestore, 'conversations'),
             where('participants', 'array-contains', user.uid)
         );
-
-        const unsubscribe = onSnapshot(conversationsQuery, (querySnapshot) => {
-            const convos: Conversation[] = [];
-            querySnapshot.forEach((doc) => {
-                convos.push({ id: doc.id, ...doc.data() } as Conversation);
-            });
-            
-            convos.sort((a, b) => {
-                const timeA = a.lastMessageAt?.toDate?.().getTime() || 0;
-                const timeB = b.lastMessageAt?.toDate()?.getTime() || 0;
-                return timeB - timeA;
-            });
-
-            setConversations(convos);
-            setConversationsLoading(false);
-        }, (error) => {
-            console.error("Error fetching conversations:", error);
-            setConversationsLoading(false);
-        });
-
-        return () => unsubscribe();
     }, [user, firestore]);
+
+    const { data: rawConversations, loading: conversationsLoading } = useCollection<Conversation>(conversationsQuery);
+
+    const conversations = useMemo(() => {
+        if (!rawConversations) return [];
+        return [...rawConversations].sort((a, b) => {
+            const timeA = a.lastMessageAt?.toDate?.().getTime() || 0;
+            const timeB = b.lastMessageAt?.toDate?.().getTime() || 0;
+            return timeB - timeA;
+        });
+    }, [rawConversations]);
 
     useEffect(() => {
         // Only set active conversation if one isn't already set (e.g. from URL)
