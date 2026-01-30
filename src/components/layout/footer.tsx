@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -18,31 +19,33 @@ export default function Footer() {
               <span className="text-xl font-bold">ApexFind</span>
             </div>
             <p className="text-muted-foreground">
-              Your trusted partner in finding the perfect home.
+              Your trusted partner in finding the perfect home in Nigeria.
             </p>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-foreground">Quick Links</h4>
+            <h4 className="font-semibold mb-4 text-foreground">Explore</h4>
             <ul className="space-y-2 text-muted-foreground">
-              <li><Link href="/search" className="hover:text-foreground">Search Homes</Link></li>
+              <li><Link href="/search?type=buy" className="hover:text-foreground">For Sale</Link></li>
+              <li><Link href="/search?type=rent" className="hover:text-foreground">For Rent</Link></li>
+              <li><Link href="/insights" className="hover:text-foreground">Market Insights</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4 text-foreground">Resources</h4>
+            <ul className="space-y-2 text-muted-foreground">
               <li><Link href="/agents" className="hover:text-foreground">Find an Agent</Link></li>
               <li><Link href="/sell" className="hover:text-foreground">Sell Your Home</Link></li>
+              <li><Link href="/mortgage" className="hover:text-foreground">Mortgage Calculator</Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-foreground">Legal</h4>
+            <h4 className="font-semibold mb-4 text-foreground">Company</h4>
             <ul className="space-y-2 text-muted-foreground">
+              <li><Link href="/about" className="hover:text-foreground">About Us</Link></li>
               <li><Link href="#" className="hover:text-foreground">Privacy Policy</Link></li>
               <li><Link href="#" className="hover:text-foreground">Terms of Service</Link></li>
+              <li><Link href="#" className="hover:text-foreground">Contact Us</Link></li>
             </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4 text-foreground">Contact</h4>
-            <p className="text-muted-foreground">
-              123 Real Estate St.<br />
-              Lagos, NG 100001<br />
-              contact@apexfind.com
-            </p>
           </div>
         </div>
         <div className="border-t border-border mt-8 pt-8 text-center text-muted-foreground">

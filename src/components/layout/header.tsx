@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from "react";
@@ -35,6 +36,7 @@ const publicNavLinks = [
   { name: "Mortgage", href: "/mortgage" },
   { name: "Find Agents", href: "/agents" },
   { name: "Market Insights", href: "/insights" },
+  { name: "About", href: "/about" },
 ];
 
 // Links for registered customers are the same as public
