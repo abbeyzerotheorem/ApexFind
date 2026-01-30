@@ -2,12 +2,11 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { useCollection, useFirestore, useUser, useDoc } from '@/firebase';
-import { collection, query, where, doc, deleteDoc } from 'firebase/firestore';
-import { useQueryClient } from '@tanstack/react-query';
+import { collection, query, where, doc } from 'firebase/firestore';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
-import { Search, ChevronDown, Star, Loader2, Phone, Trash2 } from "lucide-react";
+import { Search, ChevronDown, Star, Loader2, Phone } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -21,7 +20,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 type AgentUser = {
@@ -136,9 +134,7 @@ function AgentCard({ agent, currentUserRole }: { agent: AgentUser, currentUserRo
     const { user } = useUser();
     const firestore = useFirestore();
     const router = useRouter();
-    const queryClient = useQueryClient();
     const [isContacting, setIsContacting] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
     const [showAuthDialog, setShowAuthDialog] = useState(false);
     
     const handleContactAgent = async () => {
@@ -163,22 +159,6 @@ function AgentCard({ agent, currentUserRole }: { agent: AgentUser, currentUserRo
         }
     }
 
-    const handleDeleteAgent = async () => {
-        if (!firestore) return;
-        setIsDeleting(true);
-        try {
-            const agentDocRef = doc(firestore, 'users', agent.id);
-            await deleteDoc(agentDocRef);
-            // This invalidates all queries that use the 'users' collection,
-            // forcing a refetch on the agents page and the homepage components.
-            await queryClient.invalidateQueries({ queryKey: ['firestore-collection', 'users'] });
-        } catch (error) {
-            console.error("Failed to delete agent:", error);
-        } finally {
-            setIsDeleting(false);
-        }
-    }
-
     const agentProfile = {
         id: agent.id,
         name: agent.displayName || 'Unnamed Agent',
@@ -191,8 +171,6 @@ function AgentCard({ agent, currentUserRole }: { agent: AgentUser, currentUserRo
         rating: 4.8,
         reviewCount: 55,
     };
-
-    const canDelete = !!user && user.uid !== agent.id;
 
     return (
         <>
@@ -227,28 +205,6 @@ function AgentCard({ agent, currentUserRole }: { agent: AgentUser, currentUserRo
                         {isContacting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Phone className="mr-2 h-4 w-4"/>}
                         {isContacting ? 'Contacting...' : 'Contact Agent'}
                     </Button>
-                    {canDelete && (
-                         <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive" className="w-full mt-2" disabled={isDeleting}>
-                                    {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Trash2 className="mr-2 h-4 w-4"/>}
-                                    {isDeleting ? 'Deleting...' : 'Delete Agent'}
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This will permanently delete the agent's profile and all associated data. Their listings will be removed from the site. This action cannot be undone.
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleDeleteAgent}>Delete</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    )}
                 </div>
             </div>
             <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
