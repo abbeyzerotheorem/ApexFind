@@ -60,6 +60,11 @@ export default function ChatInterface({ initialConversationId }: { initialConver
         return convo.participantDetails.find(p => p.uid !== user?.uid);
     };
 
+    const activeConversation = useMemo(() => {
+        if (!activeConversationId || !conversations) return null;
+        return conversations.find(c => c.id === activeConversationId) || null;
+    }, [activeConversationId, conversations]);
+
     if (userLoading || conversationsLoading) {
         return (
             <div className="md:grid md:grid-cols-3 lg:grid-cols-4 md:gap-8 h-full">
@@ -140,8 +145,8 @@ export default function ChatInterface({ initialConversationId }: { initialConver
                 "md:col-span-2 lg:col-span-3 h-full",
                 mobileView === 'chat' ? 'block' : 'hidden md:block'
             )}>
-                {activeConversationId && user ? (
-                    <MessageWindow key={activeConversationId} conversationId={activeConversationId} currentUser={user} onBack={() => setMobileView('list')} />
+                {activeConversation && user ? (
+                    <MessageWindow key={activeConversation.id} conversation={activeConversation} currentUser={user} onBack={() => setMobileView('list')} />
                 ) : (
                      <div className="h-full items-center justify-center bg-secondary rounded-lg hidden md:flex flex-col">
                         <MessagesSquare className="h-16 w-16 text-muted-foreground/50 mb-4" />
@@ -156,14 +161,14 @@ export default function ChatInterface({ initialConversationId }: { initialConver
 
 
 // Message window component
-function MessageWindow({ conversationId, currentUser, onBack }: { conversationId: string, currentUser: User, onBack: () => void }) {
+function MessageWindow({ conversation, currentUser, onBack }: { conversation: Conversation, currentUser: User, onBack: () => void }) {
     const firestore = useFirestore();
     const [newMessage, setNewMessage] = useState('');
-    const [conversation, setConversation] = useState<Conversation | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [messagesLoading, setMessagesLoading] = useState(true);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const conversationId = conversation.id;
 
     // Get messages in real-time
     useEffect(() => {
@@ -193,18 +198,6 @@ function MessageWindow({ conversationId, currentUser, onBack }: { conversationId
             markConversationAsRead(firestore, conversationId, currentUser.uid);
         }
     }, [firestore, conversationId, currentUser.uid, messages]);
-
-    // Get conversation details
-    useEffect(() => {
-        if (!firestore) return;
-        const convoRef = doc(firestore, 'conversations', conversationId);
-        const unsubscribe = onSnapshot(convoRef, (doc) => {
-             if (doc.exists()) {
-                setConversation({ id: doc.id, ...doc.data() } as Conversation);
-            }
-        });
-        return () => unsubscribe();
-    }, [firestore, conversationId]);
 
     // Scroll to bottom
     useEffect(() => {
