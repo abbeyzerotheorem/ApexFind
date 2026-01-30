@@ -18,7 +18,7 @@ export default function HeroSearch() {
   const heroImage = PlaceHolderImages.find(p => p.id === 'hero-background');
 
   return (
-    <section className="relative flex h-[70vh] min-h-[500px] items-center justify-center pt-20 text-white">
+    <section className="relative flex items-center justify-center py-24 text-white sm:py-32 lg:py-48">
       {heroImage && (
         <Image
           src={heroImage.imageUrl}
@@ -31,7 +31,7 @@ export default function HeroSearch() {
         />
       )}
       <div className="absolute inset-0 bg-black/60" />
-      <div className="container relative z-10 mx-auto flex h-full flex-col items-center justify-center px-4 text-center sm:px-6 lg:px-8">
+      <div className="container relative z-10 mx-auto flex flex-col items-center justify-center px-4 text-center sm:px-6 lg:px-8">
         <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
           The Smartest Way to Find a Home in Nigeria
         </h1>
@@ -45,11 +45,19 @@ export default function HeroSearch() {
         
         <div className="mt-12 text-center">
             <p className="text-sm font-semibold uppercase tracking-wider text-gray-400">As featured in</p>
-            <div className="mt-4 flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-gray-300">
-                <span className="font-medium">Business Day</span>
-                <span className="font-medium">TechCabal</span>
-                <span className="font-medium">The Guardian</span>
-                <span className="font-medium">BellaNaija</span>
+            <div className="mt-4 flex flex-wrap justify-center items-center gap-4">
+                <div className="rounded-lg border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm transition-colors hover:bg-white/20">
+                  <span className="font-medium text-gray-300">Business Day</span>
+                </div>
+                <div className="rounded-lg border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm transition-colors hover:bg-white/20">
+                  <span className="font-medium text-gray-300">TechCabal</span>
+                </div>
+                <div className="rounded-lg border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm transition-colors hover:bg-white/20">
+                  <span className="font-medium text-gray-300">The Guardian</span>
+                </div>
+                <div className="rounded-lg border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm transition-colors hover:bg-white/20">
+                  <span className="font-medium text-gray-300">BellaNaija</span>
+                </div>
             </div>
         </div>
 
