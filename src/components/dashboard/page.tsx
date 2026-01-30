@@ -63,6 +63,7 @@ import { Progress } from "@/components/ui/progress";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import UserPreferences from "@/components/onboarding/UserPreferences";
 import { signOut } from "@/lib/auth";
+import { Badge } from "../ui/badge";
 
 const viewsData = [
     { month: "Jan", views: 1200 },

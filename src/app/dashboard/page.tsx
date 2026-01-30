@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState, useMemo, Suspense } from "react";
@@ -63,6 +64,7 @@ import { Progress } from "@/components/ui/progress";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import UserPreferences from "@/components/onboarding/UserPreferences";
 import { signOut } from "@/lib/auth";
+import { Badge } from "@/components/ui/badge";
 
 const viewsData = [
     { month: "Jan", views: 1200 },
@@ -361,7 +363,7 @@ function DashboardPageContent() {
                                             {sortedAgentListings?.map(property => (
                                                 <TableRow key={property.id}>
                                                     <TableCell className="hidden sm:table-cell">
-                                                        <Image src={getSafeImageUrl(property.imageUrl, property.home_type)} alt={property.address || 'Property image'} width={100} height={60} className="rounded-md object-cover" />
+                                                        <Image src={getSafeImageUrl(property.imageUrls?.[0], property.home_type)} alt={property.address || 'Property image'} width={100} height={60} className="rounded-md object-cover" />
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="font-medium">{property.address}</div>
