@@ -23,12 +23,12 @@ export function MediaGallery({ images, propertyAddress }: { images: string[], pr
     return (
         <div>
             {/* Main image with navigation arrows */}
-            <div className="relative h-[300px] w-full overflow-hidden rounded-lg md:h-[500px] group">
+            <div className="relative h-[300px] w-full overflow-hidden rounded-lg md:h-[500px] group bg-black/5">
                 <Image
                     src={mainImage}
                     alt={`Main image of ${propertyAddress}`}
                     fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-contain transition-transform duration-300 group-hover:scale-105"
                     priority
                     sizes="(max-width: 767px) 100vw, 66vw"
                 />
