@@ -28,6 +28,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { getOrCreateConversation } from '@/lib/chat';
+import { getSafeImageUrl } from '@/lib/image-utils';
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props} fill="currentColor">
@@ -185,15 +186,15 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
     notFound();
   }
   
-  const propertyImages = [
-      property.imageUrl
-  ];
+  const propertyImages = property.imageUrls && property.imageUrls.length > 0
+    ? property.imageUrls
+    : [getSafeImageUrl(undefined, property.home_type)];
   
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "RealEstateListing",
     "name": property.address,
-    "image": propertyImages,
+    "image": property.imageUrls,
     "description": `Stunning ${property.beds}-bedroom, ${property.baths}-bathroom ${property.home_type.toLowerCase()} in ${property.city}.`,
     "address": {
       "@type": "PostalAddress",

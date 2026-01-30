@@ -43,7 +43,7 @@ export function PropertyCard({
   const firestore = useFirestore();
   const [isSaved, setIsSaved] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [currentImageUrl, setCurrentImageUrl] = useState(() => getSafeImageUrl(property.imageUrl, property.home_type));
+  const [currentImageUrl, setCurrentImageUrl] = useState(() => getSafeImageUrl(property.imageUrls?.[0], property.home_type));
   const router = useRouter();
   const isRental = property.listing_type === 'rent';
 
@@ -66,8 +66,8 @@ export function PropertyCard({
   }, [savedHomeRef]);
 
   useEffect(() => {
-      setCurrentImageUrl(getSafeImageUrl(property.imageUrl, property.home_type));
-  }, [property.imageUrl, property.home_type]);
+      setCurrentImageUrl(getSafeImageUrl(property.imageUrls?.[0], property.home_type));
+  }, [property.imageUrls, property.home_type]);
 
 
   const handleToggleSave = async (e: React.MouseEvent) => {
@@ -97,7 +97,6 @@ export function PropertyCard({
                   <Image
                   src={currentImageUrl}
                   alt={property.address || 'a property'}
-                  data-ai-hint={property.imageHint}
                   fill
                   className="w-full object-cover transition-transform duration-300 hover:scale-105"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

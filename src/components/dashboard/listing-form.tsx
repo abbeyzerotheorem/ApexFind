@@ -17,6 +17,7 @@ import { useFirestore, useUser } from '@/firebase';
 import { addListing, updateListing, uploadPropertyImage } from '@/lib/listings';
 import { Progress } from '../ui/progress';
 import Image from 'next/image';
+import { X } from 'lucide-react';
 
 const propertySchema = z.object({
   address: z.string().min(1, 'Address is required'),
@@ -28,7 +29,7 @@ const propertySchema = z.object({
   sqft: z.preprocess((a) => parseInt(z.string().parse(a || '0'), 10), z.number().positive('Sqft must be positive')),
   listing_type: z.enum(['sale', 'rent']),
   home_type: z.string().min(1, 'Home type is required'),
-  imageUrl: z.string().min(1, 'Please upload an image.').url('A valid image URL is required.'),
+  imageUrls: z.array(z.string().url()).min(1, 'At least one image is required.').max(4, 'You can upload a maximum of 4 images.'),
   description: z.string().optional(),
   is_furnished: z.boolean().default(false),
   power_supply: z.string().optional(),
@@ -61,7 +62,7 @@ export default function ListingForm({ property }: ListingFormProps) {
       sqft: property?.sqft || undefined,
       listing_type: property?.listing_type || 'sale',
       home_type: property?.home_type || '',
-      imageUrl: property?.imageUrl || '',
+      imageUrls: property?.imageUrls || [],
       is_furnished: property?.is_furnished || false,
       power_supply: property?.power_supply || '',
       water_supply: property?.water_supply || '',
@@ -69,26 +70,54 @@ export default function ListingForm({ property }: ListingFormProps) {
     },
   });
 
-  const imageUrl = watch('imageUrl');
+  const imageUrls = watch('imageUrls');
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !user) return;
+    const files = event.target.files;
+    if (!files || !user) return;
+    
+    const currentImageCount = imageUrls?.length || 0;
+    const filesToUploadCount = Math.min(files.length, 4 - currentImageCount);
+
+    if (filesToUploadCount <= 0) {
+        alert("You have reached the maximum of 4 images.");
+        return;
+    }
 
     setUploadProgress(0);
     setIsSubmitting(true);
+
     try {
-      const downloadURL = await uploadPropertyImage(file, user.uid, (progress) => {
-        setUploadProgress(progress);
-      });
-      setValue('imageUrl', downloadURL, { shouldValidate: true });
-      setUploadProgress(100);
-      setTimeout(() => setUploadProgress(null), 1000);
+        const filesToUpload = Array.from(files).slice(0, filesToUploadCount);
+
+        const uploadPromises = filesToUpload.map((file, index) => 
+            uploadPropertyImage(file, user.uid, (progress) => {
+                if (progress !== null) {
+                    const totalProgress = (index * 100 + progress) / filesToUpload.length;
+                    setUploadProgress(totalProgress);
+                }
+            })
+        );
+        
+        const uploadedUrls = await Promise.all(uploadPromises);
+        setValue('imageUrls', [...(imageUrls || []), ...uploadedUrls], { shouldValidate: true });
+
+        setUploadProgress(100);
+        setTimeout(() => setUploadProgress(null), 2000);
     } catch (error) {
-      console.error("Image upload failed", error);
-      setUploadProgress(null);
+        console.error("Image upload failed", error);
     } finally {
         setIsSubmitting(false);
+        event.target.value = '';
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const currentImages = watch('imageUrls');
+    if (currentImages) {
+        const newImages = [...currentImages];
+        newImages.splice(index, 1);
+        setValue('imageUrls', newImages, { shouldValidate: true });
     }
   };
 
@@ -208,20 +237,39 @@ export default function ListingForm({ property }: ListingFormProps) {
           </div>
 
             <div className="space-y-2">
-              <Label htmlFor="image-upload">Property Image</Label>
-              <Input id="image-upload" type="file" onChange={handleImageUpload} accept="image/*" disabled={uploadProgress !== null} />
+              <Label htmlFor="image-upload">Property Images (up to 4)</Label>
+              <Input 
+                id="image-upload" 
+                type="file" 
+                multiple
+                onChange={handleImageUpload} 
+                accept="image/*" 
+                disabled={uploadProgress !== null || (imageUrls && imageUrls.length >= 4)} />
               {uploadProgress !== null && (
                 <div className="flex items-center gap-2 mt-2">
                   <Progress value={uploadProgress} className="w-full" />
                   <span className="text-sm text-muted-foreground">{Math.round(uploadProgress)}%</span>
                 </div>
               )}
-               {imageUrl && (
-                <div className="mt-4 relative w-full h-64 rounded-md overflow-hidden border">
-                    <Image src={imageUrl} alt="Property preview" fill className="object-cover" />
+               {imageUrls && imageUrls.length > 0 && (
+                <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {imageUrls.map((url, index) => (
+                        <div key={index} className="relative aspect-video rounded-md overflow-hidden border group">
+                            <Image src={url} alt={`Property preview ${index + 1}`} fill className="object-cover" />
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                onClick={() => removeImage(index)}
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ))}
                 </div>
               )}
-              {errors.imageUrl && <p className="text-sm text-destructive">{errors.imageUrl.message}</p>}
+              {errors.imageUrls && <p className="text-sm text-destructive">{errors.imageUrls.message}</p>}
             </div>
 
 

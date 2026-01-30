@@ -15,8 +15,7 @@ export type Property = {
     beds: number;
     baths: number;
     sqft: number;
-    imageUrl: string;
-    imageHint?: string;
+    imageUrls: string[];
     description?: string;
     lotSize?: number;
     agent?: string; // This might be redundant if we fetch agent info separately via agentId

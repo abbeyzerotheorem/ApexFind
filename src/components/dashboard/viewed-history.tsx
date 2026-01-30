@@ -24,7 +24,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { getSafeImageUrl } from "@/lib/image-utils";
 
 export default function ViewedHistory() {
   const { user } = useUser();
@@ -101,7 +102,7 @@ export default function ViewedHistory() {
             {viewedProperties.map(({ property_data: property, viewed_at }) => (
                 <Card key={property.id} className="flex overflow-hidden">
                     <Link href={`/property/${property.id}`} className="relative w-32 h-32 sm:w-48 sm:h-auto flex-shrink-0">
-                        <Image src={property.imageUrl} alt={property.address} fill className="object-cover" />
+                        <Image src={getSafeImageUrl(property.imageUrls?.[0], property.home_type)} alt={property.address} fill className="object-cover" />
                     </Link>
                     <div className="p-4 flex-grow">
                         <Link href={`/property/${property.id}`}>
