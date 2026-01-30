@@ -1,5 +1,5 @@
 
-import { initializeApp, getApps, cert, applicationDefault } from 'firebase-admin/app';
+import { initializeApp, getApps, cert, applicationDefault, type App } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
 // Ensure the service account is configured via environment variables.
@@ -11,12 +11,13 @@ const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
   ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
   : undefined;
 
-if (!getApps().length) {
-  initializeApp({
-    credential: serviceAccount ? cert(serviceAccount) : applicationDefault(),
-  });
-}
+const adminApp: App =
+  getApps().length > 0
+    ? getApps()[0]
+    : initializeApp({
+        credential: serviceAccount ? cert(serviceAccount) : applicationDefault(),
+      });
 
-const adminDb = getFirestore();
+const adminDb = getFirestore(adminApp);
 
-export { adminDb };
+export { adminDb, adminApp };

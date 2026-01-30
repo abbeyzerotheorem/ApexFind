@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminDb } from '@/lib/firebase/admin';
+import { adminDb, adminApp } from '@/lib/firebase/admin';
 import { getAuth } from 'firebase-admin/auth';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
         }
         
         const idToken = authHeader.split('Bearer ')[1];
-        const decodedToken = await getAuth().verifyIdToken(idToken);
+        const decodedToken = await getAuth(adminApp).verifyIdToken(idToken);
         const uid = decodedToken.uid;
 
         // Check user role
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
         });
 
     } catch (error: any) {
-        if (error.code === 'auth/id-token-expired' || error.code === 'auth/argument-error') {
+        if (error.code?.startsWith('auth/')) {
             return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
         }
         console.error('Error in analytics stats route:', error);

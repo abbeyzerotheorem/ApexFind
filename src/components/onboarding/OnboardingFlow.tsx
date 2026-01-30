@@ -122,7 +122,7 @@ const AGENT_ONBOARDING_STEPS = [
     id: 'agent-chat',
     title: 'Connect with Clients Directly',
     description: 'Use our secure, built-in messaging to communicate with interested parties.',
-    illustration: '/illustrations/onboarding-agent-chat.jpg',
+    illustration: '/illustrations/onboarding-agent-chat.png',
     alt: 'An illustration of a chat interface between an agent and a client.',
     features: [
       'Receive inquiries in real-time',
