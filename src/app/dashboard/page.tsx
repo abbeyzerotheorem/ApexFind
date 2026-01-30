@@ -225,8 +225,7 @@ function DashboardPageContent() {
     try {
         await deleteUserAccount(firestore, user.uid, userProfile?.role);
         await signOut();
-        router.push('/');
-        router.refresh();
+        window.location.href = '/';
     } catch (error: any) {
         console.error("Failed to delete account:", error);
         if (error.code === 'auth/requires-recent-login') {

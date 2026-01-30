@@ -27,13 +27,13 @@ export default function AuthCallbackPage() {
         setShowPasswordForm(true);
     } else if (!loading) {
         if (user) {
-            router.push('/dashboard');
+            window.location.href = '/dashboard';
         } else {
             // This case can happen if the user is not logged in but hits the callback url.
             // Or after password reset, they are redirected here but are not logged in.
             // We can decide to show a message or redirect them to login.
             setMessage('Redirecting to login...');
-            setTimeout(() => router.push('/auth'), 2000);
+            setTimeout(() => { window.location.href = '/auth'; }, 2000);
         }
     }
   }, [user, loading, router]);
@@ -47,7 +47,7 @@ export default function AuthCallbackPage() {
     try {
         await updateUserPassword(password);
         setMessage('Password updated successfully! You will be redirected to sign in...');
-        setTimeout(() => router.push('/auth'), 3000);
+        setTimeout(() => { window.location.href = '/auth'; }, 3000);
     } catch (error: any) {
         setMessage(`Error: ${error.message}`);
     } finally {

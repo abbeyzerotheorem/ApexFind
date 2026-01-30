@@ -29,9 +29,9 @@ export default function AuthPage() {
 
     useEffect(() => {
         if (!loading && user && !flowState.showOnboarding && !flowState.showPreferences) {
-            router.push('/dashboard');
+            window.location.href = '/dashboard';
         }
-    }, [user, loading, router, flowState]);
+    }, [user, loading, flowState]);
 
     const handleSignupSuccess = (uid: string, role: 'customer' | 'agent') => {
         setFlowState({ userId: uid, userRole: role, showOnboarding: true, showPreferences: false });
@@ -48,7 +48,7 @@ export default function AuthPage() {
 
     const handlePreferencesComplete = () => {
         setFlowState({ userId: '', userRole: 'customer', showOnboarding: false, showPreferences: false });
-        router.push('/dashboard');
+        window.location.href = '/dashboard';
     };
 
     const handleSkipAll = () => {
@@ -56,7 +56,7 @@ export default function AuthPage() {
             localStorage.setItem(`apexfind_onboarding_${flowState.userId}`, 'true');
             localStorage.setItem(`apexfind_preferences_${flowState.userId}`, 'true');
         }
-        router.push('/dashboard');
+        window.location.href = '/dashboard';
     };
 
     if (loading || (user && !flowState.showOnboarding && !flowState.showPreferences)) {
@@ -130,8 +130,7 @@ function SignInForm() {
         try {
             await signInWithGoogle();
             setMessage('Signed in successfully! Redirecting...');
-            router.push('/dashboard');
-            router.refresh();
+            window.location.href = '/dashboard';
         } catch (error: any) {
             setIsError(true);
             setMessage(error.message);
@@ -146,8 +145,7 @@ function SignInForm() {
         try {
             await signIn(email, password);
             setMessage('Signed in successfully! Redirecting...');
-            router.push('/dashboard');
-            router.refresh(); 
+            window.location.href = '/dashboard';
         } catch (error: any) {
             setIsError(true);
             if (error.code === 'auth/invalid-credential') {

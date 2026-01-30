@@ -79,8 +79,7 @@ export default function Header() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/');
-    router.refresh();
+    window.location.href = '/';
   };
 
   const navLinks = useMemo(() => {
