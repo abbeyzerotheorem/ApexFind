@@ -10,7 +10,7 @@ function MessagesPageContent() {
     const initialConvoId = searchParams.get('convoId');
 
     return (
-        <div className="flex-grow flex flex-col p-4 sm:p-6 lg:p-8">
+        <div className="flex-grow flex flex-col h-full">
             <ChatInterface initialConversationId={initialConvoId} />
         </div>
     );
