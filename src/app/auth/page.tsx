@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -13,53 +14,19 @@ import { useUser } from '@/firebase';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
-import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
-import UserPreferences from '@/components/onboarding/UserPreferences';
 
 export default function AuthPage() {
     const { user, loading } = useUser();
-    const router = useRouter();
-
-    const [flowState, setFlowState] = useState({
-        userId: '',
-        userRole: 'customer' as 'customer' | 'agent',
-        showOnboarding: false,
-        showPreferences: false,
-    });
 
     useEffect(() => {
-        if (!loading && user && !flowState.showOnboarding && !flowState.showPreferences) {
+        // If the user is already logged in, redirect them to the dashboard.
+        if (!loading && user) {
             window.location.href = '/dashboard';
         }
-    }, [user, loading, flowState]);
+    }, [user, loading]);
 
-    const handleSignupSuccess = (uid: string, role: 'customer' | 'agent') => {
-        setFlowState({ userId: uid, userRole: role, showOnboarding: true, showPreferences: false });
-    };
-    
-    const handleOnboardingComplete = () => {
-        // Agents go straight to the dashboard, customers see preferences
-        if (flowState.userRole === 'agent') {
-            handleSkipAll();
-        } else {
-            setFlowState(prev => ({ ...prev, showOnboarding: false, showPreferences: true }));
-        }
-    };
-
-    const handlePreferencesComplete = () => {
-        setFlowState({ userId: '', userRole: 'customer', showOnboarding: false, showPreferences: false });
-        window.location.href = '/dashboard';
-    };
-
-    const handleSkipAll = () => {
-        if (flowState.userId) {
-            localStorage.setItem(`apexfind_onboarding_${flowState.userId}`, 'true');
-            localStorage.setItem(`apexfind_preferences_${flowState.userId}`, 'true');
-        }
-        window.location.href = '/dashboard';
-    };
-
-    if (loading || (user && !flowState.showOnboarding && !flowState.showPreferences)) {
+    // Show a loading spinner while checking for an active session or after a redirect has been initiated.
+    if (loading || user) {
         return (
             <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -68,29 +35,6 @@ export default function AuthPage() {
         );
     }
     
-    if (flowState.showOnboarding && flowState.userId) {
-        return (
-          <>
-            <OnboardingFlow 
-              userId={flowState.userId}
-              role={flowState.userRole}
-              onComplete={handleOnboardingComplete}
-            />
-            <button
-              onClick={handleSkipAll}
-              className="fixed bottom-8 right-8 px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 z-[100]"
-            >
-              Skip to Dashboard
-            </button>
-          </>
-        )
-    }
-
-    if (flowState.showPreferences && flowState.userId) {
-        return <UserPreferences userId={flowState.userId} onComplete={handlePreferencesComplete} />
-    }
-
-
     return (
         <div className="flex min-h-screen flex-col bg-background">
             <main className="flex-grow flex items-center justify-center py-12 sm:py-16">
@@ -103,7 +47,7 @@ export default function AuthPage() {
                         <SignInForm />
                     </TabsContent>
                     <TabsContent value="signup">
-                        <SignUpForm onSignupSuccess={handleSignupSuccess} />
+                        <SignUpForm />
                     </TabsContent>
                 </Tabs>
             </main>
@@ -129,7 +73,6 @@ function SignInForm() {
         setIsError(false);
         try {
             await signInWithGoogle();
-            setMessage('Signed in successfully! Redirecting...');
             window.location.href = '/dashboard';
         } catch (error: any) {
             setIsError(true);
@@ -144,7 +87,6 @@ function SignInForm() {
 
         try {
             await signIn(email, password);
-            setMessage('Signed in successfully! Redirecting...');
             window.location.href = '/dashboard';
         } catch (error: any) {
             setIsError(true);
@@ -283,7 +225,7 @@ function SignInForm() {
     );
 }
 
-function SignUpForm({ onSignupSuccess }: { onSignupSuccess: (uid: string, role: 'customer' | 'agent') => void }) {
+function SignUpForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -296,8 +238,8 @@ function SignUpForm({ onSignupSuccess }: { onSignupSuccess: (uid: string, role: 
     setMessage('');
     setIsError(false);
     try {
-        const userCredential = await signInWithGoogle();
-        onSignupSuccess(userCredential.user.uid, 'customer'); // Google signups default to customer
+        await signInWithGoogle();
+        window.location.href = '/dashboard';
     } catch (error: any) {
         setIsError(true);
         setMessage(error.message);
@@ -310,8 +252,8 @@ function SignUpForm({ onSignupSuccess }: { onSignupSuccess: (uid: string, role: 
     setIsError(false);
 
     try {
-        const userCredential = await signUp(name, email, password, role);
-        onSignupSuccess(userCredential.user.uid, role);
+        await signUp(name, email, password, role);
+        window.location.href = '/dashboard';
     } catch (error: any) {
         setIsError(true);
         if (error.code === 'auth/email-already-in-use') {
