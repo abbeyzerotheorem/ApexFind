@@ -1,7 +1,7 @@
 'use client';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, query, where, orderBy, doc, onSnapshot, getDocs, type Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, doc, onSnapshot, type Timestamp } from 'firebase/firestore';
 import type { Conversation, Message, User } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,7 @@ export default function ChatInterface({ initialConversationId }: { initialConver
     
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [loadingConversations, setLoadingConversations] = useState(true);
-    const [activeConversationId, setActiveConversationId] = useState<string | null>(initialConversationId || null);
+    const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
     
     const [messages, setMessages] = useState<Message[]>([]);
     const [loadingMessages, setLoadingMessages] = useState(false);
@@ -29,12 +29,20 @@ export default function ChatInterface({ initialConversationId }: { initialConver
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [error, setError] = useState<string | null>(null);
 
-    // 1. Fetch conversations list once on component mount
+    // Effect to set the initial active conversation ID
     useEffect(() => {
-        if (userLoading || !user || !firestore) {
+      if (initialConversationId) {
+        setActiveConversationId(initialConversationId);
+        setMobileView('chat');
+      }
+    }, [initialConversationId]);
+
+    // 1. Fetch conversations list with a real-time listener
+    useEffect(() => {
+        if (!user || !firestore) {
             setLoadingConversations(!userLoading);
             return;
-        };
+        }
 
         setLoadingConversations(true);
         setError(null);
@@ -43,29 +51,26 @@ export default function ChatInterface({ initialConversationId }: { initialConver
             where('participants', 'array-contains', user.uid)
         );
 
-        getDocs(conversationsQuery)
-            .then(querySnapshot => {
-                const convos = querySnapshot.docs
-                    .map(doc => ({ id: doc.id, ...doc.data() } as Conversation))
-                    .sort((a, b) => (b.lastMessageAt?.toMillis?.() ?? 0) - (a.lastMessageAt?.toMillis?.() ?? 0));
-                
-                setConversations(convos);
+        const unsubscribe = onSnapshot(conversationsQuery, (querySnapshot) => {
+            const convos = querySnapshot.docs
+                .map(doc => ({ id: doc.id, ...doc.data() } as Conversation))
+                .sort((a, b) => (b.lastMessageAt?.toMillis?.() ?? 0) - (a.lastMessageAt?.toMillis?.() ?? 0));
+            
+            setConversations(convos);
+            
+            // If there's no active conversation, default to the first one
+            if (!activeConversationId && convos.length > 0) {
+                setActiveConversationId(convos[0].id);
+            }
+            setLoadingConversations(false);
+        }, (err) => {
+            console.error("Error fetching conversations:", err);
+            setError("Could not load your conversations. Please check your connection or try again later.");
+            setLoadingConversations(false);
+        });
 
-                if (!initialConversationId && convos.length > 0) {
-                    setActiveConversationId(convos[0].id);
-                } else if (initialConversationId) {
-                    setActiveConversationId(initialConversationId);
-                }
-            })
-            .catch(err => {
-                console.error("Error fetching conversations:", err);
-                setError("Could not load your conversations. Please check your connection or try again later.");
-            })
-            .finally(() => {
-                setLoadingConversations(false);
-            });
-
-    }, [user, firestore, initialConversationId, userLoading]);
+        return () => unsubscribe();
+    }, [user, firestore, activeConversationId]);
 
     // 2. Set up a real-time listener for messages of the active conversation
     useEffect(() => {
