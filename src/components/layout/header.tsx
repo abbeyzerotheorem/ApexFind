@@ -23,7 +23,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 
@@ -160,14 +159,14 @@ export default function Header() {
                             </DropdownMenuItem>
                              {userProfile?.role === 'agent' && (
                               <DropdownMenuItem asChild>
-                                <Link href="/dashboard?tab=my-listings">My Listings</Link>
+                                <Link href="/dashboard/listings">My Listings</Link>
                               </DropdownMenuItem>
                             )}
                             <DropdownMenuItem asChild>
-                                <Link href="/dashboard?tab=profile">Profile</Link>
+                                <Link href="/dashboard/profile">Profile</Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                                <Link href="/dashboard?tab=profile">Settings</Link>
+                                <Link href="/dashboard/profile">Settings</Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                              <AlertDialog>
