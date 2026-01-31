@@ -58,8 +58,8 @@ export default function ChatInterface({ initialConversationId }: { initialConver
             
             setConversations(convos);
             
-            // If there's no active conversation, default to the first one
-            if (!activeConversationId && convos.length > 0) {
+            // If there's no active conversation and no initial one, default to the first one
+            if (!activeConversationId && !initialConversationId && convos.length > 0) {
                 setActiveConversationId(convos[0].id);
             }
             setLoadingConversations(false);
@@ -70,7 +70,7 @@ export default function ChatInterface({ initialConversationId }: { initialConver
         });
 
         return () => unsubscribe();
-    }, [user, firestore, activeConversationId]);
+    }, [user, firestore, initialConversationId]);
 
     // 2. Set up a real-time listener for messages of the active conversation
     useEffect(() => {
@@ -89,11 +89,6 @@ export default function ChatInterface({ initialConversationId }: { initialConver
             const newMessages = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
             setMessages(newMessages);
             setLoadingMessages(false);
-            
-            if (user?.uid) {
-                markConversationAsRead(firestore, activeConversationId, user.uid);
-            }
-
         }, (err) => {
             console.error("Error fetching messages:", err);
             setError("Could not load messages for this conversation.");
@@ -101,7 +96,15 @@ export default function ChatInterface({ initialConversationId }: { initialConver
         });
 
         return () => unsubscribe();
-    }, [firestore, activeConversationId, user?.uid]);
+    }, [firestore, activeConversationId]);
+    
+    // 3. Mark conversation as read when it becomes active
+    useEffect(() => {
+        if (user?.uid && firestore && activeConversationId) {
+            markConversationAsRead(firestore, activeConversationId, user.uid);
+        }
+    }, [user?.uid, firestore, activeConversationId]);
+
 
     // Scroll to bottom when new messages arrive
     useEffect(() => {
