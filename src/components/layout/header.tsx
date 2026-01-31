@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from "react";
@@ -159,26 +158,34 @@ export default function Header() {
                             <DropdownMenuItem asChild>
                                 <Link href="/dashboard">Dashboard</Link>
                             </DropdownMenuItem>
+                             {userProfile?.role === 'agent' && (
+                              <DropdownMenuItem asChild>
+                                <Link href="/dashboard?tab=my-listings">My Listings</Link>
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem asChild>
                                 <Link href="/dashboard?tab=profile">Profile</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href="/dashboard?tab=profile">Settings</Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                              <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                        Sign out
+                                        Logout
                                     </DropdownMenuItem>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you sure you want to sign out?</AlertDialogTitle>
+                                        <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
                                         <AlertDialogDescription>
                                             You will be returned to the homepage and will need to sign in again to access your dashboard.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleSignOut}>Sign Out</AlertDialogAction>
+                                        <AlertDialogAction onClick={handleSignOut}>Logout</AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
@@ -239,18 +246,18 @@ export default function Header() {
                   {user ? (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button variant="outline" className="justify-start">Sign Out</Button>
+                            <Button variant="outline" className="justify-start">Logout</Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>Are you sure you want to sign out?</AlertDialogTitle>
+                                <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
                                 <AlertDialogDescription>
                                     You will be returned to the homepage and will need to sign in again to access your dashboard.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleSignOut}>Sign Out</AlertDialogAction>
+                                <AlertDialogAction onClick={handleSignOut}>Logout</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
