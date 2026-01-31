@@ -419,5 +419,3 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
     </div>
   );
 }
-
-    
