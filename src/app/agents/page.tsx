@@ -27,6 +27,12 @@ type AgentUser = {
     displayName?: string | null;
     photoURL?: string | null;
     role?: 'agent' | 'customer';
+    title?: string;
+    company?: string;
+    experience?: number;
+    sales?: number;
+    rating?: number;
+    reviewCount?: number;
 };
 
 
@@ -159,44 +165,31 @@ function AgentCard({ agent, currentUserRole }: { agent: AgentUser, currentUserRo
         }
     }
 
-    const agentProfile = {
-        id: agent.id,
-        name: agent.displayName || 'Unnamed Agent',
-        title: 'Real Estate Agent',
-        company: 'ApexFind',
-        imageUrl: agent.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${agent.displayName || 'A'}`,
-        imageHint: "agent portrait",
-        experience: 5,
-        sales: 32,
-        rating: 4.8,
-        reviewCount: 55,
-    };
-
     return (
         <>
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-lg flex flex-col">
                 <div className="p-6 text-center">
-                    <Link href={`/agents/${agentProfile.id}`}>
+                    <Link href={`/agents/${agent.id}`}>
                         <Avatar className="h-24 w-24 mx-auto mb-4">
-                            <AvatarImage src={agentProfile.imageUrl} alt={agentProfile.name} data-ai-hint={agentProfile.imageHint} />
-                            <AvatarFallback>{agentProfile.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
+                            <AvatarImage src={agent.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${agent.displayName || 'A'}`} alt={agent.displayName || 'Agent'} data-ai-hint="agent portrait" />
+                            <AvatarFallback>{(agent.displayName || 'A').split(" ").map((n) => n[0]).join("")}</AvatarFallback>
                         </Avatar>
-                        <h3 className="text-xl font-bold">{agentProfile.name}</h3>
+                        <h3 className="text-xl font-bold">{agent.displayName || 'Unnamed Agent'}</h3>
                     </Link>
-                    <p className="text-muted-foreground">{agentProfile.title}, {agentProfile.company}</p>
+                    <p className="text-muted-foreground">{agent.title || 'Real Estate Agent'}, {agent.company || 'ApexFind'}</p>
                     <div className="mt-2 flex items-center justify-center gap-1">
                         <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                        <span className="font-bold">{agentProfile.rating.toFixed(1)}</span>
-                        <span className="text-muted-foreground">({agentProfile.reviewCount} reviews)</span>
+                        <span className="font-bold">{(agent.rating || 0).toFixed(1)}</span>
+                        <span className="text-muted-foreground">({agent.reviewCount || 0} reviews)</span>
                     </div>
                 </div>
                 <div className="grid grid-cols-2 border-t text-center">
                     <div className="p-4 border-r">
-                        <p className="text-2xl font-bold">{agentProfile.experience} yrs</p>
+                        <p className="text-2xl font-bold">{agent.experience || 0} yrs</p>
                         <p className="text-sm text-muted-foreground">Experience</p>
                     </div>
                     <div className="p-4">
-                        <p className="text-2xl font-bold">{agentProfile.sales}</p>
+                        <p className="text-2xl font-bold">{agent.sales || 0}</p>
                         <p className="text-sm text-muted-foreground">Sales (24 mo)</p>
                     </div>
                 </div>
@@ -224,3 +217,5 @@ function AgentCard({ agent, currentUserRole }: { agent: AgentUser, currentUserRo
         </>
     )
 }
+
+    

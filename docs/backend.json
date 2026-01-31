@@ -51,6 +51,30 @@
             "admin"
           ]
         },
+        "title": {
+          "type": "string",
+          "description": "The agent's professional title."
+        },
+        "company": {
+          "type": "string",
+          "description": "The agent's real estate company."
+        },
+        "experience": {
+          "type": "number",
+          "description": "Years of experience in real estate."
+        },
+        "sales": {
+          "type": "number",
+          "description": "Number of sales in the last 24 months."
+        },
+        "rating": {
+          "type": "number",
+          "description": "Average client rating out of 5."
+        },
+        "reviewCount": {
+          "type": "number",
+          "description": "Total number of client reviews."
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time",
@@ -191,6 +215,10 @@
         "parking_spaces": {
           "type": "number",
           "description": "Number of parking spaces available."
+        },
+        "yearBuilt": {
+          "type": "number",
+          "description": "The year the property was built."
         },
         "power_supply": {
           "type": "string"

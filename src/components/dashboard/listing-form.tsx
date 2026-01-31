@@ -30,6 +30,7 @@ const propertySchema = z.object({
   baths: z.preprocess((a) => parseInt(z.string().parse(a || '0'), 10), z.number().min(0, 'Cannot be negative')),
   sqft: z.preprocess((a) => parseInt(z.string().parse(a || '0'), 10), z.number().positive('Sqft must be positive')),
   parking_spaces: z.preprocess((a) => parseInt(z.string().parse(a || '0'), 10), z.number().min(0, 'Cannot be negative')),
+  yearBuilt: z.preprocess((a) => (a ? parseInt(z.string().parse(a), 10) : undefined), z.number().min(1800, 'Invalid year').max(new Date().getFullYear(), 'Invalid year').optional()),
   listing_type: z.enum(['sale', 'rent']),
   home_type: z.string().min(1, 'Home type is required'),
   imageUrls: z.array(z.string().url()).min(1, 'At least one image is required.').max(4, 'You can upload a maximum of 4 images.'),
@@ -65,6 +66,7 @@ export default function ListingForm({ property }: ListingFormProps) {
       baths: property?.baths || undefined,
       sqft: property?.sqft || undefined,
       parking_spaces: property?.parking_spaces || 0,
+      yearBuilt: property?.yearBuilt || undefined,
       listing_type: property?.listing_type || 'sale',
       home_type: property?.home_type || '',
       imageUrls: property?.imageUrls || [],
@@ -239,26 +241,33 @@ export default function ListingForm({ property }: ListingFormProps) {
             </div>
           </div>
           
-          <div className="grid sm:grid-cols-4 gap-4">
-             <div className="space-y-2">
-              <Label htmlFor="beds">Bedrooms</Label>
-              <Input id="beds" type="number" {...register('beds')} />
-              {errors.beds && <p className="text-sm text-destructive">{errors.beds.message}</p>}
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+                <Label htmlFor="beds">Bedrooms</Label>
+                <Input id="beds" type="number" {...register('beds')} />
+                {errors.beds && <p className="text-sm text-destructive">{errors.beds.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="baths">Bathrooms</Label>
-              <Input id="baths" type="number" {...register('baths')} />
-              {errors.baths && <p className="text-sm text-destructive">{errors.baths.message}</p>}
+                <Label htmlFor="baths">Bathrooms</Label>
+                <Input id="baths" type="number" {...register('baths')} />
+                {errors.baths && <p className="text-sm text-destructive">{errors.baths.message}</p>}
             </div>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="sqft">Square Feet</Label>
-              <Input id="sqft" type="number" {...register('sqft')} />
-              {errors.sqft && <p className="text-sm text-destructive">{errors.sqft.message}</p>}
+                <Label htmlFor="sqft">Square Feet</Label>
+                <Input id="sqft" type="number" {...register('sqft')} />
+                {errors.sqft && <p className="text-sm text-destructive">{errors.sqft.message}</p>}
             </div>
             <div className="space-y-2">
                 <Label htmlFor="parking_spaces">Parking Spaces</Label>
                 <Input id="parking_spaces" type="number" {...register('parking_spaces')} />
                 {errors.parking_spaces && <p className="text-sm text-destructive">{errors.parking_spaces.message}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="yearBuilt">Year Built</Label>
+              <Input id="yearBuilt" type="number" {...register('yearBuilt')} placeholder="e.g. 2010" />
+              {errors.yearBuilt && <p className="text-sm text-destructive">{errors.yearBuilt.message}</p>}
             </div>
           </div>
 

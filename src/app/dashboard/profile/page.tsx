@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useMemo } from "react";
@@ -26,6 +27,11 @@ export default function ProfilePage() {
     const [about, setAbout] = useState('');
     const [specialties, setSpecialties] = useState('');
     const [languages, setLanguages] = useState('');
+    const [title, setTitle] = useState('');
+    const [company, setCompany] = useState('');
+    const [experience, setExperience] = useState('');
+    const [sales, setSales] = useState('');
+
     const [isSaving, setIsSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
     const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -43,6 +49,10 @@ export default function ProfilePage() {
         about?: string,
         specialties?: string[],
         languages?: string[],
+        title?: string;
+        company?: string;
+        experience?: number;
+        sales?: number;
     }>(userDocRef);
 
     useEffect(() => {
@@ -58,6 +68,10 @@ export default function ProfilePage() {
             setAbout(userProfile.about || '');
             setSpecialties(userProfile.specialties?.join(', ') || '');
             setLanguages(userProfile.languages?.join(', ') || '');
+            setTitle(userProfile.title || '');
+            setCompany(userProfile.company || '');
+            setExperience(String(userProfile.experience || ''));
+            setSales(String(userProfile.sales || ''));
           }
         }
       }, [user, userProfile]);
@@ -103,6 +117,10 @@ export default function ProfilePage() {
                 profileData.about = about;
                 profileData.specialties = specialties.split(',').map(s => s.trim()).filter(Boolean);
                 profileData.languages = languages.split(',').map(s => s.trim()).filter(Boolean);
+                profileData.title = title;
+                profileData.company = company;
+                profileData.experience = Number(experience) || 0;
+                profileData.sales = Number(sales) || 0;
             }
             await updateUserProfile(firestore, user.uid, profileData);
             setSaveMessage('Profile updated successfully!');
@@ -190,6 +208,26 @@ export default function ProfilePage() {
 
                                     {userProfile?.role === 'agent' && (
                                         <>
+                                            <div className="grid sm:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="title">Professional Title</Label>
+                                                    <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Principal Agent" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="company">Company</Label>
+                                                    <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="e.g. ApexFind Realty" />
+                                                </div>
+                                            </div>
+                                            <div className="grid sm:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="experience">Years of Experience</Label>
+                                                    <Input id="experience" type="number" value={experience} onChange={(e) => setExperience(e.target.value)} />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="sales">Sales (24 mo)</Label>
+                                                    <Input id="sales" type="number" value={sales} onChange={(e) => setSales(e.target.value)} />
+                                                </div>
+                                            </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="about">About Me</Label>
                                                 <Textarea id="about" value={about} onChange={(e) => setAbout(e.target.value)} placeholder="Tell clients a little about yourself..." />
@@ -219,3 +257,5 @@ export default function ProfilePage() {
         </div>
     )
 }
+
+    

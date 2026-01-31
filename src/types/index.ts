@@ -24,6 +24,7 @@ export type Property = {
     is_furnished?: boolean;
     has_pool?: boolean;
     parking_spaces?: number;
+    yearBuilt?: number;
     power_supply?: string;
     water_supply?: string;
     security_type?: string[];
