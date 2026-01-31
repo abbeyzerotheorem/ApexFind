@@ -22,6 +22,8 @@ export type Property = {
     status?: string;
     home_type: string;
     is_furnished?: boolean;
+    has_pool?: boolean;
+    parking_spaces?: number;
     power_supply?: string;
     water_supply?: string;
     security_type?: string[];
@@ -104,3 +106,5 @@ export interface ValuationResult {
   nextSteps: string[];
   reportId: string;
 }
+
+    

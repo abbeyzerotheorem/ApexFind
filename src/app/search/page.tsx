@@ -107,6 +107,8 @@ function SearchPageComponent() {
       }
       if (features.length > 0) {
           if (features.includes('furnished') && !property.is_furnished) matches = false;
+          if (features.includes('pool') && !property.has_pool) matches = false;
+          if (features.includes('parking') && (!property.parking_spaces || property.parking_spaces < 1)) matches = false;
           if (features.includes('generator') && !property.power_supply?.toLowerCase().includes('generator')) matches = false;
           if (features.includes('borehole') && !property.water_supply?.toLowerCase().includes('borehole')) matches = false;
           if (features.includes('gated') && !property.security_type?.includes('Gated Estate')) matches = false;
@@ -184,3 +186,5 @@ export default function SearchPage() {
     </Suspense>
   );
 }
+
+    

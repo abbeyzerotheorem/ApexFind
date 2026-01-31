@@ -184,6 +184,14 @@
         "is_furnished": {
           "type": "boolean"
         },
+        "has_pool": {
+          "type": "boolean",
+          "description": "Indicates if the property has a swimming pool."
+        },
+        "parking_spaces": {
+          "type": "number",
+          "description": "Number of parking spaces available."
+        },
         "power_supply": {
           "type": "string"
         },
@@ -503,3 +511,5 @@
     }
   }
 }
+
+    

@@ -25,9 +25,11 @@ type FilterControlsProps = {
     keywords: string;
 }
 
-const homeTypeOptions = ["House", "Apartment (Flat)", "Duplex", "Terrace", "Bungalow", "Commercial"];
+const homeTypeOptions = ["House", "Apartment (Flat)", "Duplex", "Terrace", "Bungalow", "Commercial", "Land"];
 const featureOptions = [
     { id: "furnished", label: "Furnished" },
+    { id: "pool", label: "Swimming Pool" },
+    { id: "parking", label: "Parking Space" },
     { id: "generator", label: "Generator" },
     { id: "borehole", label: "Borehole" },
     { id: "gated", label: "Gated Estate" },
@@ -216,3 +218,5 @@ export function FilterControls({
         </div>
     )
 }
+
+    

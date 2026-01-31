@@ -29,11 +29,13 @@ const propertySchema = z.object({
   beds: z.preprocess((a) => parseInt(z.string().parse(a || '0'), 10), z.number().min(0, 'Cannot be negative')),
   baths: z.preprocess((a) => parseInt(z.string().parse(a || '0'), 10), z.number().min(0, 'Cannot be negative')),
   sqft: z.preprocess((a) => parseInt(z.string().parse(a || '0'), 10), z.number().positive('Sqft must be positive')),
+  parking_spaces: z.preprocess((a) => parseInt(z.string().parse(a || '0'), 10), z.number().min(0, 'Cannot be negative')),
   listing_type: z.enum(['sale', 'rent']),
   home_type: z.string().min(1, 'Home type is required'),
   imageUrls: z.array(z.string().url()).min(1, 'At least one image is required.').max(4, 'You can upload a maximum of 4 images.'),
   description: z.string().optional(),
   is_furnished: z.boolean().default(false),
+  has_pool: z.boolean().default(false),
   power_supply: z.string().optional(),
   water_supply: z.string().optional(),
 });
@@ -62,10 +64,12 @@ export default function ListingForm({ property }: ListingFormProps) {
       beds: property?.beds || undefined,
       baths: property?.baths || undefined,
       sqft: property?.sqft || undefined,
+      parking_spaces: property?.parking_spaces || 0,
       listing_type: property?.listing_type || 'sale',
       home_type: property?.home_type || '',
       imageUrls: property?.imageUrls || [],
       is_furnished: property?.is_furnished || false,
+      has_pool: property?.has_pool || false,
       power_supply: property?.power_supply || '',
       water_supply: property?.water_supply || '',
       description: property?.description || '',
@@ -145,7 +149,7 @@ export default function ListingForm({ property }: ListingFormProps) {
     }
   };
   
-  const homeTypeOptions = ["House", "Apartment (Flat)", "Duplex", "Terrace", "Bungalow", "Commercial"];
+  const homeTypeOptions = ["House", "Apartment (Flat)", "Duplex", "Terrace", "Bungalow", "Commercial", "Land"];
 
   return (
     <Card>
@@ -235,7 +239,7 @@ export default function ListingForm({ property }: ListingFormProps) {
             </div>
           </div>
           
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-4 gap-4">
              <div className="space-y-2">
               <Label htmlFor="beds">Bedrooms</Label>
               <Input id="beds" type="number" {...register('beds')} />
@@ -250,6 +254,11 @@ export default function ListingForm({ property }: ListingFormProps) {
               <Label htmlFor="sqft">Square Feet</Label>
               <Input id="sqft" type="number" {...register('sqft')} />
               {errors.sqft && <p className="text-sm text-destructive">{errors.sqft.message}</p>}
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="parking_spaces">Parking Spaces</Label>
+                <Input id="parking_spaces" type="number" {...register('parking_spaces')} />
+                {errors.parking_spaces && <p className="text-sm text-destructive">{errors.parking_spaces.message}</p>}
             </div>
           </div>
 
@@ -317,6 +326,17 @@ export default function ListingForm({ property }: ListingFormProps) {
                 <Label htmlFor="is_furnished">This property is furnished</Label>
             </div>
 
+            <div className="flex items-center space-x-2">
+                <Controller
+                    name="has_pool"
+                    control={control}
+                    render={({ field }) => (
+                        <Checkbox id="has_pool" checked={field.value} onCheckedChange={field.onChange} />
+                    )}
+                />
+                <Label htmlFor="has_pool">This property has a swimming pool</Label>
+            </div>
+
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => router.back()}>Cancel</Button>
             <Button type="submit" disabled={isSubmitting}>
@@ -328,3 +348,5 @@ export default function ListingForm({ property }: ListingFormProps) {
     </Card>
   );
 }
+
+    
