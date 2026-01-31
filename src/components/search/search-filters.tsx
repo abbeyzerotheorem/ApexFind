@@ -184,7 +184,7 @@ export default function SearchFilters({
 
                         <Sheet>
                           <SheetTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-9">
+                            <Button variant="outline" size="sm" className="h-9 lg:hidden">
                               <SlidersHorizontal className="mr-2 h-4 w-4" />
                               All Filters
                             </Button>

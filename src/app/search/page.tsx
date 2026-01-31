@@ -10,6 +10,7 @@ import { useCollection, useFirestore } from "@/firebase";
 import { collection, query } from "firebase/firestore";
 import type { Property } from "@/types";
 import { Loader2 } from 'lucide-react';
+import { FilterControls } from '@/components/search/filter-controls';
 
 const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lgas]);
 
@@ -145,28 +146,43 @@ function SearchPageComponent() {
     return filtered;
 
   }, [allProperties, allUsers, loading, searchQuery, minPrice, maxPrice, beds, baths, homeTypes, listingType, features, minSqft, maxSqft, keywords, sort]);
+
+  const filterProps = {
+    minPrice: minPrice,
+    maxPrice: maxPrice,
+    beds: beds || 'any',
+    baths: baths || 'any',
+    homeTypes: homeTypes,
+    features: features,
+    minSqft: minSqft,
+    maxSqft: maxSqft,
+    keywords: keywords || '',
+  };
   
   return (
-    <>
+    <div className='flex flex-col'>
       <div className="sticky top-16 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <SearchFilters 
           searchQuery={searchQuery} 
           allLocations={allLocations}
-          minPrice={minPrice}
-          maxPrice={maxPrice}
-          beds={beds || 'any'}
-          baths={baths || 'any'}
-          homeTypes={homeTypes}
-          features={features}
-          minSqft={minSqft}
-          maxSqft={maxSqft}
-          keywords={keywords || ''}
+          {...filterProps}
           sort={sort}
           propertyCount={filteredProperties.length}
         />
       </div>
-      <SearchResults properties={loading ? [] : filteredProperties} />
-    </>
+      <div className="mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8">
+        <div className="grid flex-1 gap-x-8 gap-y-10 lg:grid-cols-4">
+            <aside className="hidden lg:block">
+                <h2 className="sr-only">Filters</h2>
+                <FilterControls {...filterProps}/>
+            </aside>
+
+            <div className="lg:col-span-3">
+                <SearchResults properties={loading ? [] : filteredProperties} />
+            </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -186,5 +202,3 @@ export default function SearchPage() {
     </Suspense>
   );
 }
-
-    
