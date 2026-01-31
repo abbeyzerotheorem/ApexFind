@@ -65,6 +65,7 @@ function SearchPageComponent() {
   const maxSqft = searchParams.get('maxSqft') ? parseInt(searchParams.get('maxSqft')!) : 0;
   const keywords = searchParams.get('keywords');
   const sort = searchParams.get('sort') || 'relevant';
+  const view = searchParams.get('view') || 'grid';
 
   const filteredProperties = useMemo(() => {
     if (loading || !allProperties || !allUsers) return [];
@@ -178,7 +179,7 @@ function SearchPageComponent() {
             </aside>
 
             <div className="lg:col-span-3">
-                <SearchResults properties={loading ? [] : filteredProperties} />
+                <SearchResults properties={loading ? [] : filteredProperties} view={view} />
             </div>
         </div>
       </div>

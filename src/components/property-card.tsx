@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -28,15 +29,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-type ViewMode = "list" | "map" | "gallery";
+type PropertyCardViewMode = "grid" | "list";
 
 export function PropertyCard({ 
     property, 
-    viewMode = 'list',
+    viewMode = 'grid',
     showDashboardControls = false 
 }: { 
     property: Property, 
-    viewMode?: ViewMode,
+    viewMode?: PropertyCardViewMode,
     showDashboardControls?: boolean
 }) {
   const { user } = useUser();
@@ -88,6 +89,108 @@ export function PropertyCard({
         setIsSaved(true);
     }
   };
+
+  if (viewMode === 'list') {
+    return (
+      <>
+        <Card className="overflow-hidden transition-shadow duration-300 hover:shadow-xl flex flex-col md:flex-row w-full">
+            <div className="relative h-48 md:h-auto md:w-64 flex-shrink-0">
+                <Link href={`/property/${property.id}`} className="relative block h-full w-full">
+                    <Image
+                        src={currentImageUrl}
+                        alt={property.address || 'a property'}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 256px"
+                        onError={() => { setCurrentImageUrl(getFallbackImage(property.home_type)); }}
+                    />
+                </Link>
+                 <div className="absolute left-3 top-3">
+                    {property.status && <Badge variant="secondary" className="font-medium">{property.status}</Badge>}
+                </div>
+                <div className="absolute right-3 top-3 flex flex-col gap-2">
+                    <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-8 w-8 rounded-full bg-white/80 hover:bg-white self-end"
+                        onClick={handleToggleSave}
+                        aria-label={isSaved ? "Unsave property" : "Save property"}
+                    >
+                        <Heart
+                            className={cn(
+                            "h-4 w-4 text-primary transition-all",
+                            isSaved && "fill-primary"
+                            )}
+                        />
+                    </Button>
+                </div>
+            </div>
+            <div className="flex flex-col flex-grow">
+                <CardContent className="p-4 flex-grow flex flex-col justify-between">
+                    <div>
+                        <div className="flex justify-between items-start">
+                            <p className="text-xl font-bold text-primary">
+                                {formatNaira(property.price)}
+                                {isRental && property.price_period && (
+                                    <span className="text-sm font-normal text-muted-foreground ml-1">
+                                    /{property.price_period}
+                                    </span>
+                                )}
+                            </p>
+                             <Badge variant="default" className="capitalize">{property.listing_type}</Badge>
+                        </div>
+                        <Link href={`/property/${property.id}`}>
+                            <div className="flex items-center text-muted-foreground mt-1 gap-2">
+                                <MapPin size={16} className="mt-0.5 shrink-0" />
+                                <p className="font-semibold text-foreground hover:text-primary text-lg">
+                                    {property.estate_name ? `${property.estate_name} Estate` : property.address}, {property.city}
+                                </p>
+                            </div>
+                        </Link>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-3 gap-2 pt-3 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                            <Bed className="h-5 w-5 text-muted-foreground" />
+                            <span className="text-sm"><span className="font-medium text-foreground">{property.beds}</span> Beds</span>
+                        </div>
+                        <div className="flex items-center justify-center gap-1">
+                            <Bath className="h-5 w-5 text-muted-foreground" />
+                            <span className="text-sm"><span className="font-medium text-foreground">{property.baths}</span> Baths</span>
+                        </div>
+                        <div className="flex items-center justify-center gap-1">
+                            <Square className="h-5 w-5 text-muted-foreground" />
+                            <span className="text-sm"><span className="font-medium text-foreground">{(property.sqft / 10.764).toFixed(0)}</span> m²</span>
+                        </div>
+                    </div>
+                </CardContent>
+                <CardFooter className="p-4 pt-0">
+                    <div className="mt-auto flex flex-wrap gap-2">
+                        {property.is_furnished && <Badge variant="outline">Furnished</Badge>}
+                        {property.power_supply && <Badge variant="outline" className="flex items-center gap-1"><Zap size={12}/>{property.power_supply}</Badge>}
+                        {property.water_supply && <Badge variant="outline" className="flex items-center gap-1"><Droplets size={12}/>{property.water_supply}</Badge>}
+                        {property.security_type && property.security_type.length > 0 && <Badge variant="outline" className="flex items-center gap-1"><Shield size={12}/>Security</Badge>}
+                    </div>
+                </CardFooter>
+            </div>
+        </Card>
+        <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Create an Account to Continue</AlertDialogTitle>
+              <AlertDialogDescription>
+                To save properties, you need to have an account. It's free and only takes a minute!
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => router.push('/auth')}>Sign Up / Sign In</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
+    );
+  }
 
   return (
     <>

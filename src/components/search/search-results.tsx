@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import type { Property } from "@/types";
 
 const INITIAL_LOAD_COUNT = 9;
 
-export default function SearchResults({ properties }: { properties: Property[]}) {
+export default function SearchResults({ properties, view }: { properties: Property[], view: string }) {
     const [visibleCount, setVisibleCount] = useState(INITIAL_LOAD_COUNT);
     
     const handleLoadMore = () => {
@@ -29,9 +30,13 @@ export default function SearchResults({ properties }: { properties: Property[]})
                 <div>
                     <ScrollArea>
                          {properties.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className={cn(
+                                view === 'grid'
+                                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                                : "space-y-6"
+                            )}>
                                 {properties.slice(0, visibleCount).map((property) => (
-                                    <PropertyCard key={property.id} property={property} />
+                                    <PropertyCard key={property.id} property={property} viewMode={view as 'grid' | 'list'} />
                                 ))}
                             </div>
                         ) : (

@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ChevronRight, SlidersHorizontal } from "lucide-react";
+import { ChevronRight, SlidersHorizontal, LayoutGrid, List, Map as MapIcon } from "lucide-react";
 import React from "react";
 import { FilterControls } from "./filter-controls";
 import Link from "next/link";
@@ -74,6 +74,7 @@ export default function SearchFilters({
 
     const [searchQuery, setSearchQuery] = React.useState(initialSearchQuery);
     const listingType = searchParams.get('type') || 'buy';
+    const view = searchParams.get('view') || 'grid';
 
     const [showSaveSearchDialog, setShowSaveSearchDialog] = React.useState(false);
     const [showAuthDialog, setShowAuthDialog] = React.useState(false);
@@ -134,6 +135,12 @@ export default function SearchFilters({
         }
     }
 
+    const handleViewChange = (value: string) => {
+        if (value) {
+            router.push(`${pathname}?${createQueryString('view', value)}`);
+        }
+    }
+
     return (
       <>
         <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
@@ -156,6 +163,11 @@ export default function SearchFilters({
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
+                        <ToggleGroup type="single" value={view} onValueChange={handleViewChange} aria-label="View mode">
+                            <ToggleGroupItem value="grid" aria-label="Grid View"><LayoutGrid className="h-4 w-4" /></ToggleGroupItem>
+                            <ToggleGroupItem value="list" aria-label="List View"><List className="h-4 w-4" /></ToggleGroupItem>
+                            <ToggleGroupItem value="map" aria-label="Map View" disabled><MapIcon className="h-4 w-4" /></ToggleGroupItem>
+                        </ToggleGroup>
                         <ToggleGroup type="single" value={listingType} onValueChange={handleTypeChange} aria-label="Transaction Type">
                             <ToggleGroupItem value="buy" aria-label="For Sale">Buy</ToggleGroupItem>
                             <ToggleGroupItem value="rent" aria-label="For Rent">Rent</ToggleGroupItem>
