@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -13,6 +12,12 @@ import AutocompleteSearch from './autocomplete-search';
 import allStatesWithLgas from "@/jsons/nigeria-states.json";
 
 const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lgas]);
+
+const stats = [
+    { value: '10,000+', label: 'Properties Listed' },
+    { value: '500+', label: 'Verified Agents' },
+    { value: '2,000+', label: 'Happy Clients' },
+]
 
 export default function HeroSearch() {
   const heroImage = PlaceHolderImages.find(p => p.id === 'hero-background');
@@ -43,21 +48,14 @@ export default function HeroSearch() {
           <SearchBar />
         </div>
         
-        <div className="mt-12 text-center">
-            <p className="text-sm font-semibold uppercase tracking-wider text-gray-400">As featured in</p>
-            <div className="mt-4 flex flex-wrap justify-center items-center gap-4">
-                <div className="rounded-lg border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm transition-colors hover:bg-white/20">
-                  <span className="font-medium text-gray-300">Business Day</span>
-                </div>
-                <div className="rounded-lg border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm transition-colors hover:bg-white/20">
-                  <span className="font-medium text-gray-300">TechCabal</span>
-                </div>
-                <div className="rounded-lg border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm transition-colors hover:bg-white/20">
-                  <span className="font-medium text-gray-300">The Guardian</span>
-                </div>
-                <div className="rounded-lg border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm transition-colors hover:bg-white/20">
-                  <span className="font-medium text-gray-300">BellaNaija</span>
-                </div>
+        <div className="mt-12 w-full max-w-4xl">
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-6 sm:gap-x-12">
+                {stats.map((stat) => (
+                    <div key={stat.label}>
+                        <p className="text-3xl font-bold text-white">{stat.value}</p>
+                        <p className="text-sm font-medium text-gray-300">{stat.label}</p>
+                    </div>
+                ))}
             </div>
         </div>
 
