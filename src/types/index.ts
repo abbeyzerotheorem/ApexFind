@@ -68,6 +68,7 @@ export type Conversation = {
     lastMessageAt?: any; // Firestore Timestamp
     lastMessageSenderId?: string;
     unreadCounts?: { [key: string]: number };
+    readStatus?: { [key: string]: { lastReadAt: any } };
 };
 
 export type SavedSearch = {

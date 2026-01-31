@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useUser, useFirestore } from '@/firebase';
@@ -7,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { sendMessage, markConversationAsRead } from '@/lib/chat';
-import { Loader2, Send, ArrowLeft, MessagesSquare } from 'lucide-react';
+import { Loader2, Send, ArrowLeft, MessagesSquare, CheckCheck } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -225,6 +226,27 @@ function MessageWindowContent({ conversation, otherParticipant, currentUser, mes
         await sendMessage(firestore, conversation.id, currentUser.uid, text);
     };
 
+    const isLastMessageRead = useMemo(() => {
+        // Only show read receipt if the current user sent the last message
+        if (currentUser.uid !== conversation.lastMessageSenderId) {
+            return false;
+        }
+
+        const otherUser = conversation.participantDetails.find(p => p.uid !== currentUser.uid);
+        if (!otherUser) return false;
+
+        const lastReadTimestamp = conversation.readStatus?.[otherUser.uid]?.lastReadAt;
+        const lastMessageTimestamp = conversation.lastMessageAt;
+
+        // Ensure both timestamps exist to compare
+        if (!lastReadTimestamp || !lastMessageTimestamp) {
+            return false;
+        }
+
+        // The read timestamp must be same or newer than the message timestamp
+        return lastReadTimestamp.toMillis() >= lastMessageTimestamp.toMillis();
+    }, [conversation, currentUser.uid]);
+
     return (
         <>
             <div className="p-4 border-b flex items-center gap-4">
@@ -241,16 +263,25 @@ function MessageWindowContent({ conversation, otherParticipant, currentUser, mes
                 {loadingMessages ? (
                     <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
                 ) : (
-                    messages.map((msg: Message) => {
+                    messages.map((msg: Message, index: number) => {
                         const isSender = msg.senderId === currentUser.uid;
+                        const isLastMessage = index === messages.length - 1;
                         return (
-                            <div key={msg.id} className={cn("flex my-2", isSender ? "justify-end" : "justify-start")}>
-                                <div className={cn(
-                                    "p-3 rounded-lg max-w-sm md:max-w-md",
-                                    isSender ? "bg-primary text-primary-foreground" : "bg-muted"
-                                )}>
-                                    <p className="whitespace-pre-wrap">{msg.text}</p>
+                            <div key={msg.id}>
+                                <div className={cn("flex my-2", isSender ? "justify-end" : "justify-start")}>
+                                    <div className={cn(
+                                        "p-3 rounded-lg max-w-sm md:max-w-md",
+                                        isSender ? "bg-primary text-primary-foreground" : "bg-muted"
+                                    )}>
+                                        <p className="whitespace-pre-wrap">{msg.text}</p>
+                                    </div>
                                 </div>
+                                 {isSender && isLastMessage && isLastMessageRead && (
+                                     <div className="flex justify-end items-center pr-2 text-xs text-muted-foreground">
+                                        <CheckCheck className="h-4 w-4 mr-1 text-primary" />
+                                        <span>Read</span>
+                                    </div>
+                                )}
                             </div>
                         );
                     })

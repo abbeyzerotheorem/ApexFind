@@ -111,13 +111,17 @@ export async function getOrCreateConversation(
             [currentUser.uid]: 0,
             [otherUser.uid]: 0,
         },
+        readStatus: {
+            [currentUser.uid]: { lastReadAt: now },
+            [otherUser.uid]: { lastReadAt: now },
+        }
     });
 
     return conversationId;
 }
 
 /**
- * Sets a user's unread count for a specific conversation to 0.
+ * Sets a user's unread count for a specific conversation to 0 and updates their read timestamp.
  */
 export async function markConversationAsRead(
     firestore: Firestore,
@@ -127,14 +131,14 @@ export async function markConversationAsRead(
     if (!firestore || !conversationId || !userId) return;
 
     const conversationRef = doc(firestore, 'conversations', conversationId);
-    const updatePath = `unreadCounts.${userId}`;
+    
+    const updatePayload: { [key: string]: any } = {};
+    updatePayload[`unreadCounts.${userId}`] = 0;
+    updatePayload[`readStatus.${userId}.lastReadAt`] = serverTimestamp();
 
     try {
-        await updateDoc(conversationRef, {
-            [updatePath]: 0
-        });
+        await updateDoc(conversationRef, updatePayload);
     } catch (error) {
         console.error("Failed to mark conversation as read:", error);
-        // This might fail if the document or field doesn't exist, but it's handled gracefully.
     }
 }
