@@ -166,7 +166,7 @@ export default function SearchFilters({
                         <ToggleGroup type="single" value={view} onValueChange={handleViewChange} aria-label="View mode">
                             <ToggleGroupItem value="grid" aria-label="Grid View"><LayoutGrid className="h-4 w-4" /></ToggleGroupItem>
                             <ToggleGroupItem value="list" aria-label="List View"><List className="h-4 w-4" /></ToggleGroupItem>
-                            <ToggleGroupItem value="map" aria-label="Map View" disabled><MapIcon className="h-4 w-4" /></ToggleGroupItem>
+                            <ToggleGroupItem value="map" aria-label="Map View"><MapIcon className="h-4 w-4" /></ToggleGroupItem>
                         </ToggleGroup>
                         <ToggleGroup type="single" value={listingType} onValueChange={handleTypeChange} aria-label="Transaction Type">
                             <ToggleGroupItem value="buy" aria-label="For Sale">Buy</ToggleGroupItem>

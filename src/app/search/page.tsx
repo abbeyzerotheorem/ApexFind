@@ -2,6 +2,7 @@
 'use client';
 
 import { Suspense, useMemo, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useSearchParams } from "next/navigation";
 import SearchResults from "@/components/search/search-results";
 import SearchFilters from "@/components/search/search-filters";
@@ -13,6 +14,12 @@ import { Loader2 } from 'lucide-react';
 import { FilterControls } from '@/components/search/filter-controls';
 
 const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lgas]);
+
+const MapView = dynamic(() => import('@/components/search/map-view'), {
+    ssr: false,
+    loading: () => <div className="flex h-full w-full items-center justify-center bg-muted"><Loader2 className="h-8 w-8 animate-spin" /></div>
+});
+
 
 function SearchPageComponent() {
   const searchParams = useSearchParams();
@@ -179,7 +186,10 @@ function SearchPageComponent() {
             </aside>
 
             <div className="lg:col-span-3">
-                <SearchResults properties={loading ? [] : filteredProperties} view={view} />
+                {view === 'map'
+                    ? <div className="h-[75vh]"><MapView properties={filteredProperties} /></div>
+                    : <SearchResults properties={loading ? [] : filteredProperties} view={view} />
+                }
             </div>
         </div>
       </div>
