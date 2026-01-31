@@ -167,7 +167,7 @@ export default function Header() {
                                 <Link href="/dashboard/profile">Profile</Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                                <Link href="/dashboard/profile">Settings</Link>
+                                <Link href="/dashboard/settings">Settings</Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                              <AlertDialog>
