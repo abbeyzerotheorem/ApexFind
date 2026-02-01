@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, where, orderBy, doc, onSnapshot, type Timestamp } from 'firebase/firestore';
 import type { Conversation, Message, User } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -14,6 +14,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 import { Skeleton } from '../ui/skeleton';
+import { useSearchParams } from 'next/navigation';
 
 export default function ChatInterface({ initialConversationId }: { initialConversationId?: string | null }) {
     const { user, loading: userLoading } = useUser();
@@ -39,39 +40,47 @@ export default function ChatInterface({ initialConversationId }: { initialConver
     }, [initialConversationId]);
 
     // 1. Fetch conversations list with a real-time listener
+    const conversationsQuery = useMemo(() => {
+        if (!user || !firestore) return null;
+        return query(
+            collection(firestore, 'conversations'),
+            where('participants', 'array-contains', user.uid)
+        );
+    }, [user, firestore]);
+    const { data: convos, loading: initialConvosLoading, error: convosError } = useCollection(conversationsQuery);
+
     useEffect(() => {
         if (!user || !firestore) {
             setLoadingConversations(!userLoading);
             return;
         }
-
-        setLoadingConversations(true);
-        setError(null);
-        const conversationsQuery = query(
-            collection(firestore, 'conversations'),
-            where('participants', 'array-contains', user.uid)
-        );
-
-        const unsubscribe = onSnapshot(conversationsQuery, (querySnapshot) => {
-            const convos = querySnapshot.docs
-                .map(doc => ({ id: doc.id, ...doc.data() } as Conversation))
-                .sort((a, b) => (b.lastMessageAt?.toMillis?.() ?? 0) - (a.lastMessageAt?.toMillis?.() ?? 0));
-            
-            setConversations(convos);
-            
-            // If there's no active conversation and no initial one, default to the first one
-            if (!activeConversationId && !initialConversationId && convos.length > 0) {
-                setActiveConversationId(convos[0].id);
-            }
-            setLoadingConversations(false);
-        }, (err) => {
-            console.error("Error fetching conversations:", err);
+        
+        if (initialConvosLoading) {
+            setLoadingConversations(true);
+            return;
+        }
+        
+        if (convosError) {
+            console.error("Error fetching conversations:", convosError);
             setError("Could not load your conversations. Please check your connection or try again later.");
             setLoadingConversations(false);
-        });
+            return;
+        }
 
-        return () => unsubscribe();
-    }, [user, firestore, initialConversationId]);
+        const sortedConvos = (convos || [])
+            .map(doc => ({ id: doc.id, ...doc } as Conversation))
+            .sort((a, b) => (b.lastMessageAt?.toMillis?.() ?? 0) - (a.lastMessageAt?.toMillis?.() ?? 0));
+        
+        setConversations(sortedConvos);
+        
+        // If there's no active conversation and no initial one, default to the first one
+        if (!activeConversationId && !initialConversationId && sortedConvos.length > 0) {
+            setActiveConversationId(sortedConvos[0].id);
+        }
+        setLoadingConversations(false);
+
+    }, [user, firestore, convos, initialConvosLoading, convosError, activeConversationId, initialConversationId]);
+
 
     // 2. Set up a real-time listener for messages of the active conversation
     useEffect(() => {
@@ -102,9 +111,12 @@ export default function ChatInterface({ initialConversationId }: { initialConver
     // 3. Mark conversation as read when it becomes active
     useEffect(() => {
         if (user?.uid && firestore && activeConversationId) {
-            markConversationAsRead(firestore, activeConversationId, user.uid);
+            const activeConvo = conversations.find(c => c.id === activeConversationId);
+            if (activeConvo && (activeConvo.unreadCounts?.[user.uid] ?? 0) > 0) {
+                markConversationAsRead(firestore, activeConversationId, user.uid);
+            }
         }
-    }, [user?.uid, firestore, activeConversationId]);
+    }, [user?.uid, firestore, activeConversationId, conversations, messages]);
 
 
     // Scroll to bottom when new messages arrive
@@ -215,8 +227,16 @@ export default function ChatInterface({ initialConversationId }: { initialConver
 }
 
 function MessageWindowContent({ conversation, otherParticipant, currentUser, messages, loadingMessages, onBack, messagesEndRef }: { conversation: Conversation; otherParticipant: any; currentUser: User; messages: Message[]; loadingMessages: boolean; onBack: () => void; messagesEndRef: React.RefObject<HTMLDivElement>; }) {
+    const searchParams = useSearchParams();
+    const initialMessage = searchParams.get('msg');
     const [newMessage, setNewMessage] = useState('');
     const firestore = useFirestore();
+
+    useEffect(() => {
+        if (initialMessage) {
+            setNewMessage(decodeURIComponent(initialMessage));
+        }
+    }, [initialMessage]);
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
