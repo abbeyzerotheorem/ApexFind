@@ -2,14 +2,9 @@
 'use client';
 
 import { notFound, useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { BedDouble, Bath, Maximize, Calendar, Car, Home, Droplet, Wind, Heart, Share2, MapPin, Zap, Shield, Loader2 } from 'lucide-react';
+import { BedDouble, Bath, Maximize, Calendar, Car, Home, Droplet, Wind, Heart, Share2, MapPin, Zap, Shield, Loader2, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { PropertyCard } from '@/components/property-card';
 import { MediaGallery } from '@/components/property/media-gallery';
 import { formatNaira } from '@/lib/naira-formatter';
 import { Badge } from '@/components/ui/badge';
@@ -28,8 +23,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { getOrCreateConversation } from '@/lib/chat';
 import { getSafeImageUrl } from '@/lib/image-utils';
+import AgentCard from './property/agent-card';
+import SimilarProperties from './property/similar-properties';
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props} fill="currentColor">
@@ -47,7 +43,6 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
   const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
   const [geocodingLoading, setGeocodingLoading] = useState(true);
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
-  const [isContacting, setIsContacting] = useState(false);
 
   const propertyRef = useMemo(() => {
       if (!firestore) return null;
@@ -128,32 +123,6 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
     }
   };
   
-  const handleContactAgent = async (e: React.MouseEvent | React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !firestore) {
-        setShowAuthDialog(true);
-        return;
-    }
-    if (!agent) {
-      console.error("Agent data not loaded yet.");
-      return;
-    }
-
-    setIsContacting(true);
-    try {
-        const conversationId = await getOrCreateConversation(
-            firestore,
-            { uid: user.uid, displayName: user.displayName, photoURL: user.photoURL },
-            { uid: agent.id, displayName: agent.displayName || null, photoURL: agent.photoURL || null }
-        );
-        router.push(`/messages?convoId=${conversationId}`);
-    } catch (error) {
-        console.error("Failed to create conversation", error);
-    } finally {
-        setIsContacting(false);
-    }
-  };
-
   const handleShareOnWhatsApp = async () => {
     if (!property) return;
     setIsGeneratingLink(true);
@@ -190,13 +159,15 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
   const propertyImages = property.imageUrls && property.imageUrls.length > 0
     ? property.imageUrls
     : [getSafeImageUrl(undefined, property.home_type)];
+
+  const description = property.description || `Discover luxury living in this stunning ${property.beds}-bedroom, ${property.baths}-bathroom ${property.home_type.toLowerCase()} located in the heart of ${property.city}. Spanning ${property.sqft.toLocaleString()} square feet, this home offers an open-concept living space perfect for both relaxation and entertaining. This property combines modern elegance with comfort, making it the perfect place to call home.`;
   
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "RealEstateListing",
     "name": property.address,
     "image": property.imageUrls,
-    "description": `Stunning ${property.beds}-bedroom, ${property.baths}-bathroom ${property.home_type.toLowerCase()} in ${property.city}.`,
+    "description": description,
     "address": {
       "@type": "PostalAddress",
       "streetAddress": property.address,
@@ -256,7 +227,9 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                         <Button variant="outline" size="icon" onClick={handleShareOnWhatsApp} disabled={isGeneratingLink}>
                             {isGeneratingLink ? <Loader2 className="animate-spin" /> : <WhatsAppIcon className="h-5 w-5" />}
                         </Button>
-                        <Button variant="outline" size="icon"><Share2 className="h-5 w-5" /></Button>
+                        <Button variant="outline" size="icon" onClick={() => window.print()} aria-label="Print page">
+                            <Printer className="h-5 w-5" />
+                        </Button>
                     </div>
                 </div>
 
@@ -291,11 +264,11 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                     </div>}
                 </div>
                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                    <Button size="lg" className="w-full sm:w-auto flex-1" onClick={handleContactAgent} disabled={isContacting}>
-                        {isContacting ? <Loader2 className="animate-spin" /> : 'Schedule a Tour'}
+                    <Button size="lg" className="w-full sm:w-auto flex-1">
+                        Schedule a Tour
                     </Button>
-                    <Button size="lg" variant="outline" className="w-full sm:w-auto flex-1" onClick={handleContactAgent} disabled={isContacting}>
-                         {isContacting ? <Loader2 className="animate-spin" /> : 'Contact Agent'}
+                    <Button size="lg" variant="outline" className="w-full sm:w-auto flex-1">
+                         Get Mortgage Quote
                     </Button>
                 </div>
               </div>
@@ -303,7 +276,7 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
               <div className="mt-8">
                 <h2 className="text-2xl font-bold text-foreground">About this home</h2>
                 <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-                  Discover luxury living in this stunning ${property.beds}-bedroom, ${property.baths}-bathroom ${property.home_type.toLowerCase()} located in the heart of ${property.city}. Spanning ${property.sqft.toLocaleString()} square feet, this home offers an open-concept living space perfect for both relaxation and entertaining. The gourmet kitchen features state-of-the-art appliances and custom cabinetry. The master suite is a private oasis with a spa-like ensuite bathroom. Enjoy the Nigerian sun in your private outdoor space. This property combines modern elegance with comfort, making it the perfect place to call home.
+                  {description}
                 </p>
                  <div className="mt-6 flex flex-wrap gap-3">
                     {property.is_furnished && <Badge variant="secondary">Furnished</Badge>}
@@ -371,34 +344,11 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
             </div>
 
             <div className="lg:col-span-1">
-              <div className="lg:sticky top-24 rounded-lg border bg-card p-6 shadow-sm">
-                <h3 className="text-xl font-bold text-foreground">Contact Agent</h3>
-                <form className="mt-4 space-y-4" onSubmit={handleContactAgent}>
-                  <div>
-                    <Label htmlFor="name">Name</Label>
-                    <Input id="name" type="text" placeholder="Your Name" defaultValue={user?.displayName ?? ''} />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="your@email.com" defaultValue={user?.email ?? ''} />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" type="tel" placeholder="Your Phone Number" />
-                  </div>
-                  <div>
-                    <Label htmlFor="message">Message</Label>
-                    <Textarea id="message" defaultValue={`I am interested in ${property.address}.`} />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isContacting}>
-                    {isContacting ? <Loader2 className="animate-spin" /> : 'Contact Agent'}
-                  </Button>
-                  <p className="text-center text-xs text-muted-foreground">
-                    By pressing Contact Agent, you agree to our Terms of Use & Privacy Policy.
-                  </p>
-                </form>
-              </div>
+              <AgentCard agent={agent} property={property} />
             </div>
+          </div>
+          <div className="mt-16">
+            <SimilarProperties currentProperty={property} />
           </div>
         </div>
         <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
