@@ -33,7 +33,7 @@ const propertySchema = z.object({
   yearBuilt: z.preprocess((a) => (a ? parseInt(z.string().parse(a), 10) : undefined), z.number().min(1800, 'Invalid year').max(new Date().getFullYear(), 'Invalid year').optional()),
   listing_type: z.enum(['sale', 'rent']),
   home_type: z.string().min(1, 'Home type is required'),
-  imageUrls: z.array(z.string().url()).min(1, 'At least one image is required.').max(4, 'You can upload a maximum of 4 images.'),
+  imageUrls: z.array(z.string().url()).min(1, 'At least one image is required.').max(10, 'You can upload a maximum of 10 images.'),
   description: z.string().optional(),
   is_furnished: z.boolean().default(false),
   has_pool: z.boolean().default(false),
@@ -85,10 +85,10 @@ export default function ListingForm({ property }: ListingFormProps) {
     if (!files || !user) return;
     
     const currentImageCount = imageUrls?.length || 0;
-    const filesToUploadCount = Math.min(files.length, 4 - currentImageCount);
+    const filesToUploadCount = Math.min(files.length, 10 - currentImageCount);
 
     if (filesToUploadCount <= 0) {
-        alert("You have reached the maximum of 4 images.");
+        alert("You have reached the maximum of 10 images.");
         return;
     }
 
@@ -272,14 +272,14 @@ export default function ListingForm({ property }: ListingFormProps) {
           </div>
 
             <div className="space-y-2">
-              <Label htmlFor="image-upload">Property Images (up to 4)</Label>
+              <Label htmlFor="image-upload">Property Images (up to 10)</Label>
               <Input 
                 id="image-upload" 
                 type="file" 
                 multiple
                 onChange={handleImageUpload} 
                 accept="image/*" 
-                disabled={uploadProgress !== null || (imageUrls && imageUrls.length >= 4)} />
+                disabled={uploadProgress !== null || (imageUrls && imageUrls.length >= 10)} />
               {uploadProgress !== null && (
                 <div className="flex items-center gap-2 mt-2">
                   <Progress value={uploadProgress} className="w-full" />
@@ -357,5 +357,3 @@ export default function ListingForm({ property }: ListingFormProps) {
     </Card>
   );
 }
-
-    
