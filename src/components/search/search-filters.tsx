@@ -33,6 +33,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useUser, useFirestore } from "@/firebase";
 import { saveSearch } from "@/lib/searches";
+import { formatNairaShort } from "@/lib/naira-formatter";
 
 
 type SearchFiltersProps = {
@@ -53,6 +54,60 @@ type SearchFiltersProps = {
   furnishing: string;
   pricePeriods: string[];
 };
+
+function createFilterSummary({
+  searchQuery,
+  homeTypes,
+  minPrice,
+  maxPrice,
+  beds,
+  baths,
+  listingType
+}: {
+  searchQuery: string;
+  homeTypes: string[];
+  minPrice: number;
+  maxPrice: number;
+  beds: string;
+  baths: string;
+  listingType: string | null;
+}): string {
+  const parts: string[] = [];
+
+  const typeLabel = listingType === 'rent' ? 'For Rent' : 'For Sale';
+  parts.push(typeLabel);
+
+  if (searchQuery) {
+    parts.push(searchQuery);
+  } else {
+    parts.push("Nigeria");
+  }
+
+  if (homeTypes.length > 0) {
+    parts.push(homeTypes.join(', '));
+  }
+
+  if (minPrice > 0 || maxPrice < 500000000) {
+    const min = minPrice > 0 ? formatNairaShort(minPrice) : '';
+    const max = maxPrice < 500000000 ? formatNairaShort(maxPrice) : '';
+    if (min || max) {
+      if (min && max) parts.push(`${min} - ${max}`);
+      else if (min) parts.push(`> ${min}`);
+      else if (max) parts.push(`< ${max}`);
+    }
+  }
+
+  if (beds && beds !== 'any') {
+    parts.push(`${beds.replace('+', '')}+ Beds`);
+  }
+
+  if (baths && baths !== 'any') {
+    parts.push(`${baths.replace('+', '')}+ Baths`);
+  }
+
+  return parts.join(' → ');
+}
+
 
 export default function SearchFilters({ 
   searchQuery: initialSearchQuery, 
@@ -145,15 +200,26 @@ export default function SearchFilters({
             router.push(`${pathname}?${createQueryString('view', value)}`);
         }
     }
+    
+    const filterSummary = createFilterSummary({
+      searchQuery: initialSearchQuery,
+      homeTypes,
+      minPrice,
+      maxPrice,
+      beds,
+      baths,
+      listingType
+    });
+
 
     return (
       <>
         <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col gap-3 py-4">
-                 <div className="flex items-center text-sm">
-                    <Link href="/" className="text-muted-foreground hover:text-foreground">Home</Link>
-                    <ChevronRight className="h-4 w-4" />
-                    <span className="font-semibold">{initialSearchQuery || "Nigeria"}</span>
+                 <div className="flex items-center text-sm overflow-x-auto whitespace-nowrap">
+                    <Link href="/" className="text-muted-foreground hover:text-foreground flex-shrink-0">Home</Link>
+                    <ChevronRight className="h-4 w-4 flex-shrink-0" />
+                    <span className="font-semibold text-ellipsis overflow-hidden">{filterSummary}</span>
                 </div>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex-grow">

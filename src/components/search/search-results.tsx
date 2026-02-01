@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { PropertyCard } from "@/components/property-card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { Property } from "@/types";
+import Link from "next/link";
 
 const INITIAL_LOAD_COUNT = 9;
 
@@ -40,9 +42,18 @@ export default function SearchResults({ properties, view }: { properties: Proper
                                 ))}
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center h-full py-24">
+                            <div className="flex flex-col items-center justify-center h-full py-24 text-center">
                                 <h3 className="text-2xl font-semibold">No results found</h3>
-                                <p className="text-muted-foreground">Try adjusting your search or filters.</p>
+                                <p className="text-muted-foreground mt-2 max-w-md">Try adjusting your search or filters, such as widening the price range or changing the location.</p>
+                                 <div className="mt-6">
+                                    <h4 className="font-semibold mb-2">Popular Searches:</h4>
+                                    <div className="flex flex-wrap justify-center gap-2">
+                                        <Button variant="link" asChild><Link href="/search?q=Lagos">Lagos</Link></Button>
+                                        <Button variant="link" asChild><Link href="/search?q=Abuja">Abuja</Link></Button>
+                                        <Button variant="link" asChild><Link href="/search?q=Lekki">Lekki</Link></Button>
+                                        <Button variant="link" asChild><Link href="/search?q=Port-Harcourt">Port Harcourt</Link></Button>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </ScrollArea>
