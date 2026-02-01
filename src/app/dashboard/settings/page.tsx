@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from "react";
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
 import { deleteUserAccount } from "@/lib/user";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function SettingsPage() {
     const { user, loading: userLoading } = useUser();
@@ -45,7 +47,8 @@ export default function SettingsPage() {
             await deleteUserAccount(firestore, user.uid, userProfile?.role);
             await signOut();
             window.location.href = '/';
-        } catch (error: any) {
+        } catch (error: any)
+        {
             console.error("Failed to delete account:", error);
             if (error.code === 'auth/requires-recent-login') {
                 alert("For your security, please sign out and sign back in before deleting your account.");
@@ -75,73 +78,93 @@ export default function SettingsPage() {
                 </h1>
                 <p className="mt-1 text-muted-foreground">Manage your notification and account settings.</p>
 
-                <Card className="mt-8">
-                    <CardHeader>
-                        <CardTitle>Notification Settings</CardTitle>
-                        <CardDescription>
-                            Manage how you receive notifications from ApexFind.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                                <Label htmlFor="new-listing-alerts" className="font-medium">New Listing Alerts</Label>
-                                <p className="text-sm text-muted-foreground">
-                                    Receive emails about new properties that match your saved searches.
-                                </p>
-                            </div>
-                            <Switch id="new-listing-alerts" defaultChecked />
-                        </div>
-                        <div className="flex items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                                <Label htmlFor="chat-notifications" className="font-medium">Chat Notifications</Label>
-                                <p className="text-sm text-muted-foreground">
-                                    Get notified when you receive a new message from an agent or client.
-                                </p>
-                            </div>
-                            <Switch id="chat-notifications" defaultChecked />
-                        </div>
-                        <div className="flex items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                                <Label htmlFor="newsletter-emails" className="font-medium">Newsletter Emails</Label>
-                                <p className="text-sm text-muted-foreground">
-                                    Receive occasional news, tips, and promotions from ApexFind.
-                                </p>
-                            </div>
-                            <Switch id="newsletter-emails" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="mt-8 bg-destructive/10 border-destructive/20">
-                    <CardHeader>
-                        <CardTitle className="text-destructive">Danger Zone</CardTitle>
-                        <CardDescription className="text-destructive/80">
-                            Permanently delete your account and all associated data. This action cannot be undone.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive">Delete My Account</Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This will permanently delete your account and all associated data. This action cannot be undone.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleDeleteAccount} disabled={isDeleting}>
-                                        {isDeleting ? 'Deleting...' : 'Yes, delete my account'}
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </CardContent>
-                </Card>
+                <Tabs defaultValue="notifications" className="mt-8">
+                    <TabsList className="grid w-full grid-cols-2 max-w-sm">
+                        <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                        <TabsTrigger value="account">Account</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="notifications">
+                        <Card className="mt-2">
+                            <CardHeader>
+                                <CardTitle>Notification Settings</CardTitle>
+                                <CardDescription>
+                                    Manage how you receive notifications from ApexFind.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="flex items-center justify-between rounded-lg border p-4">
+                                    <div className="space-y-0.5">
+                                        <Label htmlFor="new-listing-alerts" className="font-medium">New Listing Alerts</Label>
+                                        <p className="text-sm text-muted-foreground">
+                                            Receive emails about new properties that match your saved searches.
+                                        </p>
+                                    </div>
+                                    <Switch id="new-listing-alerts" defaultChecked />
+                                </div>
+                                <div className="flex items-center justify-between rounded-lg border p-4">
+                                    <div className="space-y-0.5">
+                                        <Label htmlFor="chat-notifications" className="font-medium">Chat Notifications</Label>
+                                        <p className="text-sm text-muted-foreground">
+                                            Get notified when you receive a new message from an agent or client.
+                                        </p>
+                                    </div>
+                                    <Switch id="chat-notifications" defaultChecked />
+                                </div>
+                                <div className="flex items-center justify-between rounded-lg border p-4">
+                                    <div className="space-y-0.5">
+                                        <Label htmlFor="newsletter-emails" className="font-medium">Newsletter Emails</Label>
+                                        <p className="text-sm text-muted-foreground">
+                                            Receive occasional news, tips, and promotions from ApexFind.
+                                        </p>
+                                    </div>
+                                    <Switch id="newsletter-emails" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                    <TabsContent value="account">
+                         <Card className="mt-2">
+                            <CardHeader>
+                                <CardTitle>Account Management</CardTitle>
+                                <CardDescription>
+                                    Manage general account settings.
+                                </CardDescription>
+                            </CardHeader>
+                             <CardContent>
+                                <Button variant="outline" onClick={() => signOut().then(() => window.location.href = '/')}>Sign Out</Button>
+                            </CardContent>
+                        </Card>
+                        <Card className="mt-8 bg-destructive/10 border-destructive/20">
+                            <CardHeader>
+                                <CardTitle className="text-destructive">Danger Zone</CardTitle>
+                                <CardDescription className="text-destructive/80">
+                                    Permanently delete your account and all associated data. This action cannot be undone.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="destructive">Delete My Account</Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This will permanently delete your account and all associated data. This action cannot be undone.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleDeleteAccount} disabled={isDeleting}>
+                                                {isDeleting ? 'Deleting...' : 'Yes, delete my account'}
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
             </div>
         </div>
     )
