@@ -5,13 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
 import { formatNairaShort } from "@/lib/naira-formatter";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { cn } from "@/lib/utils";
 
 type FilterControlsProps = {
     minPrice: number;
@@ -23,17 +21,12 @@ type FilterControlsProps = {
     minSqft: number;
     maxSqft: number;
     keywords: string;
+    listingType: string | null;
+    furnishing: string;
+    pricePeriods: string[];
 }
 
 const homeTypeOptions = ["House", "Apartment (Flat)", "Duplex", "Terrace", "Bungalow", "Commercial", "Land"];
-const featureOptions = [
-    { id: "furnished", label: "Furnished" },
-    { id: "pool", label: "Swimming Pool" },
-    { id: "parking", label: "Parking Space" },
-    { id: "generator", label: "Generator" },
-    { id: "borehole", label: "Borehole" },
-    { id: "gated", label: "Gated Estate" },
-];
 
 export function FilterControls({ 
     minPrice: initialMin, 
@@ -45,6 +38,9 @@ export function FilterControls({
     minSqft: initialMinSqft,
     maxSqft: initialMaxSqft,
     keywords: initialKeywords,
+    listingType,
+    furnishing: initialFurnishing,
+    pricePeriods: initialPricePeriods
 }: FilterControlsProps) {
     const router = useRouter();
     const pathname = usePathname();
@@ -59,7 +55,8 @@ export function FilterControls({
     const [minSqft, setMinSqft] = React.useState(initialMinSqft);
     const [maxSqft, setMaxSqft] = React.useState(initialMaxSqft);
     const [keywords, setKeywords] = React.useState(initialKeywords);
-
+    const [furnishing, setFurnishing] = React.useState(initialFurnishing);
+    const [selectedPricePeriods, setSelectedPricePeriods] = React.useState<string[]>(initialPricePeriods);
 
     const handlePriceChange = (value: number[]) => {
         setMinPrice(value[0]);
@@ -72,12 +69,19 @@ export function FilterControls({
             : [...selectedHomeTypes, type];
         setSelectedHomeTypes(newSelectedTypes);
     }
-
+    
     const handleFeatureChange = (featureId: string) => {
         const newSelectedFeatures = selectedFeatures.includes(featureId)
             ? selectedFeatures.filter(f => f !== featureId)
             : [...selectedFeatures, featureId];
         setSelectedFeatures(newSelectedFeatures);
+    }
+
+    const handlePricePeriodChange = (period: string) => {
+        const newSelectedPeriods = selectedPricePeriods.includes(period)
+            ? selectedPricePeriods.filter(p => p !== period)
+            : [...selectedPricePeriods, period];
+        setSelectedPricePeriods(newSelectedPeriods);
     }
     
     const applyFilters = () => {
@@ -91,6 +95,11 @@ export function FilterControls({
         if (minSqft > 0) params.set('minSqft', String(minSqft)); else params.delete('minSqft');
         if (maxSqft > 0) params.set('maxSqft', String(maxSqft)); else params.delete('maxSqft');
         if (keywords) params.set('keywords', keywords); else params.delete('keywords');
+        
+        if (listingType === 'rent') {
+            if (furnishing !== 'any') params.set('furnishing', furnishing); else params.delete('furnishing');
+            if (selectedPricePeriods.length > 0) params.set('pricePeriods', selectedPricePeriods.join(',')); else params.delete('pricePeriods');
+        }
 
         router.push(`${pathname}?${params.toString()}`);
     }
@@ -106,15 +115,30 @@ export function FilterControls({
         params.delete('minSqft');
         params.delete('maxSqft');
         params.delete('keywords');
+        params.delete('furnishing');
+        params.delete('pricePeriods');
         router.push(`${pathname}?${params.toString()}`);
     }
 
     const bedOptions = ["any", "1", "2", "3", "4", "5+"];
     const bathOptions = ["any", "1", "2", "3", "4", "5+"];
+    const pricePeriodOptions = ["monthly", "quarterly", "yearly"];
+
+    const baseFeatureOptions = [
+        { id: "pool", label: "Swimming Pool" },
+        { id: "parking", label: "Parking Space" },
+        { id: "generator", label: "Generator" },
+        { id: "borehole", label: "Borehole" },
+        { id: "gated", label: "Gated Estate" },
+    ];
+    
+    const featureOptions = listingType !== 'rent' 
+        ? [{ id: "furnished", label: "Furnished" }, ...baseFeatureOptions]
+        : baseFeatureOptions;
 
     return (
         <div className="space-y-6 py-4">
-             <Accordion type="multiple" defaultValue={['price', 'beds-baths', 'home-type', 'features']}>
+             <Accordion type="multiple" defaultValue={['price', 'beds-baths', 'home-type', 'features', 'furnishing', 'price-period']}>
                 <AccordionItem value="price">
                     <AccordionTrigger>Price</AccordionTrigger>
                     <AccordionContent>
@@ -132,6 +156,37 @@ export function FilterControls({
                         </div>
                     </AccordionContent>
                 </AccordionItem>
+                 {listingType === 'rent' && (
+                    <>
+                        <AccordionItem value="furnishing">
+                            <AccordionTrigger>Furnishing</AccordionTrigger>
+                            <AccordionContent>
+                                <ToggleGroup type="single" value={furnishing} onValueChange={(value) => value && setFurnishing(value)} className="flex-wrap justify-start mt-2">
+                                    <ToggleGroupItem value="any" className="rounded-full">Any</ToggleGroupItem>
+                                    <ToggleGroupItem value="furnished" className="rounded-full">Furnished</ToggleGroupItem>
+                                    <ToggleGroupItem value="unfurnished" className="rounded-full">Unfurnished</ToggleGroupItem>
+                                </ToggleGroup>
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="price-period">
+                            <AccordionTrigger>Payment Period</AccordionTrigger>
+                            <AccordionContent>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {pricePeriodOptions.map(period => (
+                                        <div key={period} className="flex items-center gap-2">
+                                            <Checkbox 
+                                                id={`pp-${period}`} 
+                                                checked={selectedPricePeriods.includes(period)}
+                                                onCheckedChange={() => handlePricePeriodChange(period)}
+                                            /> 
+                                            <Label htmlFor={`pp-${period}`} className="font-normal capitalize">{period}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </>
+                )}
                 <AccordionItem value="beds-baths">
                     <AccordionTrigger>Beds & Baths</AccordionTrigger>
                     <AccordionContent>
@@ -141,7 +196,7 @@ export function FilterControls({
                                 <ToggleGroup type="single" value={beds} onValueChange={(value) => value && setBeds(value)} className="flex-wrap justify-start mt-2">
                                     {bedOptions.map(option => (
                                         <ToggleGroupItem key={`bed-${option}`} value={option} aria-label={`${option} beds`} className="rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                                           {option === 'any' ? 'Any' : `${option}${option.includes('+') ? '' : '+'}`}
+                                           {option === 'any' ? 'Any' : `${option}${option.includes('+') ? '' : ''}`}
                                         </ToggleGroupItem>
                                     ))}
                                 </ToggleGroup>
@@ -151,7 +206,7 @@ export function FilterControls({
                                  <ToggleGroup type="single" value={baths} onValueChange={(value) => value && setBaths(value)} className="flex-wrap justify-start mt-2">
                                     {bathOptions.map(option => (
                                         <ToggleGroupItem key={`bath-${option}`} value={option} aria-label={`${option} baths`} className="rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                                           {option === 'any' ? 'Any' : `${option}${option.includes('+') ? '' : '+'}`}
+                                           {option === 'any' ? 'Any' : `${option}${option.includes('+') ? '' : ''}`}
                                         </ToggleGroupItem>
                                     ))}
                                 </ToggleGroup>
@@ -218,5 +273,3 @@ export function FilterControls({
         </div>
     )
 }
-
-    

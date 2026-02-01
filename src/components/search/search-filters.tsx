@@ -49,6 +49,9 @@ type SearchFiltersProps = {
   keywords: string;
   sort: string;
   propertyCount: number;
+  listingType: string | null;
+  furnishing: string;
+  pricePeriods: string[];
 };
 
 export default function SearchFilters({ 
@@ -64,7 +67,10 @@ export default function SearchFilters({
   maxSqft,
   keywords,
   sort: initialSort,
-  propertyCount
+  propertyCount,
+  listingType,
+  furnishing,
+  pricePeriods,
 }: SearchFiltersProps) {
     const router = useRouter();
     const pathname = usePathname();
@@ -73,7 +79,6 @@ export default function SearchFilters({
     const firestore = useFirestore();
 
     const [searchQuery, setSearchQuery] = React.useState(initialSearchQuery);
-    const listingType = searchParams.get('type') || 'buy';
     const view = searchParams.get('view') || 'grid';
 
     const [showSaveSearchDialog, setShowSaveSearchDialog] = React.useState(false);
@@ -168,7 +173,7 @@ export default function SearchFilters({
                             <ToggleGroupItem value="list" aria-label="List View"><List className="h-4 w-4" /></ToggleGroupItem>
                             <ToggleGroupItem value="map" aria-label="Map View"><MapIcon className="h-4 w-4" /></ToggleGroupItem>
                         </ToggleGroup>
-                        <ToggleGroup type="single" value={listingType} onValueChange={handleTypeChange} aria-label="Transaction Type">
+                        <ToggleGroup type="single" value={listingType || 'buy'} onValueChange={handleTypeChange} aria-label="Transaction Type">
                             <ToggleGroupItem value="buy" aria-label="For Sale">Buy</ToggleGroupItem>
                             <ToggleGroupItem value="rent" aria-label="For Rent">Rent</ToggleGroupItem>
                         </ToggleGroup>
@@ -215,6 +220,9 @@ export default function SearchFilters({
                                 minSqft={minSqft}
                                 maxSqft={maxSqft}
                                 keywords={keywords}
+                                listingType={listingType}
+                                furnishing={furnishing}
+                                pricePeriods={pricePeriods}
                             />
                           </SheetContent>
                         </Sheet>

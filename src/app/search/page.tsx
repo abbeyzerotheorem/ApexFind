@@ -73,6 +73,8 @@ function SearchPageComponent() {
   const keywords = searchParams.get('keywords');
   const sort = searchParams.get('sort') || 'relevant';
   const view = searchParams.get('view') || 'grid';
+  const furnishing = searchParams.get('furnishing');
+  const pricePeriods = searchParams.get('pricePeriods')?.split(',') || [];
 
   const filteredProperties = useMemo(() => {
     if (loading || !allProperties || !allUsers) return [];
@@ -131,6 +133,17 @@ function SearchPageComponent() {
       if (keywords) {
           matches = matches && (property.description?.toLowerCase().includes(keywords.toLowerCase()) || property.address.toLowerCase().includes(keywords.toLowerCase()));
       }
+      
+      if (furnishing === 'furnished') {
+        matches = matches && property.is_furnished === true;
+      } else if (furnishing === 'unfurnished') {
+        matches = matches && !property.is_furnished;
+      }
+
+      if (pricePeriods.length > 0 && property.listing_type === 'rent') {
+          matches = matches && !!property.price_period && pricePeriods.includes(property.price_period);
+      }
+
       return matches;
     });
 
@@ -153,7 +166,7 @@ function SearchPageComponent() {
 
     return filtered;
 
-  }, [allProperties, allUsers, loading, searchQuery, minPrice, maxPrice, beds, baths, homeTypes, listingType, features, minSqft, maxSqft, keywords, sort]);
+  }, [allProperties, allUsers, loading, searchQuery, minPrice, maxPrice, beds, baths, homeTypes, listingType, features, minSqft, maxSqft, keywords, sort, furnishing, pricePeriods]);
 
   const filterProps = {
     minPrice: minPrice,
@@ -165,6 +178,9 @@ function SearchPageComponent() {
     minSqft: minSqft,
     maxSqft: maxSqft,
     keywords: keywords || '',
+    furnishing: furnishing || 'any',
+    pricePeriods: pricePeriods,
+    listingType: listingType,
   };
   
   return (
