@@ -12,6 +12,10 @@ interface UserProfileData {
     about?: string;
     specialties?: string[];
     languages?: string[];
+    title?: string;
+    company?: string;
+    experience?: number;
+    sales?: number;
 }
 
 export async function uploadProfilePicture(
@@ -82,6 +86,10 @@ export async function updateUserProfile(
     if (data.about !== undefined) firestoreData.about = data.about;
     if (data.specialties !== undefined) firestoreData.specialties = data.specialties;
     if (data.languages !== undefined) firestoreData.languages = data.languages;
+    if (data.title !== undefined) firestoreData.title = data.title;
+    if (data.company !== undefined) firestoreData.company = data.company;
+    if (data.experience !== undefined) firestoreData.experience = data.experience;
+    if (data.sales !== undefined) firestoreData.sales = data.sales;
     
 
     // Update Firestore document
