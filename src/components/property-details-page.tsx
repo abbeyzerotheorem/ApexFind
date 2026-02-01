@@ -2,7 +2,7 @@
 'use client';
 
 import { notFound, useRouter } from 'next/navigation';
-import { BedDouble, Bath, Maximize, Calendar, Car, Home, Droplet, Wind, Heart, Share2, MapPin, Zap, Shield, Loader2, Printer } from 'lucide-react';
+import { BedDouble, Bath, Maximize, Calendar as CalendarIcon, Car, Home, Droplet, Wind, Heart, Share2, MapPin, Zap, Shield, Loader2, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { MediaGallery } from '@/components/property/media-gallery';
@@ -26,6 +26,28 @@ import {
 import { getSafeImageUrl } from '@/lib/image-utils';
 import AgentCard from './property/agent-card';
 import SimilarProperties from './property/similar-properties';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { format } from "date-fns";
+import Link from 'next/link';
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props} fill="currentColor">
@@ -43,6 +65,12 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
   const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
   const [geocodingLoading, setGeocodingLoading] = useState(true);
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const [isScheduling, setIsScheduling] = useState(false);
+  const [preferredDate, setPreferredDate] = useState<Date | undefined>(new Date());
+  const [preferredTime, setPreferredTime] = useState<string>('morning');
+  const [additionalMessage, setAdditionalMessage] = useState('');
 
   const propertyRef = useMemo(() => {
       if (!firestore) return null;
@@ -139,6 +167,35 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
         console.error("WhatsApp share failed:", error);
     } finally {
         setIsGeneratingLink(false);
+    }
+  };
+
+  const handleScheduleTour = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+        setShowScheduleDialog(false);
+        setShowAuthDialog(true);
+        return;
+    }
+    if (!agent || !property || !firestore) return;
+
+    setIsScheduling(true);
+
+    const formattedDate = preferredDate ? format(preferredDate, "PPP") : 'a suitable date';
+    const message = `Hi, I'm interested in scheduling a viewing for the property at ${property.address}. My preferred date is ${formattedDate} in the ${preferredTime}. ${additionalMessage}`;
+
+    try {
+        const conversationId = await getOrCreateConversation(
+            firestore,
+            { uid: user.uid, displayName: user.displayName, photoURL: user.photoURL },
+            { uid: agent.id, displayName: agent.displayName || null, photoURL: agent.photoURL || null }
+        );
+        router.push(`/messages?convoId=${conversationId}&msg=${encodeURIComponent(message)}`);
+    } catch (error) {
+        console.error("Failed to start scheduling conversation", error);
+    } finally {
+        setIsScheduling(false);
+        setShowScheduleDialog(false);
     }
   };
 
@@ -264,11 +321,71 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                     </div>}
                 </div>
                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                    <Button size="lg" className="w-full sm:w-auto flex-1">
-                        Schedule a Tour
-                    </Button>
-                    <Button size="lg" variant="outline" className="w-full sm:w-auto flex-1">
-                         Get Mortgage Quote
+                    <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
+                        <DialogTrigger asChild>
+                            <Button size="lg" className="w-full sm:w-auto flex-1">
+                                Schedule a Tour
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                            <form onSubmit={handleScheduleTour}>
+                                <DialogHeader>
+                                    <DialogTitle>Schedule a Tour</DialogTitle>
+                                    <DialogDescription>
+                                        Select a preferred date and time to visit "{property.address}". The agent will confirm the appointment with you via chat.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="date">Preferred Date</Label>
+                                        <Calendar
+                                            mode="single"
+                                            selected={preferredDate}
+                                            onSelect={setPreferredDate}
+                                            disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))}
+                                            initialFocus
+                                            className="rounded-md border"
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="time">Preferred Time</Label>
+                                        <Select value={preferredTime} onValueChange={setPreferredTime}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a time slot" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="morning">Morning (9am - 12pm)</SelectItem>
+                                                <SelectItem value="afternoon">Afternoon (12pm - 4pm)</SelectItem>
+                                                <SelectItem value="evening">Evening (4pm - 6pm)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="message">Additional Message (Optional)</Label>
+                                        <Textarea
+                                            id="message"
+                                            value={additionalMessage}
+                                            onChange={(e) => setAdditionalMessage(e.target.value)}
+                                            placeholder="Any specific questions or requirements?"
+                                        />
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <DialogClose asChild>
+                                        <Button type="button" variant="ghost">Cancel</Button>
+                                    </DialogClose>
+                                    <Button type="submit" disabled={isScheduling}>
+                                        {isScheduling ? 'Sending Request...' : 'Send Request'}
+                                    </Button>
+                                </DialogFooter>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+
+                    <Button size="lg" variant="outline" className="w-full sm:w-auto flex-1" asChild>
+                        <Link href="/mortgage">
+                            Get Mortgage Quote
+                        </Link>
                     </Button>
                 </div>
               </div>
@@ -293,7 +410,7 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                     <AccordionTrigger className="text-lg font-semibold">Property Facts</AccordionTrigger>
                     <AccordionContent className="grid grid-cols-2 gap-4 pt-4">
                         <div className="flex items-center gap-3"><Home className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Type</div><div className="font-medium">{property.home_type}</div></div></div>
-                        <div className="flex items-center gap-3"><Calendar className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Year Built</div><div className="font-medium">{property.yearBuilt || 'N/A'}</div></div></div>
+                        <div className="flex items-center gap-3"><CalendarIcon className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Year Built</div><div className="font-medium">{property.yearBuilt || 'N/A'}</div></div></div>
                         <div className="flex items-center gap-3"><Car className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Parking</div><div className="font-medium">{property.parking_spaces ? `${property.parking_spaces}-Car Space${property.parking_spaces > 1 ? 's' : ''}` : 'N/A'}</div></div></div>
                         <div className="flex items-center gap-3"><Droplet className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Water</div><div className="font-medium">{property.water_supply}</div></div></div>
                         <div className="flex items-center gap-3"><Zap className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Power</div><div className="font-medium">{property.power_supply}</div></div></div>
@@ -304,7 +421,7 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
                     <AccordionTrigger className="text-lg font-semibold">Financial & Tax</AccordionTrigger>
                     <AccordionContent className="grid grid-cols-2 gap-4 pt-4">
                         <div className="flex items-center gap-3"><Home className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">Price/sqft</div><div className="font-medium">{formatNaira(property.price / property.sqft)}</div></div></div>
-                        <div className="flex items-center gap-3"><Calendar className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">HOA Dues</div><div className="font-medium">{formatNaira(50000)}/month</div></div></div>
+                        <div className="flex items-center gap-3"><CalendarIcon className="h-5 w-5 text-primary"/><div><div className="text-xs text-muted-foreground">HOA Dues</div><div className="font-medium">{formatNaira(50000)}/month</div></div></div>
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -369,3 +486,5 @@ export default function PropertyDetailsPage({ id }: { id: string }) {
     </div>
   );
 }
+
+    
