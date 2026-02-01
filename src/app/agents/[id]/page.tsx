@@ -39,7 +39,8 @@ type AgentProfileUser = {
     reviewCount?: number;
 };
 
-export default function AgentProfilePage({ id }: { id: string }) {
+export default function AgentProfilePage({ params }: { params: { id: string } }) {
+    const { id } = params;
     const firestore = useFirestore();
     const router = useRouter();
     const { user } = useUser();
@@ -202,5 +203,3 @@ export default function AgentProfilePage({ id }: { id: string }) {
         </div>
     );
 }
-
-    
