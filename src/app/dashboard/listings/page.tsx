@@ -4,7 +4,7 @@
 import { useMemo } from "react";
 import { useUser, useFirestore, useCollection } from "@/firebase";
 import { Loader2, MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
-import { collection, query, where } from "firebase/firestore";
+import { collection, query, where, orderBy } from "firebase/firestore";
 import Link from 'next/link';
 
 import { Button } from "@/components/ui/button";
@@ -55,26 +55,17 @@ export default function MyListingsPage() {
 
     const propertiesQuery = useMemo(() => {
         if (!firestore || !user) return null;
-        return query(collection(firestore, 'properties'), where('agentId', '==', user.uid));
+        return query(collection(firestore, 'properties'), where('agentId', '==', user.uid), orderBy('createdAt', 'desc'));
     }, [firestore, user]);
 
     const { data: agentListings, loading: listingsLoading } = useCollection<Property>(propertiesQuery);
     
-    // Client-side sorting
-    const sortedAgentListings = useMemo(() => {
-        if (!agentListings) return [];
-        return [...agentListings].sort((a, b) => {
-            const timeA = a.createdAt?.toDate?.().getTime() || 0;
-            const timeB = b.createdAt?.toDate?.().getTime() || 0;
-            return timeB - timeA;
-        });
-    }, [agentListings]);
-
     const handleDeleteListing = async (id: string) => {
         if (!firestore || !user) return;
         try {
             await deleteListing(firestore, id);
-            await queryClient.invalidateQueries({ queryKey: ['firestore-collection', `users/${user.uid}/properties`] });
+            // This will refetch the data for the 'firestore-collection' query key
+            await queryClient.invalidateQueries({ queryKey: ['firestore-collection', `properties`] });
         } catch (error) {
             console.error("Failed to delete listing", error);
         }
@@ -106,7 +97,7 @@ export default function MyListingsPage() {
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div>
                                 <CardTitle>My Property Listings</CardTitle>
-                                <CardDescription>You have {sortedAgentListings?.length || 0} active listings.</CardDescription>
+                                <CardDescription>You have {agentListings?.length || 0} active listings.</CardDescription>
                             </div>
                             <Button asChild>
                                 <Link href="/dashboard/listings/new">+ Add New Listing</Link>
@@ -121,11 +112,13 @@ export default function MyListingsPage() {
                                     <TableHead>Property</TableHead>
                                     <TableHead>Price</TableHead>
                                     <TableHead className="hidden md:table-cell">Status</TableHead>
-                                    <TableHead>Actions</TableHead>
+                                    <TableHead>
+                                        <span className="sr-only">Actions</span>
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {sortedAgentListings?.map(property => (
+                                {agentListings?.map(property => (
                                     <TableRow key={property.id}>
                                         <TableCell className="hidden sm:table-cell">
                                             <Image src={getSafeImageUrl(property.imageUrls?.[0], property.home_type)} alt={property.address || 'Property image'} width={100} height={60} className="rounded-md object-cover" />
@@ -149,19 +142,19 @@ export default function MyListingsPage() {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                 <DropdownMenuItem asChild>
-                                                    <Link href={`/dashboard/listings/${property.id}/edit`} className="w-full">
+                                                    <Link href={`/dashboard/listings/${property.id}/edit`} className="cursor-pointer">
                                                         <Pencil className="mr-2 h-4 w-4" /> Edit Listing
                                                     </Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem asChild>
-                                                    <Link href={`/property/${property.id}`} className="flex items-center w-full">
+                                                    <Link href={`/property/${property.id}`} className="flex items-center w-full cursor-pointer">
                                                         <Eye className="mr-2 h-4 w-4" /> View Details
                                                     </Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                     <AlertDialog>
                                                     <AlertDialogTrigger asChild>
-                                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive cursor-pointer">
                                                             <Trash2 className="mr-2 h-4 w-4" /> Delete Listing
                                                         </DropdownMenuItem>
                                                     </AlertDialogTrigger>
@@ -185,7 +178,7 @@ export default function MyListingsPage() {
                                 ))}
                             </TableBody>
                         </Table>
-                        {(!sortedAgentListings || sortedAgentListings.length === 0) && (
+                        {(!agentListings || agentListings.length === 0) && (
                             <div className="text-center p-8">
                             <h3 className="text-xl font-semibold">No listings yet.</h3>
                             <p className="text-muted-foreground mt-2">Get started by adding your first property.</p>

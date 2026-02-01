@@ -33,6 +33,7 @@ const propertySchema = z.object({
   yearBuilt: z.preprocess((a) => (a ? parseInt(z.string().parse(a), 10) : undefined), z.number().min(1800, 'Invalid year').max(new Date().getFullYear(), 'Invalid year').optional()),
   listing_type: z.enum(['sale', 'rent']),
   home_type: z.string().min(1, 'Home type is required'),
+  status: z.string().optional(),
   imageUrls: z.array(z.string().url()).min(1, 'At least one image is required.').max(10, 'You can upload a maximum of 10 images.'),
   description: z.string().optional(),
   is_furnished: z.boolean().default(false),
@@ -69,6 +70,7 @@ export default function ListingForm({ property }: ListingFormProps) {
       yearBuilt: property?.yearBuilt || undefined,
       listing_type: property?.listing_type || 'sale',
       home_type: property?.home_type || '',
+      status: property?.status || 'New',
       imageUrls: property?.imageUrls || [],
       is_furnished: property?.is_furnished || false,
       has_pool: property?.has_pool || false,
@@ -142,7 +144,7 @@ export default function ListingForm({ property }: ListingFormProps) {
         } else {
             await addListing(firestore, user.uid, data);
         }
-        router.push('/dashboard');
+        router.push('/dashboard/listings');
         router.refresh(); 
     } catch (error) {
         console.error("Failed to save listing:", error);
@@ -152,6 +154,7 @@ export default function ListingForm({ property }: ListingFormProps) {
   };
   
   const homeTypeOptions = ["House", "Apartment (Flat)", "Duplex", "Terrace", "Bungalow", "Commercial", "Land"];
+  const statusOptions = ["New", "Active", "Pending", "Sold", "Rented", "Draft", "Archived"];
 
   return (
     <Card>
@@ -241,7 +244,7 @@ export default function ListingForm({ property }: ListingFormProps) {
             </div>
           </div>
           
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-3 gap-4">
             <div className="space-y-2">
                 <Label htmlFor="beds">Bedrooms</Label>
                 <Input id="beds" type="number" {...register('beds')} />
@@ -252,13 +255,13 @@ export default function ListingForm({ property }: ListingFormProps) {
                 <Input id="baths" type="number" {...register('baths')} />
                 {errors.baths && <p className="text-sm text-destructive">{errors.baths.message}</p>}
             </div>
-          </div>
-          <div className="grid sm:grid-cols-3 gap-4">
             <div className="space-y-2">
                 <Label htmlFor="sqft">Square Feet</Label>
                 <Input id="sqft" type="number" {...register('sqft')} />
                 {errors.sqft && <p className="text-sm text-destructive">{errors.sqft.message}</p>}
             </div>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-4">
             <div className="space-y-2">
                 <Label htmlFor="parking_spaces">Parking Spaces</Label>
                 <Input id="parking_spaces" type="number" {...register('parking_spaces')} />
@@ -268,6 +271,23 @@ export default function ListingForm({ property }: ListingFormProps) {
               <Label htmlFor="yearBuilt">Year Built</Label>
               <Input id="yearBuilt" type="number" {...register('yearBuilt')} placeholder="e.g. 2010" />
               {errors.yearBuilt && <p className="text-sm text-destructive">{errors.yearBuilt.message}</p>}
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+               <Controller
+                    name="status"
+                    control={control}
+                    render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger id="status">
+                                <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {statusOptions.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    )}
+                />
             </div>
           </div>
 
