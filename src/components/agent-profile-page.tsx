@@ -1,3 +1,4 @@
+
 'use client';
 
 import { notFound } from 'next/navigation';
@@ -32,6 +33,10 @@ type AgentProfileUser = {
     about?: string;
     specialties?: string[];
     languages?: string[];
+    experience?: number;
+    sales?: number;
+    rating?: number;
+    reviewCount?: number;
 };
 
 export default function AgentProfilePage({ id }: { id: string }) {
@@ -90,16 +95,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
         notFound();
     }
     
-    const agentStats = {
-        experience: 5,
-        sales: 32,
-        rating: 4.8,
-        reviewCount: 55,
-        specialties: agent.specialties || [],
-        languages: agent.languages || [],
-    };
-
-    const aboutText = agent.about || `A seasoned professional with ${agentStats.experience} years of experience in the Nigerian real estate market, ${agent.displayName} is dedicated to helping clients find their perfect home. Specializing in ${agentStats.specialties.join(', ')}, they bring a wealth of knowledge and a commitment to client satisfaction.`;
+    const aboutText = agent.about || `A seasoned professional with ${agent.experience || 0} years of experience in the Nigerian real estate market, ${agent.displayName} is dedicated to helping clients find their perfect home. Specializing in ${(agent.specialties || []).join(', ')}, they bring a wealth of knowledge and a commitment to client satisfaction.`;
 
 
     return (
@@ -118,8 +114,8 @@ export default function AgentProfilePage({ id }: { id: string }) {
                                 <p className="text-muted-foreground">Real Estate Agent at ApexFind</p>
                                 <div className="mt-2 flex items-center justify-center gap-1">
                                     <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                                    <span className="font-bold">{agentStats.rating.toFixed(1)}</span>
-                                    <span className="text-muted-foreground">({agentStats.reviewCount} reviews)</span>
+                                    <span className="font-bold">{(agent.rating || 0).toFixed(1)}</span>
+                                    <span className="text-muted-foreground">({agent.reviewCount || 0} reviews)</span>
                                 </div>
                                 
                                 <div className="mt-6 flex flex-col gap-3">
@@ -134,11 +130,11 @@ export default function AgentProfilePage({ id }: { id: string }) {
                             </CardContent>
                              <div className="grid grid-cols-2 border-t text-center">
                                 <div className="p-4 border-r">
-                                    <p className="text-2xl font-bold">{agentStats.experience} yrs</p>
+                                    <p className="text-2xl font-bold">{agent.experience || 0} yrs</p>
                                     <p className="text-sm text-muted-foreground">Experience</p>
                                 </div>
                                 <div className="p-4">
-                                    <p className="text-2xl font-bold">{agentStats.sales}</p>
+                                    <p className="text-2xl font-bold">{agent.sales || 0}</p>
                                     <p className="text-sm text-muted-foreground">Sales (24 mo)</p>
                                 </div>
                             </div>
@@ -153,7 +149,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
                                 {aboutText}
                             </p>
                              <div className="mt-4">
-                                <p><span className="font-semibold">Languages:</span> {agentStats.languages.join(', ')}</p>
+                                <p><span className="font-semibold">Languages:</span> {(agent.languages || []).join(', ')}</p>
                             </div>
                         </div>
 
