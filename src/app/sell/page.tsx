@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import InstantValuation from '@/components/valuation/InstantValuation';
 import { Button } from '@/components/ui/button';
 import { X, ArrowRight, User, Home, Star } from 'lucide-react';
@@ -10,6 +10,20 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useRouter } from 'next/navigation';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 
 const sellFeatures = [
     {
@@ -52,6 +66,32 @@ const testimonials = [
 export default function SellPage() {
     const [showValuation, setShowValuation] = useState(false);
     const heroImage = PlaceHolderImages.find(p => p.id === 'property-4');
+
+    const router = useRouter();
+    const { user } = useUser();
+    const firestore = useFirestore();
+
+    const [showRoleDialog, setShowRoleDialog] = useState(false);
+    const [showAuthDialog, setShowAuthDialog] = useState(false);
+    
+    const userDocRef = useMemo(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, 'users', user.uid);
+    }, [user, firestore]);
+
+    const { data: userProfile } = useDoc<{ role?: 'customer' | 'agent' }>(userDocRef);
+
+    const handleListPropertyClick = () => {
+        if (!user) {
+            setShowAuthDialog(true);
+            return;
+        }
+        if (userProfile?.role === 'agent') {
+            router.push('/dashboard/listings/new');
+        } else {
+            setShowRoleDialog(true);
+        }
+    };
 
     return (
         <>
@@ -109,8 +149,8 @@ export default function SellPage() {
                                     </p>
                                 </CardContent>
                                 <CardContent>
-                                    <Button size="lg" className="w-full" asChild>
-                                        <Link href="/dashboard/listings/new">List a Property</Link>
+                                    <Button size="lg" className="w-full" onClick={handleListPropertyClick}>
+                                        List a Property
                                     </Button>
                                 </CardContent>
                             </Card>
@@ -198,6 +238,36 @@ export default function SellPage() {
                 </div>
               </div>
             )}
+
+            <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Authentication Required</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    You need to be signed in to an agent account to list properties. Please sign in or create a new agent account.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => router.push('/auth')}>Sign In / Sign Up</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            
+            <AlertDialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Agent Account Required</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Only users with an agent account can list properties. To proceed, you can create a new agent account. Note that this may require a different email address if you are already signed in.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => router.push('/auth')}>Create Agent Account</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
         </>
     );
 }
