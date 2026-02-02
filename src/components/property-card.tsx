@@ -34,11 +34,15 @@ type PropertyCardViewMode = "grid" | "list";
 export function PropertyCard({ 
     property, 
     viewMode = 'grid',
-    showDashboardControls = false 
+    showDashboardControls = false,
+    isSelected = false,
+    onToggleSelect
 }: { 
     property: Property, 
     viewMode?: PropertyCardViewMode,
-    showDashboardControls?: boolean
+    showDashboardControls?: boolean,
+    isSelected?: boolean,
+    onToggleSelect?: () => void
 }) {
   const { user } = useUser();
   const firestore = useFirestore();
@@ -93,7 +97,10 @@ export function PropertyCard({
   if (viewMode === 'list') {
     return (
       <>
-        <Card className="overflow-hidden transition-shadow duration-300 hover:shadow-xl flex flex-col md:flex-row w-full">
+        <Card className={cn(
+          "overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col md:flex-row w-full border-2",
+          isSelected ? "border-primary bg-primary/5" : "border-transparent"
+        )}>
             <div className="relative h-48 md:h-auto md:w-64 flex-shrink-0">
                 <Link href={`/property/${property.id}`} className="relative block h-full w-full">
                     <Image
@@ -137,7 +144,16 @@ export function PropertyCard({
                                     </span>
                                 )}
                             </p>
-                             <Badge variant="default" className="capitalize">{property.listing_type}</Badge>
+                             <div className="flex gap-2">
+                               {showDashboardControls && (
+                                 <Checkbox 
+                                   checked={isSelected} 
+                                   onCheckedChange={onToggleSelect} 
+                                   className="h-5 w-5"
+                                 />
+                               )}
+                               <Badge variant="default" className="capitalize">{property.listing_type}</Badge>
+                             </div>
                         </div>
                         <Link href={`/property/${property.id}`}>
                             <div className="flex items-center text-muted-foreground mt-1 gap-2">
@@ -194,7 +210,10 @@ export function PropertyCard({
 
   return (
     <>
-      <Card className="overflow-hidden transition-shadow duration-300 hover:shadow-xl flex flex-col">
+      <Card className={cn(
+        "overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col border-2",
+        isSelected ? "border-primary bg-primary/5" : "border-transparent"
+      )}>
           <div className="relative h-64">
               <Link href={`/property/${property.id}`} className="relative block h-full w-full">
                   <Image
@@ -232,14 +251,23 @@ export function PropertyCard({
           </div>
         <CardContent className="p-4 flex-grow flex flex-col">
           <div>
-            <p className="text-2xl font-bold text-primary">
-              {formatNaira(property.price)}
-              {isRental && property.price_period && (
-                <span className="text-sm font-normal text-muted-foreground ml-1">
-                  /{property.price_period}
-                </span>
+            <div className="flex justify-between items-start">
+              <p className="text-2xl font-bold text-primary">
+                {formatNaira(property.price)}
+                {isRental && property.price_period && (
+                  <span className="text-sm font-normal text-muted-foreground ml-1">
+                    /{property.price_period}
+                  </span>
+                )}
+              </p>
+              {showDashboardControls && (
+                <Checkbox 
+                  checked={isSelected} 
+                  onCheckedChange={onToggleSelect} 
+                  className="h-5 w-5"
+                />
               )}
-            </p>
+            </div>
             <div className="flex items-start text-muted-foreground mt-1 gap-2">
               <MapPin size={16} className="mt-0.5 shrink-0" />
               <p className="font-semibold text-foreground hover:text-primary">
@@ -274,8 +302,7 @@ export function PropertyCard({
         {showDashboardControls && (
           <CardFooter className="p-4 border-t flex justify-between items-center">
               <div className="flex items-center space-x-2">
-                  <Checkbox id={`compare-${property.id}`} />
-                  <Label htmlFor={`compare-${property.id}`} className="text-sm font-normal">Compare</Label>
+                  <p className="text-xs text-muted-foreground">Select to compare</p>
               </div>
               <Button variant="ghost" size="sm">Add Note</Button>
           </CardFooter>
