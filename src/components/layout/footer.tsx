@@ -44,7 +44,7 @@ export default function Footer() {
               <li><Link href="/about" className="hover:text-foreground">About Us</Link></li>
               <li><Link href="#" className="hover:text-foreground">Privacy Policy</Link></li>
               <li><Link href="#" className="hover:text-foreground">Terms of Service</Link></li>
-              <li><Link href="#" className="hover:text-foreground">Contact Us</Link></li>
+              <li><Link href="/contact" className="hover:text-foreground">Contact Us</Link></li>
             </ul>
           </div>
         </div>
