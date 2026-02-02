@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -26,6 +27,7 @@ export default function Footer() {
             <ul className="space-y-2 text-muted-foreground">
               <li><Link href="/search?type=buy" className="hover:text-foreground">For Sale</Link></li>
               <li><Link href="/search?type=rent" className="hover:text-foreground">For Rent</Link></li>
+              <li><Link href="/agencies" className="hover:text-foreground">Agency Directory</Link></li>
               <li><Link href="/insights" className="hover:text-foreground">Market Insights</Link></li>
             </ul>
           </div>

@@ -1,9 +1,8 @@
 
-
 import type { User as FirebaseUser } from 'firebase/auth';
 
 export type Property = {
-    id: string; // Firestore ID is a string
+    id: string;
     agentId: string;
     price: number;
     listing_type: 'sale' | 'rent';
@@ -18,7 +17,7 @@ export type Property = {
     imageUrls: string[];
     description?: string;
     lotSize?: number;
-    agent?: string; // This might be redundant if we fetch agent info separately via agentId
+    agent?: string;
     status?: string;
     home_type: string;
     is_furnished?: boolean;
@@ -28,12 +27,29 @@ export type Property = {
     power_supply?: string;
     water_supply?: string;
     security_type?: string[];
-    createdAt?: any; // Firestore Timestamp
-    updatedAt?: any; // Firestore Timestamp
+    createdAt?: any;
+    updatedAt?: any;
+};
+
+export type Agency = {
+    id: string;
+    name: string;
+    licenseNumber: string;
+    yearsInOperation: number;
+    location: string;
+    specialties: string[];
+    rating: number;
+    reviewCount: number;
+    photoURL?: string;
+    about?: string;
+    email: string;
+    phoneNumber: string;
+    verificationBadges: string[];
+    createdAt: any;
 };
 
 export type Agent = {
-    id: number;
+    id: string;
     name: string;
     title: string;
     company: string;
@@ -46,6 +62,7 @@ export type Agent = {
     location: string;
     languages: string[];
     specialties: string[];
+    agencyId?: string;
 };
 
 export type User = FirebaseUser;
@@ -54,7 +71,7 @@ export type Message = {
     id: string;
     senderId: string;
     text: string;
-    createdAt: any; // Firestore Timestamp
+    createdAt: any;
 };
 
 export type ConversationParticipant = {
@@ -68,7 +85,7 @@ export type Conversation = {
     participants: string[];
     participantDetails: ConversationParticipant[];
     lastMessageText?: string;
-    lastMessageAt?: any; // Firestore Timestamp
+    lastMessageAt?: any;
     lastMessageSenderId?: string;
     unreadCounts?: { [key: string]: number };
     readStatus?: { [key: string]: { lastReadAt: any } };
@@ -81,8 +98,8 @@ export type SavedSearch = {
     searchParams: string;
     alertFrequency: 'daily' | 'weekly' | 'instant' | 'never';
     newMatchCount: number;
-    createdAt: any; // Firestore Timestamp
-    lastSentAt?: any; // Firestore Timestamp
+    createdAt: any;
+    lastSentAt?: any;
 };
 
 export interface ValuationResult {
@@ -107,5 +124,3 @@ export interface ValuationResult {
   nextSteps: string[];
   reportId: string;
 }
-
-    

@@ -51,6 +51,10 @@
             "admin"
           ]
         },
+        "agencyId": {
+          "type": "string",
+          "description": "The ID of the agency this user belongs to."
+        },
         "title": {
           "type": "string",
           "description": "The agent's professional title."
@@ -146,6 +150,27 @@
         "email",
         "role"
       ]
+    },
+    "agency": {
+      "title": "Agency",
+      "description": "A real estate agency or firm.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "licenseNumber": { "type": "string" },
+        "yearsInOperation": { "type": "number" },
+        "location": { "type": "string" },
+        "specialties": { "type": "array", "items": { "type": "string" } },
+        "rating": { "type": "number" },
+        "reviewCount": { "type": "number" },
+        "photoURL": { "type": "string", "format": "uri" },
+        "about": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phoneNumber": { "type": "string" },
+        "verificationBadges": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "licenseNumber", "location"]
     },
     "property": {
       "title": "Property",
@@ -489,6 +514,12 @@
       },
       "description": "Stores user profile information."
     },
+    "/agencies/{agencyId}": {
+      "schema": {
+        "$ref": "#/entities/agency"
+      },
+      "description": "Stores real estate agency firm information."
+    },
     "/users/{userId}/saved_homes/{propertyId}": {
       "schema": {
         "$ref": "#/entities/savedHome"
@@ -539,5 +570,3 @@
     }
   }
 }
-
-    

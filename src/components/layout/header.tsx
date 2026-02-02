@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from "react";
@@ -27,21 +28,18 @@ import {
 } from "@/components/ui/alert-dialog";
 
 
-// Links for non-registered users and customers
 const publicNavLinks = [
   { name: "Buy", href: "/search" },
-  { name: "Sell", href: "/sell" },
   { name: "Rent", href: "/search?type=rent" },
-  { name: "Mortgage", href: "/mortgage" },
+  { name: "Sell", href: "/sell" },
+  { name: "Agencies", href: "/agencies" },
   { name: "Find Agents", href: "/agents" },
-  { name: "Market Insights", href: "/insights" },
-  { name: "About", href: "/about" },
+  { name: "Insights", href: "/insights" },
+  { name: "Mortgage", href: "/mortgage" },
 ];
 
-// Links for registered customers are the same as public
 const customerNavLinks = publicNavLinks;
 
-// Links for registered agents, they see the same as customers but without the "Find Agents" link.
 const agentNavLinks = publicNavLinks
   .filter(link => link.name !== 'Find Agents');
 
@@ -88,7 +86,6 @@ export default function Header() {
     if (userProfile?.role === 'agent') {
       return agentNavLinks;
     }
-    // Default for authenticated users (customers)
     return customerNavLinks;
   }, [user, userProfile]);
 
@@ -111,7 +108,7 @@ export default function Header() {
             />
             <span className="text-xl font-bold">ApexFind</span>
           </Link>
-          <nav className="hidden md:flex md:gap-8">
+          <nav className="hidden md:flex md:gap-6">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
