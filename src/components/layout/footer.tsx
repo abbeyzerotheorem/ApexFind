@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -36,6 +35,7 @@ export default function Footer() {
               <li><Link href="/agents" className="hover:text-foreground">Find an Agent</Link></li>
               <li><Link href="/sell" className="hover:text-foreground">Sell Your Home</Link></li>
               <li><Link href="/mortgage" className="hover:text-foreground">Mortgage Calculator</Link></li>
+              <li><Link href="/help" className="hover:text-foreground">Help Center / FAQ</Link></li>
             </ul>
           </div>
           <div>
