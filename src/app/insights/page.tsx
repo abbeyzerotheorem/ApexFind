@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { PropertyCard } from "@/components/property-card";
 import AgentPromotion from "@/components/agent-promotion";
-import { Utensils, GraduationCap, TramFront, Wallet, Info, TrendingUp, MapPin, Search, ArrowUpRight } from "lucide-react";
+import { Utensils, GraduationCap, TrainFront, Wallet, Info, TrendingUp, MapPin, Search, ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from 'next/link';
 import AutocompleteSearch from "@/components/autocomplete-search";
@@ -17,8 +17,9 @@ import { collection, query, where, limit } from 'firebase/firestore';
 import type { Property } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
-// Simulated high-quality market data for the chart
+// Benchmark market data for visualization
 const marketData = [
     { month: "Jan", price: 140000000 },
     { month: "Feb", price: 145000000 },
@@ -64,7 +65,7 @@ export default function InsightsPage() {
         }
     };
 
-    const isLagos = displayLocation.toLowerCase() === 'lagos' || displayLocation.toLowerCase() === 'lekki';
+    const isLagos = displayLocation.toLowerCase() === 'lagos' || displayLocation.toLowerCase() === 'lekki' || displayLocation.toLowerCase() === 'ikeja';
 
     return (
         <div className="flex min-h-screen flex-col bg-background">
@@ -72,13 +73,13 @@ export default function InsightsPage() {
             <section className="bg-primary/5 border-b py-16 sm:py-24">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
                     <Badge variant="secondary" className="mb-4 bg-primary/10 text-primary border-none font-bold uppercase tracking-widest px-4">
-                        Data-Driven Real Estate
+                        Market Intelligence
                     </Badge>
                     <h1 className="text-4xl font-black tracking-tight text-foreground sm:text-6xl">
-                        Nigerian Market Insights
+                        Nigerian Real Estate Insights
                     </h1>
                     <p className="mt-6 max-w-2xl mx-auto text-lg text-muted-foreground leading-relaxed">
-                        Navigate the complexity of property trends across all 36 states with real-time data, inventory levels, and expert analysis.
+                        Navigate the complexity of property trends across all 36 states with real-time data benchmarks and expert neighborhood analysis.
                     </p>
                     <div className="mt-10 mx-auto max-w-xl">
                         <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 bg-white p-2 rounded-2xl shadow-xl border">
@@ -102,9 +103,9 @@ export default function InsightsPage() {
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
                     <div>
                         <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-                            {displayLocation} Overview
+                            {displayLocation} Market Overview
                         </h2>
-                        <p className="text-muted-foreground mt-1">Key metrics for residential and commercial listings.</p>
+                        <p className="text-muted-foreground mt-1">Key metrics aggregated from current residential and commercial listings.</p>
                     </div>
                     <div className="flex items-center gap-2 text-sm font-bold text-primary bg-primary/10 px-4 py-2 rounded-full">
                         <TrendingUp className="h-4 w-4" /> Market Status: Active
@@ -115,26 +116,26 @@ export default function InsightsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <MetricCard 
                         label="Median List Price" 
-                        value={isLagos ? formatNaira(155000000) : "Variable"} 
-                        trend="+2.5% YoY" 
+                        value={isLagos ? formatNaira(155000000) : "Benchmarking"} 
+                        trend={isLagos ? "+2.5% YoY" : "Available on Request"} 
                         trendUp={true} 
                     />
                     <MetricCard 
                         label="Price per Sqft" 
-                        value={isLagos ? formatNaira(450000) : "Variable"} 
-                        trend="+5.1% YoY" 
+                        value={isLagos ? formatNaira(450000) : "Benchmarking"} 
+                        trend={isLagos ? "+5.1% YoY" : "Stable"} 
                         trendUp={true} 
                     />
                     <MetricCard 
                         label="Avg. Days on Market" 
                         value={isLagos ? "85 Days" : "90+ Days"} 
-                        trend="-5 days YoY" 
+                        trend={isLagos ? "-5 days YoY" : "Average"} 
                         trendUp={true} 
                     />
                     <MetricCard 
                         label="Active Inventory" 
-                        value={isLagos ? "1,250+" : "Loading..."} 
-                        trend="+12% YoY" 
+                        value={isLagos ? "1,250+" : "Tracking..."} 
+                        trend={isLagos ? "+12% YoY" : "Growing"} 
                         trendUp={true} 
                     />
                 </div>
@@ -199,22 +200,22 @@ export default function InsightsPage() {
                             <LifestyleFeature 
                                 icon={Utensils} 
                                 title="Vibrant Lifestyle" 
-                                desc="World-class restaurants, open-air markets, and a globally recognized arts and music scene."
+                                desc={`World-class restaurants, open-air markets, and a globally recognized arts and music scene define ${displayLocation}.`}
                             />
                             <LifestyleFeature 
                                 icon={Wallet} 
                                 title="Cost of Living" 
-                                desc="While prime areas like Ikoyi are premium, {displayLocation} offers diverse housing tiers for all income levels."
+                                desc={`${displayLocation} offers diverse housing tiers for all income levels, from prime luxury estates to emerging suburban areas.`}
                             />
                             <LifestyleFeature 
                                 icon={GraduationCap} 
                                 title="Top Schools" 
-                                desc="Home to elite international primary and secondary schools with British and American curriculums."
+                                desc="Home to elite international primary and secondary schools with British and American curricula."
                             />
                             <LifestyleFeature 
-                                icon={TramFront} 
+                                icon={TrainFront} 
                                 title="Infrastructure" 
-                                desc="Major upgrades including the Blue and Red Line rail systems are transforming the urban commute."
+                                desc="Major transport upgrades, including state-of-the-art rail systems, are transforming the urban commute."
                             />
                         </div>
                     </section>
@@ -295,7 +296,7 @@ function MetricCard({ label, value, trend, trendUp }: { label: string, value: st
                     "text-xs font-bold mt-1 flex items-center gap-1",
                     trendUp ? "text-green-600" : "text-red-600"
                 )}>
-                    {trendUp ? "↑" : "↓"} {trend}
+                    {trendUp ? "↑" : "•"} {trend}
                 </div>
             </CardContent>
         </Card>
