@@ -14,6 +14,7 @@ import { Banknote, Percent, Calendar, Building2, Loader2, FileText, Printer, Bui
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 const requiredDocuments = [
     "Duly completed Application Form",
