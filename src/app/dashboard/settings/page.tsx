@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from "react";
 import { useUser, useFirestore, useDoc } from "@/firebase";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 import { doc } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { deleteUserAccount } from "@/lib/user";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function SettingsPage() {
     const { user, loading: userLoading } = useUser();
@@ -134,14 +135,28 @@ export default function SettingsPage() {
                                 <Button variant="outline" onClick={() => signOut().then(() => window.location.href = '/')}>Sign Out</Button>
                             </CardContent>
                         </Card>
-                        <Card className="mt-8 bg-destructive/10 border-destructive/20">
-                            <CardHeader>
-                                <CardTitle className="text-destructive">Danger Zone</CardTitle>
+                        <Card className="mt-8 border-destructive/20">
+                            <CardHeader className="bg-destructive/5">
+                                <CardTitle className="text-destructive flex items-center gap-2">
+                                    <AlertTriangle className="h-5 w-5" /> Danger Zone
+                                </CardTitle>
                                 <CardDescription className="text-destructive/80">
-                                    Permanently delete your account and all associated data. This action cannot be undone.
+                                    Permanently delete your account and all associated data.
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="pt-6">
+                                {userProfile?.role === 'agent' && (
+                                    <Alert variant="destructive" className="mb-6 bg-destructive/10">
+                                        <AlertTriangle className="h-4 w-4" />
+                                        <AlertTitle>Warning for Agents</AlertTitle>
+                                        <AlertDescription>
+                                            Deleting your account will <strong>permanently delete all your property listings</strong> from ApexFind. This action cannot be undone.
+                                        </AlertDescription>
+                                    </Alert>
+                                )}
+                                <p className="text-sm text-muted-foreground mb-6">
+                                    Once you delete your account, there is no going back. Please be certain.
+                                </p>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                         <Button variant="destructive">Delete My Account</Button>
@@ -150,12 +165,14 @@ export default function SettingsPage() {
                                         <AlertDialogHeader>
                                             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                This will permanently delete your account and all associated data. This action cannot be undone.
+                                                This will permanently delete your account and all associated data
+                                                {userProfile?.role === 'agent' ? ", including all your property listings," : ""}
+                                                . This action cannot be undone.
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={handleDeleteAccount} disabled={isDeleting}>
+                                            <AlertDialogAction onClick={handleDeleteAccount} disabled={isDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                                 {isDeleting ? 'Deleting...' : 'Yes, delete my account'}
                                             </AlertDialogAction>
                                         </AlertDialogFooter>

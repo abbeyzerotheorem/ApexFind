@@ -118,9 +118,15 @@ export async function deleteUserAccount(
         const subcollectionRef = collection(firestore, 'users', userId, subcollectionName);
         const snapshot = await getDocs(subcollectionRef);
         if (snapshot.empty) return;
-        const batch = writeBatch(firestore);
-        snapshot.docs.forEach(doc => batch.delete(doc.ref));
-        await batch.commit();
+        
+        // Firestore batches are limited to 500 operations
+        const docs = snapshot.docs;
+        for (let i = 0; i < docs.length; i += 500) {
+            const batch = writeBatch(firestore);
+            const chunk = docs.slice(i, i + 500);
+            chunk.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+        }
     };
 
     // If user is an agent, delete their properties from the top-level collection
@@ -128,10 +134,15 @@ export async function deleteUserAccount(
         const propertiesRef = collection(firestore, 'properties');
         const q = query(propertiesRef, where('agentId', '==', userId));
         const snapshot = await getDocs(q);
+        
         if (!snapshot.empty) {
-            const batch = writeBatch(firestore);
-            snapshot.docs.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
+            const docs = snapshot.docs;
+            for (let i = 0; i < docs.length; i += 500) {
+                const batch = writeBatch(firestore);
+                const chunk = docs.slice(i, i + 500);
+                chunk.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+            }
         }
     }
     
