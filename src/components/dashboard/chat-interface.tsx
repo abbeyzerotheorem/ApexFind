@@ -1,6 +1,6 @@
 'use client';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useUser, useFirestore, useCollection } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy, doc, onSnapshot, type Timestamp } from 'firebase/firestore';
 import type { Conversation, Message, User } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { sendMessage, markConversationAsRead } from '@/lib/chat';
 import { Loader2, Send, ArrowLeft, MessagesSquare, CheckCheck, Search } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
@@ -40,54 +40,42 @@ export default function ChatInterface({ initialConversationId }: { initialConver
       }
     }, [initialConversationId]);
 
-    // Fetch conversations list with a real-time listener
-    const conversationsQuery = useMemo(() => {
-        if (!user || !firestore) return null;
-        return query(
+    // REAL-TIME listener for conversations list
+    useEffect(() => {
+        if (!user || !firestore) return;
+
+        const convosQuery = query(
             collection(firestore, 'conversations'),
             where('participants', 'array-contains', user.uid)
         );
-    }, [user, firestore]);
-    const { data: convos, loading: initialConvosLoading, error: convosError } = useCollection(conversationsQuery);
 
-    useEffect(() => {
-        if (!user || !firestore) {
-            setLoadingConversations(!userLoading);
-            return;
-        }
-        
-        if (initialConvosLoading) {
-            setLoadingConversations(true);
-            return;
-        }
-        
-        if (convosError) {
-            console.error("Error fetching conversations:", convosError);
-            setError("Could not load your conversations. Please check your connection or try again later.");
+        const unsubscribe = onSnapshot(convosQuery, (snapshot) => {
+            const sortedConvos = snapshot.docs
+                .map(doc => ({ id: doc.id, ...doc.data() } as Conversation))
+                .sort((a, b) => {
+                    const timeA = a.lastMessageAt?.toMillis?.() ?? 0;
+                    const timeB = b.lastMessageAt?.toMillis?.() ?? 0;
+                    return timeB - timeA;
+                });
+            
+            setConversations(sortedConvos);
+            
+            // Default to first conversation on desktop if none selected
+            if (!activeConversationId && !initialConversationId && sortedConvos.length > 0 && window.innerWidth >= 768) {
+                setActiveConversationId(sortedConvos[0].id);
+            }
             setLoadingConversations(false);
-            return;
-        }
+        }, (err) => {
+            console.error("Error fetching conversations:", err);
+            setError("Could not load your conversations. Please check your connection.");
+            setLoadingConversations(false);
+        });
 
-        const sortedConvos = (convos || [])
-            .map(doc => ({ id: doc.id, ...doc } as Conversation))
-            .sort((a, b) => {
-                const timeA = a.lastMessageAt?.toMillis?.() ?? 0;
-                const timeB = b.lastMessageAt?.toMillis?.() ?? 0;
-                return timeB - timeA;
-            });
-        
-        setConversations(sortedConvos);
-        
-        // Default to first conversation on desktop if none selected
-        if (!activeConversationId && !initialConversationId && sortedConvos.length > 0 && window.innerWidth >= 768) {
-            setActiveConversationId(sortedConvos[0].id);
-        }
-        setLoadingConversations(false);
-
-    }, [user, firestore, convos, initialConvosLoading, convosError, activeConversationId, initialConversationId, userLoading]);
+        return () => unsubscribe();
+    }, [user, firestore, activeConversationId, initialConversationId]);
 
 
-    // Real-time listener for messages
+    // REAL-TIME listener for messages in active conversation
     useEffect(() => {
         if (!firestore || !activeConversationId) {
             setMessages([]);
@@ -124,12 +112,18 @@ export default function ChatInterface({ initialConversationId }: { initialConver
     }, [user?.uid, firestore, activeConversationId, conversations, messages.length]);
 
 
-    // Auto-scroll
+    // Auto-scroll logic
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+
     useEffect(() => {
         if (messages.length > 0) {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            // Short delay to ensure DOM is ready
+            const timer = setTimeout(scrollToBottom, 100);
+            return () => clearTimeout(timer);
         }
-    }, [messages]);
+    }, [messages, activeConversationId]);
 
     const filteredConversations = useMemo(() => {
         if (!searchQuery.trim()) return conversations;
@@ -151,18 +145,21 @@ export default function ChatInterface({ initialConversationId }: { initialConver
     }, [activeConversation, user]);
 
     if (userLoading) {
-        return <div className="flex h-full items-center justify-center bg-background"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
+        return <div className="flex h-[calc(100dvh-64px)] items-center justify-center bg-background"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
     }
     
     if (error && !loadingConversations) {
-        return <div className="flex h-full items-center justify-center text-destructive p-4 text-center bg-background">{error}</div>
+        return <div className="flex h-[calc(100dvh-64px)] items-center justify-center text-destructive p-4 text-center bg-background">{error}</div>
     }
 
     return (
-        <div className="md:grid md:grid-cols-[300px_1fr] lg:grid-cols-[380px_1fr] h-[calc(100vh-64px)] bg-background overflow-hidden">
+        <div className="flex h-[calc(100dvh-64px)] bg-background overflow-hidden relative">
             {/* Conversation List */}
-            <div className={cn('border-r flex flex-col h-full bg-white', mobileView === 'list' ? 'flex' : 'hidden md:flex')}>
-                <div className="p-6 border-b space-y-4">
+            <div className={cn(
+                'border-r flex flex-col h-full bg-white transition-all duration-300',
+                mobileView === 'list' ? 'w-full md:w-[300px] lg:w-[380px]' : 'hidden md:flex md:w-[300px] lg:w-[380px]'
+            )}>
+                <div className="p-6 border-b space-y-4 shrink-0">
                     <h2 className="text-2xl font-bold tracking-tight">Messages</h2>
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -174,7 +171,7 @@ export default function ChatInterface({ initialConversationId }: { initialConver
                         />
                     </div>
                 </div>
-                <ScrollArea className="flex-1">
+                <ScrollArea className="flex-1 overflow-y-auto">
                     {loadingConversations ? (
                         <div className="p-4 space-y-4">
                             {[...Array(5)].map((_, i) => (
@@ -202,8 +199,8 @@ export default function ChatInterface({ initialConversationId }: { initialConver
                                             isActive ? 'bg-primary/5 border-l-4 border-primary' : 'border-l-4 border-transparent'
                                         )}
                                     >
-                                        <div className="relative">
-                                            <Avatar className="h-12 w-12 shadow-sm">
+                                        <div className="relative shrink-0">
+                                            <Avatar className="h-12 w-12 shadow-sm border border-muted">
                                                 <AvatarImage src={otherUser?.photoURL ?? undefined} alt={otherUser?.displayName ?? 'User'} className="object-cover" />
                                                 <AvatarFallback className="bg-primary/10 text-primary font-bold">{otherUser?.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
                                             </Avatar>
@@ -213,7 +210,7 @@ export default function ChatInterface({ initialConversationId }: { initialConver
                                         </div>
                                         <div className="flex-1 overflow-hidden">
                                             <div className="flex justify-between items-center mb-1">
-                                                <p className={cn("font-bold truncate", unreadCount > 0 && !isActive ? "text-foreground" : "text-muted-foreground font-semibold")}>
+                                                <p className={cn("font-bold truncate", unreadCount > 0 && !isActive ? "text-foreground" : "text-muted-foreground")}>
                                                     {otherUser?.displayName || 'Unnamed User'}
                                                 </p>
                                                 {convo.lastMessageAt && (
@@ -248,7 +245,10 @@ export default function ChatInterface({ initialConversationId }: { initialConver
             </div>
 
             {/* Message Window */}
-            <div className={cn('flex flex-col h-full bg-muted/10', mobileView === 'chat' ? 'flex' : 'hidden md:flex')}>
+            <div className={cn(
+                'flex-1 flex flex-col h-full bg-muted/10 transition-all duration-300',
+                mobileView === 'chat' ? 'flex' : 'hidden md:flex'
+            )}>
                 {activeConversation && otherParticipant ? (
                     <MessageWindowContent
                         key={activeConversation.id}
@@ -307,9 +307,10 @@ function MessageWindowContent({ conversation, otherParticipant, currentUser, mes
     }, [conversation, currentUser.uid]);
 
     return (
-        <div className="flex flex-col h-full relative">
-            <div className="p-4 md:p-6 border-b bg-white flex items-center gap-4 shadow-sm z-10">
-                <Button variant="ghost" size="icon" className="md:hidden -ml-2" onClick={onBack}>
+        <div className="flex flex-col h-full relative overflow-hidden">
+            {/* Window Header */}
+            <div className="p-4 md:p-6 border-b bg-white flex items-center gap-4 shadow-sm z-10 shrink-0">
+                <Button variant="ghost" size="icon" className="md:hidden -ml-2 rounded-full" onClick={onBack}>
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div className="flex items-center gap-3">
@@ -320,80 +321,86 @@ function MessageWindowContent({ conversation, otherParticipant, currentUser, mes
                     <div>
                         <h3 className="text-lg font-bold leading-none">{otherParticipant.displayName || 'Unnamed User'}</h3>
                         <p className="text-[10px] uppercase font-black text-primary mt-1 flex items-center gap-1">
-                            <span className="block h-1.5 w-1.5 rounded-full bg-green-500" /> Connected
+                            <span className="block h-1.5 w-1.5 rounded-full bg-green-500" /> Active Now
                         </p>
                     </div>
                 </div>
             </div>
             
-            <ScrollArea className="flex-1 p-4 md:p-6 overflow-y-auto">
-                {loadingMessages ? (
-                    <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-                ) : (
-                    <div className="space-y-4">
-                        {messages.map((msg: Message, index: number) => {
-                            const isSender = msg.senderId === currentUser.uid;
-                            const isLastMessage = index === messages.length - 1;
-                            const msgDate = msg.createdAt ? (msg.createdAt as Timestamp).toDate() : new Date();
-                            
-                            return (
-                                <div key={msg.id} className={cn("flex flex-col", isSender ? "items-end" : "items-start")}>
-                                    <div className={cn(
-                                        "p-3 md:p-4 rounded-2xl max-w-[85%] md:max-w-[70%] shadow-sm text-sm md:text-base",
-                                        isSender 
-                                            ? "bg-primary text-primary-foreground rounded-tr-none" 
-                                            : "bg-white text-foreground border rounded-tl-none"
-                                    )}>
-                                        <p className="whitespace-pre-wrap leading-relaxed">{msg.text}</p>
+            {/* Messages Area */}
+            <ScrollArea className="flex-1 bg-muted/5 relative">
+                <div className="p-4 md:p-6 space-y-4">
+                    {loadingMessages && messages.length === 0 ? (
+                        <div className="flex h-full items-center justify-center p-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                    ) : (
+                        <>
+                            {messages.map((msg: Message, index: number) => {
+                                const isSender = msg.senderId === currentUser.uid;
+                                const isLastMessage = index === messages.length - 1;
+                                const msgDate = msg.createdAt ? (msg.createdAt as Timestamp).toDate() : new Date();
+                                
+                                return (
+                                    <div key={msg.id} className={cn("flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300", isSender ? "items-end" : "items-start")}>
                                         <div className={cn(
-                                            "text-[10px] mt-1.5 opacity-70 font-medium",
-                                            isSender ? "text-right" : "text-left"
+                                            "p-3 md:p-4 rounded-2xl max-w-[90%] md:max-w-[75%] lg:max-w-[65%] shadow-sm text-sm md:text-base leading-relaxed",
+                                            isSender 
+                                                ? "bg-primary text-primary-foreground rounded-tr-none" 
+                                                : "bg-white text-foreground border rounded-tl-none"
                                         )}>
-                                            {format(msgDate, "h:mm a")}
+                                            <p className="whitespace-pre-wrap">{msg.text}</p>
+                                            <div className={cn(
+                                                "text-[10px] mt-1.5 opacity-70 font-medium",
+                                                isSender ? "text-right" : "text-left"
+                                            )}>
+                                                {format(msgDate, "h:mm a")}
+                                            </div>
                                         </div>
+                                        {isSender && isLastMessage && isLastMessageRead && (
+                                            <div className="flex items-center mt-1 pr-1 text-[10px] font-bold text-primary uppercase tracking-widest">
+                                                <CheckCheck className="h-3 w-3 mr-1" />
+                                                <span>Read</span>
+                                            </div>
+                                        )}
                                     </div>
-                                    {isSender && isLastMessage && isLastMessageRead && (
-                                        <div className="flex items-center mt-1 pr-1 text-[10px] font-bold text-primary uppercase">
-                                            <CheckCheck className="h-3 w-3 mr-1" />
-                                            <span>Read</span>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                        <div ref={messagesEndRef} className="h-4" />
-                    </div>
-                )}
+                                );
+                            })}
+                            <div ref={messagesEndRef} className="h-4" />
+                        </>
+                    )}
+                </div>
             </ScrollArea>
 
-            <div className="p-4 md:p-6 border-t bg-white">
+            {/* Input Area */}
+            <div className="p-4 md:p-6 border-t bg-white shrink-0">
                 <form onSubmit={handleSendMessage} className="flex items-end gap-3 max-w-5xl mx-auto">
-                    <div className="flex-1 bg-muted/30 rounded-2xl p-1 px-2 border focus-within:ring-1 focus-within:ring-primary transition-all">
+                    <div className="flex-1 bg-muted/30 rounded-2xl p-1 px-2 border border-muted focus-within:ring-1 focus-within:ring-primary transition-all">
                         <Textarea
                             placeholder="Type a message..."
                             value={newMessage}
                             onChange={e => setNewMessage(e.target.value)}
                             onKeyDown={e => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
+                                if (e.key === 'Enter' && !e.shiftKey && !(/Android|iPhone|iPad/i.test(navigator.userAgent))) {
                                     e.preventDefault();
                                     handleSendMessage(e);
                                 }
                             }}
                             rows={1}
-                            className="resize-none border-none bg-transparent focus-visible:ring-0 text-sm md:text-base min-h-[44px] py-3"
+                            className="resize-none border-none bg-transparent focus-visible:ring-0 text-sm md:text-base min-h-[44px] max-h-32 py-3"
                         />
                     </div>
-                    <Button type="submit" size="icon" disabled={!newMessage.trim()} className="h-[44px] w-[44px] rounded-2xl shrink-0 shadow-lg">
+                    <Button 
+                        type="submit" 
+                        size="icon" 
+                        disabled={!newMessage.trim()} 
+                        className="h-[44px] w-[44px] rounded-2xl shrink-0 shadow-lg"
+                    >
                         <Send className="h-5 w-5" />
                     </Button>
                 </form>
-                <p className="text-[10px] text-center text-muted-foreground mt-3 uppercase tracking-widest font-bold">
-                    Encrypted End-to-End by ApexFind
+                <p className="text-[10px] text-center text-muted-foreground mt-3 uppercase tracking-widest font-black opacity-50">
+                    ApexFind Secure Messaging
                 </p>
             </div>
         </div>
     );
 }
-
-// Add simple helper for time display
-import { format } from "date-fns";
