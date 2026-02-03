@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -11,6 +10,7 @@ import {
   updatePassword,
   GoogleAuthProvider,
   signInWithPopup,
+  sendEmailVerification,
 } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { getApp } from 'firebase/app';
@@ -19,6 +19,9 @@ export async function signUp(name: string, email: string, password: string, role
     const auth = getAuth();
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(userCredential.user, { displayName: name });
+
+    // Send verification email immediately after sign up
+    await sendEmailVerification(userCredential.user);
 
     const db = getFirestore(getApp());
     const userDocRef = doc(db, 'users', userCredential.user.uid);
@@ -70,6 +73,15 @@ export async function resetPasswordForEmail(email: string) {
     await sendPasswordResetEmail(auth, email, {
         url: `${window.location.origin}/auth/callback`,
     });
+}
+
+export async function resendVerificationEmail() {
+    const auth = getAuth();
+    if (auth.currentUser) {
+        await sendEmailVerification(auth.currentUser);
+    } else {
+        throw new Error("No user is currently signed in.");
+    }
 }
 
 export async function updateUserPassword(password: string) {

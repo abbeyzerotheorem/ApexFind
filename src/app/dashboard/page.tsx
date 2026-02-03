@@ -1,11 +1,9 @@
-
-
 'use client';
 
 import { useEffect, useState, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useUser, useFirestore, useDoc, useCollection } from "@/firebase";
-import { Loader2, Heart, Users, TrendingUp, Filter, MapPin, Eye } from "lucide-react";
+import { useUser, useFirestore, useDoc, useAuth } from "@/firebase";
+import { Loader2, Heart, Users, TrendingUp, Filter, MapPin, Eye, MailWarning } from "lucide-react";
 import { doc, collection, query, where, limit } from "firebase/firestore";
 import { useQuery } from "@tanstack/react-query";
 
@@ -27,15 +25,19 @@ import {
 import SavedSearches from "@/components/dashboard/saved-searches";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import UserPreferences from "@/components/onboarding/UserPreferences";
+import { resendVerificationEmail } from "@/lib/auth";
 
 function DashboardPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: userLoading } = useUser();
+  const auth = useAuth();
   const firestore = useFirestore();
 
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
   const [showPreferencesPrompt, setShowPreferencesPrompt] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendStatus, setResendStatus] = useState<'idle' | 'sent' | 'error'>('idle');
 
   const userDocRef = useMemo(() => {
     if (!user || !firestore) return null;
@@ -97,6 +99,29 @@ function DashboardPageContent() {
     }
   }, [user, userLoading, router]);
 
+  const handleReloadStatus = async () => {
+    if (auth.currentUser) {
+        await auth.currentUser.reload();
+        // Since useUser uses onAuthStateChanged, it might not trigger a state update 
+        // immediately after reload. A hard refresh is the most reliable way to update emailVerified.
+        window.location.reload();
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setIsResending(true);
+    setResendStatus('idle');
+    try {
+        await resendVerificationEmail();
+        setResendStatus('sent');
+    } catch (error) {
+        console.error("Resend error:", error);
+        setResendStatus('error');
+    } finally {
+        setIsResending(false);
+    }
+  };
+
   if (userLoading || profileLoading) {
     return (
       <div className="flex flex-col flex-grow items-center justify-center space-y-4 bg-background">
@@ -108,6 +133,46 @@ function DashboardPageContent() {
 
   if (!user) {
       return null; 
+  }
+
+  // --- Email Verification Check ---
+  if (!user.emailVerified) {
+    return (
+        <div className="flex flex-col flex-grow items-center justify-center bg-background px-4">
+            <Card className="max-w-md w-full text-center">
+                <CardHeader>
+                    <div className="mx-auto bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                        <MailWarning className="text-yellow-600 h-8 w-8" />
+                    </div>
+                    <CardTitle>Verify Your Email</CardTitle>
+                    <CardDescription>
+                        To protect our community and your account, we require all users to verify their email address.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm text-muted-foreground">
+                    <p>We've sent a verification link to <strong>{user.email}</strong>.</p>
+                    <p>If you don't see it, check your spam folder.</p>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-3">
+                    <Button className="w-full" onClick={handleReloadStatus}>
+                        Check Verification Status
+                    </Button>
+                    <Button 
+                        variant="outline" 
+                        className="w-full" 
+                        onClick={handleResendVerification}
+                        disabled={isResending}
+                    >
+                        {isResending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        {resendStatus === 'sent' ? 'Verification Sent!' : 'Resend Verification Email'}
+                    </Button>
+                    {resendStatus === 'error' && (
+                        <p className="text-xs text-destructive">Too many requests. Please try again later.</p>
+                    )}
+                </CardFooter>
+            </Card>
+        </div>
+    );
   }
 
   const initialTab = searchParams.get('tab') || 'saved-homes';

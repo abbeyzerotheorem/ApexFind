@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { signIn, signUp, resetPasswordForEmail, signInWithGoogle } from '@/lib/auth';
 import { useUser } from '@/firebase';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff, MailCheck } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 
@@ -19,14 +18,14 @@ export default function AuthPage() {
     const { user, loading } = useUser();
 
     useEffect(() => {
-        // If the user is already logged in, redirect them to the dashboard.
-        if (!loading && user) {
+        // If the user is already logged in and verified, redirect them to the dashboard.
+        if (!loading && user && user.emailVerified) {
             window.location.href = '/dashboard';
         }
     }, [user, loading]);
 
     // Show a loading spinner while checking for an active session or after a redirect has been initiated.
-    if (loading || user) {
+    if (loading) {
         return (
             <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -233,6 +232,7 @@ function SignUpForm() {
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isVerificationSent, setIsVerificationSent] = useState(false);
 
   const handleGoogleSignUp = async () => {
     setMessage('');
@@ -253,7 +253,7 @@ function SignUpForm() {
 
     try {
         await signUp(name, email, password, role);
-        window.location.href = '/dashboard';
+        setIsVerificationSent(true);
     } catch (error: any) {
         setIsError(true);
         if (error.code === 'auth/email-already-in-use') {
@@ -265,6 +265,35 @@ function SignUpForm() {
         }
     }
   };
+
+  if (isVerificationSent) {
+    return (
+        <Card className="text-center">
+            <CardHeader>
+                <div className="mx-auto bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                    <MailCheck className="text-primary h-8 w-8" />
+                </div>
+                <CardTitle>Check Your Email</CardTitle>
+                <CardDescription>
+                    We've sent a verification link to <strong>{email}</strong>.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground">
+                    Please click the link in the email to verify your account and access the ApexFind dashboard.
+                </p>
+            </CardContent>
+            <CardFooter className="flex flex-col gap-2">
+                <Button className="w-full" onClick={() => window.location.href = '/dashboard'}>
+                    I've verified my email
+                </Button>
+                <Button variant="ghost" className="w-full" onClick={() => setIsVerificationSent(false)}>
+                    Back to Sign Up
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+  }
 
   return (
     <Card>
