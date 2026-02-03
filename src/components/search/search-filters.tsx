@@ -59,7 +59,6 @@ function createFilterSummary({
   minPrice,
   maxPrice,
   beds,
-  baths,
   listingType
 }: {
   searchQuery: string;
@@ -67,12 +66,11 @@ function createFilterSummary({
   minPrice: number;
   maxPrice: number;
   beds: string;
-  baths: string;
   listingType: string | null;
 }): string {
   const parts: string[] = [];
 
-  const typeLabel = listingType === 'rent' ? 'For Rent' : 'For Sale';
+  const typeLabel = listingType === 'rent' ? 'Rent' : 'Sale';
   parts.push(typeLabel);
 
   if (searchQuery) {
@@ -85,9 +83,9 @@ function createFilterSummary({
     parts.push(homeTypes.length === 1 ? homeTypes[0] : `${homeTypes.length} Types`);
   }
 
-  if (minPrice > 0 || maxPrice < 500000000) {
+  if (minPrice > 0 || maxPrice < 1000000000) {
     const min = minPrice > 0 ? formatNairaShort(minPrice) : '';
-    const max = maxPrice < 500000000 ? formatNairaShort(maxPrice) : '';
+    const max = maxPrice < 1000000000 ? formatNairaShort(maxPrice) : '';
     if (min || max) {
       if (min && max) parts.push(`${min}-${max}`);
       else if (min) parts.push(`>${min}`);
@@ -200,7 +198,6 @@ export default function SearchFilters({
       minPrice,
       maxPrice,
       beds,
-      baths,
       listingType
     });
 
@@ -209,11 +206,11 @@ export default function SearchFilters({
       <>
         <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col gap-3 py-4">
-                 <div className="flex items-center text-xs sm:text-sm overflow-x-auto whitespace-nowrap scrollbar-hide py-1">
-                    <Link href="/" className="text-muted-foreground hover:text-foreground flex-shrink-0">Home</Link>
-                    <ChevronRight className="h-4 w-4 flex-shrink-0 mx-1 text-muted-foreground" />
-                    <span className="font-semibold text-primary truncate">{filterSummary}</span>
-                    <span className="ml-2 text-muted-foreground">({propertyCount} listings)</span>
+                 <div className="flex items-center text-[10px] sm:text-xs font-black uppercase tracking-widest overflow-x-auto whitespace-nowrap scrollbar-hide py-1">
+                    <Link href="/" className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0">Home</Link>
+                    <ChevronRight className="h-3 w-3 flex-shrink-0 mx-1 text-muted-foreground" />
+                    <span className="text-primary truncate">{filterSummary}</span>
+                    <span className="ml-2 text-muted-foreground opacity-60">({propertyCount} listings)</span>
                 </div>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex-grow max-w-2xl">
@@ -222,9 +219,9 @@ export default function SearchFilters({
                               allLocations={allLocations} 
                               value={searchQuery}
                               onChange={setSearchQuery}
-                              className="h-11"
+                              className="h-11 shadow-sm"
                             />
-                            <Button type="submit" className="h-11 px-6">Search</Button>
+                            <Button type="submit" className="h-11 px-6 font-bold shadow-sm">Search</Button>
                         </form>
                     </div>
 
@@ -236,41 +233,41 @@ export default function SearchFilters({
                         </ToggleGroup>
                         
                         <ToggleGroup type="single" value={listingType || 'buy'} onValueChange={handleTypeChange} className="bg-muted p-1 rounded-lg">
-                            <ToggleGroupItem value="buy" className="rounded-md h-8 px-3 text-xs" aria-label="For Sale">Buy</ToggleGroupItem>
-                            <ToggleGroupItem value="rent" className="rounded-md h-8 px-3 text-xs" aria-label="For Rent">Rent</ToggleGroupItem>
+                            <ToggleGroupItem value="buy" className="rounded-md h-8 px-3 text-[10px] font-black uppercase tracking-tight" aria-label="For Sale">Buy</ToggleGroupItem>
+                            <ToggleGroupItem value="rent" className="rounded-md h-8 px-3 text-[10px] font-black uppercase tracking-tight" aria-label="For Rent">Rent</ToggleGroupItem>
                         </ToggleGroup>
 
-                        <Button variant="outline" size="sm" onClick={handleSaveSearchClick} className="h-10 gap-2">
+                        <Button variant="outline" size="sm" onClick={handleSaveSearchClick} className="h-10 gap-2 font-bold border-2">
                             <Save className="h-4 w-4" /> Save
                         </Button>
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="h-10">
+                                <Button variant="outline" size="sm" className="h-10 border-2 font-bold">
                                     <span className="hidden sm:inline">Sort: </span>
-                                    <span className="font-semibold capitalize">{initialSort.replace('-', ' ')}</span>
+                                    <span className="capitalize">{initialSort.replace('-', ' ')}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuRadioGroup value={initialSort} onValueChange={handleSortChange}>
-                                    <DropdownMenuRadioItem value="relevant">Relevant</DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="newest">Newest</DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="price-low-high">Price (Low-High)</DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="price-high-low">Price (High-Low)</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="relevant" className="font-medium">Relevant</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="newest" className="font-medium">Newest</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="price-low-high" className="font-medium">Price (Low-High)</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="price-high-low" className="font-medium">Price (High-Low)</DropdownMenuRadioItem>
                                 </DropdownMenuRadioGroup>
                             </DropdownMenuContent>
                         </DropdownMenu>
 
                         <Sheet>
                           <SheetTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-10 lg:hidden">
+                            <Button variant="outline" size="sm" className="h-10 lg:hidden border-2 font-bold">
                               <SlidersHorizontal className="mr-2 h-4 w-4" />
                               Filters
                             </Button>
                           </SheetTrigger>
-                          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+                          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto rounded-l-3xl">
                             <SheetHeader className="mb-6">
-                              <SheetTitle className="text-2xl font-bold">Search Filters</SheetTitle>
+                              <SheetTitle className="text-2xl font-black">Search Filters</SheetTitle>
                             </SheetHeader>
                             <FilterControls 
                                 minPrice={minPrice}
@@ -294,46 +291,47 @@ export default function SearchFilters({
         </div>
 
         <Dialog open={showSaveSearchDialog} onOpenChange={setShowSaveSearchDialog}>
-            <DialogContent>
+            <DialogContent className="rounded-3xl">
                 <DialogHeader>
-                    <DialogTitle>Save Your Search</DialogTitle>
-                    <DialogDescription>Get instant alerts when new properties matching your filters are listed.</DialogDescription>
+                    <DialogTitle className="text-2xl font-black">Save Your Search</DialogTitle>
+                    <DialogDescription className="text-base">Get instant alerts when new properties matching your filters are listed.</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                        <Label htmlFor="search-name">Search Name</Label>
+                        <Label htmlFor="search-name" className="font-bold">Search Name</Label>
                         <Input 
                             id="search-name" 
                             value={searchName} 
                             onChange={(e) => setSearchName(e.target.value)} 
                             placeholder="e.g. Luxury Duplexes in Lekki" 
+                            className="h-12"
                         />
                     </div>
-                    <div className="p-3 bg-muted rounded-lg text-xs text-muted-foreground">
-                        <p className="font-semibold mb-1">Filters to save:</p>
-                        <p>{filterSummary}</p>
+                    <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Filters to be saved:</p>
+                        <p className="text-sm font-bold text-foreground/80">{filterSummary}</p>
                     </div>
                 </div>
-                <DialogFooter>
-                    <Button variant="ghost" onClick={() => setShowSaveSearchDialog(false)}>Cancel</Button>
-                    <Button onClick={handleConfirmSaveSearch} disabled={isSaving || !searchName.trim()}>
-                        {isSaving ? 'Saving...' : 'Save Search'}
+                <DialogFooter className="gap-2">
+                    <Button variant="ghost" onClick={() => setShowSaveSearchDialog(false)} className="font-bold h-12">Cancel</Button>
+                    <Button onClick={handleConfirmSaveSearch} disabled={isSaving || !searchName.trim()} className="font-black h-12 flex-1 text-lg shadow-lg">
+                        {isSaving ? 'Saving...' : 'Confirm & Save'}
                     </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
 
         <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
-          <AlertDialogContent>
+          <AlertDialogContent className="rounded-3xl">
             <AlertDialogHeader>
-              <AlertDialogTitleAuth>Sign In Required</AlertDialogTitleAuth>
-              <AlertDialogDescription>
+              <AlertDialogTitleAuth className="text-2xl font-black text-center">Sign In Required</AlertDialogTitleAuth>
+              <AlertDialogDescription className="text-base text-center">
                 You need an account to save searches and receive real-time property alerts. It's free and takes less than a minute.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => router.push('/auth')}>Sign Up / Sign In</AlertDialogAction>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-3 pt-4">
+              <AlertDialogCancel className="h-12 font-bold flex-1">Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => router.push('/auth')} className="h-12 font-black flex-1 bg-primary text-primary-foreground shadow-lg">Sign Up / Sign In</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
