@@ -3,7 +3,7 @@
 
 import { notFound } from 'next/navigation';
 import { useDoc, useCollection, useFirestore, useUser } from '@/firebase';
-import { doc, collection, query, where, orderBy } from 'firebase/firestore';
+import { doc, collection, query, where } from 'firebase/firestore';
 import { Loader2, Mail, Phone, Star, ShieldCheck, Award } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PropertyCard } from '@/components/property-card';
 import type { Property, Agent } from '@/types';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { getOrCreateConversation } from '@/lib/chat';
 import { useRouter } from 'next/navigation';
 import {
@@ -35,13 +35,23 @@ export default function AgentProfilePage({ id }: { id: string }) {
     const agentRef = doc(firestore, 'users', id);
     const { data: agent, loading: agentLoading } = useDoc<Agent>(agentRef);
 
+    // Removed orderBy to avoid composite index requirement
     const propertiesQuery = query(
         collection(firestore, 'properties'), 
-        where('agentId', '==', id),
-        orderBy('createdAt', 'desc')
+        where('agentId', '==', id)
     );
-    const { data: properties, loading: propertiesLoading } = useCollection<Property>(propertiesQuery);
+    const { data: rawProperties, loading: propertiesLoading } = useCollection<Property>(propertiesQuery);
     
+    // Client-side sorting
+    const properties = useMemo(() => {
+        if (!rawProperties) return [];
+        return [...rawProperties].sort((a, b) => {
+            const timeA = a.createdAt?.toDate?.()?.getTime() || 0;
+            const timeB = b.createdAt?.toDate?.()?.getTime() || 0;
+            return timeB - timeA;
+        });
+    }, [rawProperties]);
+
     const handleContactAgent = async () => {
         if (!user || !firestore) {
             setShowAuthDialog(true);

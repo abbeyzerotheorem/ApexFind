@@ -14,7 +14,7 @@ import AutocompleteSearch from "@/components/autocomplete-search";
 import allStatesWithLgas from "@/jsons/nigeria-states.json";
 import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, where, limit, orderBy } from 'firebase/firestore';
+import { collection, query, where, limit } from 'firebase/firestore';
 import type { Property } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -36,17 +36,17 @@ export default function InsightsPage() {
     const [searchValue, setSearchValue] = useState('Lagos');
     const [displayLocation, setDisplayLocation] = useState('Lagos');
 
+    // Removed orderBy to avoid composite index requirement
     const featuredPropertiesQuery = useMemo(() => {
         if (!firestore) return null;
         return query(
             collection(firestore, 'properties'),
             where('city', '==', displayLocation),
-            orderBy('createdAt', 'desc'),
-            limit(3)
+            limit(10) // Fetch a few more to filter/sort client side
         );
     }, [firestore, displayLocation]);
 
-    const { data: featuredProperties, loading: propertiesLoading } = useCollection<Property>(featuredPropertiesQuery);
+    const { data: rawProperties, loading: propertiesLoading } = useCollection<Property>(featuredPropertiesQuery);
 
     const usersQuery = useMemo(() => {
         if (!firestore) return null;
@@ -56,11 +56,19 @@ export default function InsightsPage() {
 
     const loading = propertiesLoading || usersLoading;
 
+    // Client-side filtering and sorting
     const activeProperties = useMemo(() => {
-        if (!featuredProperties || !allUsers) return [];
+        if (!rawProperties || !allUsers) return [];
         const activeUserIds = new Set(allUsers.map(user => user.id));
-        return featuredProperties.filter(p => activeUserIds.has(p.agentId));
-    }, [featuredProperties, allUsers]);
+        return rawProperties
+            .filter(p => activeUserIds.has(p.agentId))
+            .sort((a, b) => {
+                const timeA = a.createdAt?.toDate?.()?.getTime() || 0;
+                const timeB = b.createdAt?.toDate?.()?.getTime() || 0;
+                return timeB - timeA;
+            })
+            .slice(0, 3);
+    }, [rawProperties, allUsers]);
 
     const handleSearch = (e: FormEvent) => {
         e.preventDefault();
