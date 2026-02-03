@@ -1,4 +1,3 @@
-
 export async function POST(request: Request) {
   const { propertyPrice, downPaymentPercent, loanTerm, interestRate } = await request.json()
   
@@ -15,13 +14,14 @@ export async function POST(request: Request) {
   const totalPayment = monthlyPayment * numberOfPayments
   const totalInterest = totalPayment - loanAmount
   
-  // Nigerian bank rates comparison
+  // Updated list of major Nigerian mortgage-providing banks
   const nigerianBanks = [
-    { name: 'GTBank', rate: 17.5, minDownPayment: 30 },
-    { name: 'Zenith Bank', rate: 18.2, minDownPayment: 30 },
-    { name: 'Access Bank', rate: 18.5, minDownPayment: 35 },
-    { name: 'First Bank', rate: 19.0, minDownPayment: 30 },
-    { name: 'UBA', rate: 18.8, minDownPayment: 30 }
+    { name: 'National Housing Fund (NHF)', rate: 6.0, minDownPayment: 10 },
+    { name: 'Stanbic IBTC Bank', rate: 17.5, minDownPayment: 20 },
+    { name: 'GTBank', rate: 18.0, minDownPayment: 30 },
+    { name: 'Zenith Bank', rate: 18.5, minDownPayment: 30 },
+    { name: 'Access Bank', rate: 19.0, minDownPayment: 35 },
+    { name: 'First Bank', rate: 19.5, minDownPayment: 30 }
   ]
   
   return Response.json({
@@ -31,11 +31,10 @@ export async function POST(request: Request) {
     loanAmount: Math.round(loanAmount),
     downPayment: Math.round(downPayment),
     affordability: {
-      // Nigerian income brackets
-      recommendedMonthlyIncome: Math.round(monthlyPayment * 3), // 30% rule
-      affordableFor: monthlyPayment < 500000 ? 'Middle class' : 'High income'
+      recommendedMonthlyIncome: Math.round(monthlyPayment * 3), // 33% debt-to-income rule
+      affordableFor: monthlyPayment < 300000 ? 'Middle class' : 'High income'
     },
     nigerianBanks,
-    disclaimer: 'Rates based on current Nigerian mortgage market. Actual rates may vary.'
+    disclaimer: 'Rates based on current Nigerian mortgage market benchmarks. Consult your bank for actual personalized quotes.'
   })
 }
