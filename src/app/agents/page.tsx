@@ -1,7 +1,7 @@
 'use client';
 import { useState, useMemo } from 'react';
-import { useCollection, useFirestore, useUser, useDoc } from '@/firebase';
-import { collection, query, where, doc } from 'firebase/firestore';
+import { useCollection, useFirestore, useUser } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -28,7 +28,7 @@ const SPECIALTIES = ["Luxury Homes", "First-time Buyers", "Commercial", "Rentals
 export default function AgentSearchPage() {
     const firestore = useFirestore();
     const { user } = useUser();
-    const [searchTerm, setSearchTerm] = setSearchTerm('');
+    const [searchTerm, setSearchTerm] = useState('');
     const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
     const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
     

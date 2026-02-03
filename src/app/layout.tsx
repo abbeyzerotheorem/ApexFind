@@ -6,6 +6,7 @@ import Footer from '@/components/layout/footer';
 import { FirebaseClientProvider } from '@/firebase';
 import { firebaseConfig } from '@/firebase/config';
 import ReactQueryProvider from '@/components/react-query-provider';
+import { Toaster } from '@/components/ui/toaster';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -28,6 +29,7 @@ export default async function RootLayout({
             <Header />
             <main className="flex-grow flex flex-col">{children}</main>
             <Footer />
+            <Toaster />
           </FirebaseClientProvider>
         </ReactQueryProvider>
       </body>
