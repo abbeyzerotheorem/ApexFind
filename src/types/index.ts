@@ -31,38 +31,25 @@ export type Property = {
     updatedAt?: any;
 };
 
-export type Agency = {
-    id: string;
-    name: string;
-    licenseNumber: string;
-    yearsInOperation: number;
-    location: string;
-    specialties: string[];
-    rating: number;
-    reviewCount: number;
-    photoURL?: string;
-    about?: string;
-    email: string;
-    phoneNumber: string;
-    verificationBadges: string[];
-    createdAt: any;
-};
-
 export type Agent = {
     id: string;
-    name: string;
+    displayName?: string;
+    name?: string; // fallback
     title: string;
     company: string;
     imageUrl: string;
+    photoURL?: string; // actual firebase/firestore field
     imageHint: string;
     experience: number;
     sales: number;
     rating: number;
     reviewCount: number;
-    location: string;
+    location?: string;
     languages: string[];
     specialties: string[];
     agencyId?: string;
+    licenseNumber?: string;
+    verificationBadges?: string[];
 };
 
 export type User = FirebaseUser;

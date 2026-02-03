@@ -31,6 +31,8 @@ export default function ProfilePage() {
     const [company, setCompany] = useState('');
     const [experience, setExperience] = useState('');
     const [sales, setSales] = useState('');
+    const [licenseNumber, setLicenseNumber] = useState('');
+    const [verificationBadges, setVerificationBadges] = useState('');
 
     const [isSaving, setIsSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
@@ -53,6 +55,8 @@ export default function ProfilePage() {
         company?: string;
         experience?: number;
         sales?: number;
+        licenseNumber?: string;
+        verificationBadges?: string[];
     }>(userDocRef);
 
     useEffect(() => {
@@ -72,6 +76,8 @@ export default function ProfilePage() {
             setCompany(userProfile.company || '');
             setExperience(String(userProfile.experience || ''));
             setSales(String(userProfile.sales || ''));
+            setLicenseNumber(userProfile.licenseNumber || '');
+            setVerificationBadges(userProfile.verificationBadges?.join(', ') || '');
           }
         }
       }, [user, userProfile]);
@@ -121,6 +127,8 @@ export default function ProfilePage() {
                 profileData.company = company;
                 profileData.experience = Number(experience) || 0;
                 profileData.sales = Number(sales) || 0;
+                profileData.licenseNumber = licenseNumber;
+                profileData.verificationBadges = verificationBadges.split(',').map(s => s.trim()).filter(Boolean);
             }
             await updateUserProfile(firestore, user.uid, profileData);
             setSaveMessage('Profile updated successfully!');
@@ -226,6 +234,16 @@ export default function ProfilePage() {
                                                 <div className="space-y-2">
                                                     <Label htmlFor="sales">Sales (24 mo)</Label>
                                                     <Input id="sales" type="number" value={sales} onChange={(e) => setSales(e.target.value)} />
+                                                </div>
+                                            </div>
+                                            <div className="grid sm:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="license">License Number (LASRERA etc.)</Label>
+                                                    <Input id="license" value={licenseNumber} onChange={(e) => setLicenseNumber(e.target.value)} placeholder="e.g. LASRERA/12345" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="badges">Memberships / Badges</Label>
+                                                    <Input id="badges" value={verificationBadges} onChange={(e) => setVerificationBadges(e.target.value)} placeholder="e.g. NIESV, REAN (comma-separated)" />
                                                 </div>
                                             </div>
                                             <div className="space-y-2">

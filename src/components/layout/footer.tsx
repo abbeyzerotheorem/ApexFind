@@ -27,8 +27,8 @@ export default function Footer() {
             <ul className="space-y-2 text-muted-foreground">
               <li><Link href="/search?type=buy" className="hover:text-foreground">For Sale</Link></li>
               <li><Link href="/search?type=rent" className="hover:text-foreground">For Rent</Link></li>
-              <li><Link href="/agencies" className="hover:text-foreground">Agency Directory</Link></li>
               <li><Link href="/insights" className="hover:text-foreground">Market Insights</Link></li>
+              <li><Link href="/mortgage" className="hover:text-foreground">Mortgage Calculator</Link></li>
             </ul>
           </div>
           <div>
@@ -36,7 +36,6 @@ export default function Footer() {
             <ul className="space-y-2 text-muted-foreground">
               <li><Link href="/agents" className="hover:text-foreground">Find an Agent</Link></li>
               <li><Link href="/sell" className="hover:text-foreground">Sell Your Home</Link></li>
-              <li><Link href="/mortgage" className="hover:text-foreground">Mortgage Calculator</Link></li>
               <li><Link href="/help" className="hover:text-foreground">Help Center / FAQ</Link></li>
               <li><Link href="/mobile" className="hover:text-foreground font-semibold text-primary">Download Mobile App</Link></li>
             </ul>

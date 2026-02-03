@@ -32,7 +32,6 @@ const publicNavLinks = [
   { name: "Buy", href: "/search" },
   { name: "Rent", href: "/search?type=rent" },
   { name: "Sell", href: "/sell" },
-  { name: "Agencies", href: "/agencies" },
   { name: "Find Agents", href: "/agents" },
   { name: "Insights", href: "/insights" },
   { name: "Mortgage", href: "/mortgage" },

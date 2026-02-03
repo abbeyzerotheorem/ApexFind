@@ -79,6 +79,17 @@
           "type": "number",
           "description": "Total number of client reviews."
         },
+        "licenseNumber": {
+          "type": "string",
+          "description": "The agent's professional license number (e.g., LASRERA)."
+        },
+        "verificationBadges": {
+          "type": "array",
+          "description": "A list of verification badges or professional memberships.",
+          "items": {
+            "type": "string"
+          }
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time",
@@ -150,27 +161,6 @@
         "email",
         "role"
       ]
-    },
-    "agency": {
-      "title": "Agency",
-      "description": "A real estate agency or firm.",
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "licenseNumber": { "type": "string" },
-        "yearsInOperation": { "type": "number" },
-        "location": { "type": "string" },
-        "specialties": { "type": "array", "items": { "type": "string" } },
-        "rating": { "type": "number" },
-        "reviewCount": { "type": "number" },
-        "photoURL": { "type": "string", "format": "uri" },
-        "about": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "phoneNumber": { "type": "string" },
-        "verificationBadges": { "type": "array", "items": { "type": "string" } },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["name", "licenseNumber", "location"]
     },
     "property": {
       "title": "Property",
@@ -513,12 +503,6 @@
         "$ref": "#/entities/user"
       },
       "description": "Stores user profile information."
-    },
-    "/agencies/{agencyId}": {
-      "schema": {
-        "$ref": "#/entities/agency"
-      },
-      "description": "Stores real estate agency firm information."
     },
     "/users/{userId}/saved_homes/{propertyId}": {
       "schema": {

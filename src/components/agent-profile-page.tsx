@@ -4,12 +4,13 @@
 import { notFound } from 'next/navigation';
 import { useDoc, useCollection, useFirestore, useUser } from '@/firebase';
 import { doc, collection, query, where, orderBy } from 'firebase/firestore';
-import { Loader2, Mail, Phone, Star } from 'lucide-react';
+import { Loader2, Mail, Phone, Star, ShieldCheck, Award } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { PropertyCard } from '@/components/property-card';
-import type { Property } from '@/types';
+import type { Property, Agent } from '@/types';
 import { useState } from 'react';
 import { getOrCreateConversation } from '@/lib/chat';
 import { useRouter } from 'next/navigation';
@@ -24,21 +25,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-type AgentProfileUser = {
-    id: string;
-    displayName?: string;
-    photoURL?: string;
-    email?: string;
-    phoneNumber?: string;
-    about?: string;
-    specialties?: string[];
-    languages?: string[];
-    experience?: number;
-    sales?: number;
-    rating?: number;
-    reviewCount?: number;
-};
-
 export default function AgentProfilePage({ id }: { id: string }) {
     const firestore = useFirestore();
     const router = useRouter();
@@ -47,15 +33,13 @@ export default function AgentProfilePage({ id }: { id: string }) {
     const [showAuthDialog, setShowAuthDialog] = useState(false);
 
     const agentRef = doc(firestore, 'users', id);
-
-    const { data: agent, loading: agentLoading } = useDoc<AgentProfileUser>(agentRef);
+    const { data: agent, loading: agentLoading } = useDoc<Agent>(agentRef);
 
     const propertiesQuery = query(
         collection(firestore, 'properties'), 
         where('agentId', '==', id),
         orderBy('createdAt', 'desc')
     );
-
     const { data: properties, loading: propertiesLoading } = useCollection<Property>(propertiesQuery);
     
     const handleContactAgent = async () => {
@@ -75,12 +59,10 @@ export default function AgentProfilePage({ id }: { id: string }) {
             router.push(`/messages?convoId=${conversationId}`);
         } catch (error) {
             console.error("Failed to create conversation", error);
-            // In a real app, show a toast notification
         } finally {
             setIsContacting(false);
         }
     }
-
 
     if (agentLoading) {
         return (
@@ -97,21 +79,20 @@ export default function AgentProfilePage({ id }: { id: string }) {
     
     const aboutText = agent.about || `A seasoned professional with ${agent.experience || 0} years of experience in the Nigerian real estate market, ${agent.displayName} is dedicated to helping clients find their perfect home. Specializing in ${(agent.specialties || []).join(', ')}, they bring a wealth of knowledge and a commitment to client satisfaction.`;
 
-
     return (
         <div className="flex min-h-screen flex-col bg-background py-8 sm:py-12">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     {/* Agent Profile Card */}
-                    <div className="lg:col-span-1">
+                    <div className="lg:col-span-1 space-y-6">
                         <Card className="sticky top-24">
                              <CardContent className="p-6 text-center">
-                                <Avatar className="h-28 w-28 mx-auto mb-4 border-4 border-primary">
+                                <Avatar className="h-28 w-28 mx-auto mb-4 border-4 border-primary shadow-md">
                                     <AvatarImage src={agent.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${agent.displayName || 'A'}`} alt={agent.displayName || 'Agent'} />
                                     <AvatarFallback>{agent.displayName?.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
                                 </Avatar>
                                 <h1 className="text-2xl font-bold">{agent.displayName}</h1>
-                                <p className="text-muted-foreground">Real Estate Agent at ApexFind</p>
+                                <p className="text-muted-foreground">{agent.title || 'Real Estate Agent'} at {agent.company || 'ApexFind'}</p>
                                 <div className="mt-2 flex items-center justify-center gap-1">
                                     <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
                                     <span className="font-bold">{(agent.rating || 0).toFixed(1)}</span>
@@ -124,7 +105,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
                                         {isContacting ? 'Contacting...' : 'Contact Agent'}
                                     </Button>
                                     <Button size="lg" variant="outline">
-                                        <Mail className="mr-2 h-4 w-4"/> {agent.email}
+                                        <Mail className="mr-2 h-4 w-4"/> Email Agent
                                     </Button>
                                 </div>
                             </CardContent>
@@ -139,22 +120,71 @@ export default function AgentProfilePage({ id }: { id: string }) {
                                 </div>
                             </div>
                         </Card>
+
+                        {/* Professional Verification Card */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg">Professional Verification</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {agent.licenseNumber ? (
+                                    <div className="flex items-center justify-between p-3 bg-green-50 text-green-800 rounded-lg border border-green-100">
+                                        <div className="flex items-center gap-2">
+                                            <ShieldCheck className="h-5 w-5" />
+                                            <span className="text-sm font-semibold">Verified Agent</span>
+                                        </div>
+                                        <Badge variant="outline" className="border-green-200 bg-white">Licensed</Badge>
+                                    </div>
+                                ) : (
+                                    <div className="text-sm text-muted-foreground italic">Verification pending...</div>
+                                )}
+                                
+                                {agent.licenseNumber && (
+                                    <div>
+                                        <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">License Number</p>
+                                        <p className="font-mono font-bold text-sm mt-1">{agent.licenseNumber}</p>
+                                    </div>
+                                )}
+
+                                {agent.verificationBadges && agent.verificationBadges.length > 0 && (
+                                    <div>
+                                        <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-2">Memberships</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {agent.verificationBadges.map(badge => (
+                                                <Badge key={badge} variant="secondary" className="gap-1">
+                                                    <Award className="h-3 w-3" /> {badge}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     </div>
 
                     {/* Agent Listings & Details */}
                     <div className="lg:col-span-2">
                         <div className="mb-8">
                             <h2 className="text-3xl font-bold">About {agent.displayName}</h2>
-                            <p className="mt-4 text-muted-foreground">
+                            <p className="mt-4 text-muted-foreground text-lg leading-relaxed">
                                 {aboutText}
                             </p>
-                             <div className="mt-4">
-                                <p><span className="font-semibold">Languages:</span> {(agent.languages || []).join(', ')}</p>
+                             <div className="mt-6 flex flex-wrap gap-4">
+                                <div>
+                                    <p className="text-sm text-muted-foreground font-semibold">Specialties</p>
+                                    <div className="flex flex-wrap gap-2 mt-1">
+                                        {(agent.specialties || ['Residential']).map(s => <Badge key={s} variant="outline">{s}</Badge>)}
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground font-semibold">Languages</p>
+                                    <p className="mt-1">{(agent.languages || ['English']).join(', ')}</p>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="mb-8">
-                            <h2 className="text-3xl font-bold">Agent's Listings ({properties?.length || 0})</h2>
+                        <div className="mb-8 pt-8 border-t">
+                            <h2 className="text-3xl font-bold mb-6">Agent's Listings ({properties?.length || 0})</h2>
                              <div className="mt-6">
                                 {propertiesLoading ? (
                                     <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin" /></div>
@@ -175,11 +205,12 @@ export default function AgentProfilePage({ id }: { id: string }) {
                             </div>
                         </div>
 
-                        <div>
+                        <div className="pt-8 border-t">
                              <h2 className="text-3xl font-bold">Client Reviews</h2>
                               <div className="mt-6 text-center py-12 bg-secondary rounded-lg">
+                                    <Star className="mx-auto h-12 w-12 text-muted-foreground opacity-30 mb-4" />
                                     <h3 className="text-xl font-semibold">Reviews Coming Soon</h3>
-                                    <p className="text-muted-foreground mt-2">Check back later to see what clients are saying.</p>
+                                    <p className="text-muted-foreground mt-2">Check back later to see what clients are saying about {agent.displayName}.</p>
                                 </div>
                         </div>
                     </div>
