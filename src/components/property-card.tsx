@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -14,7 +13,6 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
-import { Label } from "./ui/label";
 import { formatNaira } from "@/lib/naira-formatter";
 import { getFallbackImage, getSafeImageUrl } from "@/lib/image-utils";
 import type { Property } from "@/types";
@@ -94,49 +92,67 @@ export function PropertyCard({
     }
   };
 
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (navigator.share) {
+        navigator.share({
+            title: property.address,
+            text: `Check out this property on ApexFind: ${property.address} - ${formatNaira(property.price)}`,
+            url: window.location.origin + `/property/${property.id}`
+        }).catch(console.error);
+    } else {
+        const text = encodeURIComponent(`Check out this property on ApexFind: ${property.address} - ${formatNaira(property.price)}\n\n${window.location.origin}/property/${property.id}`);
+        window.open(`https://wa.me/?text=${text}`, '_blank');
+    }
+  }
+
   if (viewMode === 'list') {
     return (
       <>
         <Card className={cn(
-          "overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col md:flex-row w-full border-2",
-          isSelected ? "border-primary bg-primary/5" : "border-transparent"
+          "overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col md:flex-row w-full border-2 group",
+          isSelected ? "border-primary bg-primary/5 shadow-md" : "border-transparent shadow-sm"
         )}>
-            <div className="relative h-48 md:h-auto md:w-64 flex-shrink-0">
+            <div className="relative h-56 md:h-auto md:w-80 flex-shrink-0">
                 <Link href={`/property/${property.id}`} className="relative block h-full w-full">
                     <Image
                         src={currentImageUrl}
                         alt={property.address || 'a property'}
                         fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 256px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, 320px"
                         onError={() => { setCurrentImageUrl(getFallbackImage(property.home_type)); }}
                     />
                 </Link>
-                 <div className="absolute left-3 top-3">
-                    {property.status && <Badge variant="secondary" className="font-medium">{property.status}</Badge>}
+                 <div className="absolute left-3 top-3 flex gap-2">
+                    <Badge variant="secondary" className="font-bold bg-white/90 backdrop-blur-sm text-foreground shadow-sm">{property.status || 'Active'}</Badge>
+                    <Badge className="font-bold uppercase shadow-sm">{property.listing_type}</Badge>
                 </div>
                 <div className="absolute right-3 top-3 flex flex-col gap-2">
                     <Button
                         size="icon"
                         variant="secondary"
-                        className="h-8 w-8 rounded-full bg-white/80 hover:bg-white self-end"
+                        className="h-9 w-9 rounded-full bg-white/90 hover:bg-white shadow-sm"
                         onClick={handleToggleSave}
-                        aria-label={isSaved ? "Unsave property" : "Save property"}
                     >
-                        <Heart
-                            className={cn(
-                            "h-4 w-4 text-primary transition-all",
-                            isSaved && "fill-primary"
-                            )}
-                        />
+                        <Heart className={cn("h-5 w-5 text-primary", isSaved && "fill-primary")} />
+                    </Button>
+                    <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-9 w-9 rounded-full bg-white/90 hover:bg-white shadow-sm"
+                        onClick={handleShare}
+                    >
+                        <Share2 className="h-5 w-5 text-foreground" />
                     </Button>
                 </div>
             </div>
             <div className="flex flex-col flex-grow">
-                <CardContent className="p-4 flex-grow flex flex-col justify-between">
+                <CardContent className="p-6 flex-grow flex flex-col justify-between">
                     <div>
-                        <div className="flex justify-between items-start">
-                            <p className="text-xl font-bold text-primary">
+                        <div className="flex justify-between items-start mb-2">
+                            <p className="text-2xl font-bold text-primary leading-none">
                                 {formatNaira(property.price)}
                                 {isRental && property.price_period && (
                                     <span className="text-sm font-normal text-muted-foreground ml-1">
@@ -144,63 +160,51 @@ export function PropertyCard({
                                     </span>
                                 )}
                             </p>
-                             <div className="flex gap-2">
-                               {showDashboardControls && (
+                             {showDashboardControls && (
                                  <Checkbox 
                                    checked={isSelected} 
                                    onCheckedChange={onToggleSelect} 
-                                   className="h-5 w-5"
+                                   className="h-6 w-6"
                                  />
-                               )}
-                               <Badge variant="default" className="capitalize">{property.listing_type}</Badge>
-                             </div>
+                             )}
                         </div>
                         <Link href={`/property/${property.id}`}>
-                            <div className="flex items-center text-muted-foreground mt-1 gap-2">
-                                <MapPin size={16} className="mt-0.5 shrink-0" />
-                                <p className="font-semibold text-foreground hover:text-primary text-lg">
-                                    {property.estate_name ? `${property.estate_name} Estate` : property.address}, {property.city}
+                            <div className="flex items-start text-muted-foreground gap-2">
+                                <MapPin size={18} className="mt-1 shrink-0 text-primary" />
+                                <p className="font-bold text-foreground hover:text-primary text-xl transition-colors line-clamp-1">
+                                    {property.address}, {property.city}
                                 </p>
                             </div>
                         </Link>
+                        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                            {property.description || `Beautiful ${property.beds} bedroom ${property.home_type.toLowerCase()} located in the prime area of ${property.city}.`}
+                        </p>
                     </div>
 
-                    <div className="mt-4 grid grid-cols-3 gap-2 pt-3 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                            <Bed className="h-5 w-5 text-muted-foreground" />
-                            <span className="text-sm"><span className="font-medium text-foreground">{property.beds}</span> Beds</span>
+                    <div className="mt-6 flex items-center justify-between border-t pt-4">
+                        <div className="flex items-center gap-4 text-sm font-medium">
+                            <span className="flex items-center gap-1.5"><Bed className="h-4 w-4 text-primary" /> {property.beds} Beds</span>
+                            <span className="flex items-center gap-1.5"><Bath className="h-4 w-4 text-primary" /> {property.baths} Baths</span>
+                            <span className="flex items-center gap-1.5"><Square className="h-4 w-4 text-primary" /> {property.sqft.toLocaleString()} sqft</span>
                         </div>
-                        <div className="flex items-center justify-center gap-1">
-                            <Bath className="h-5 w-5 text-muted-foreground" />
-                            <span className="text-sm"><span className="font-medium text-foreground">{property.baths}</span> Baths</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-1">
-                            <Square className="h-5 w-5 text-muted-foreground" />
-                            <span className="text-sm"><span className="font-medium text-foreground">{(property.sqft / 10.764).toFixed(0)}</span> m²</span>
+                        <div className="flex gap-2">
+                            {property.is_furnished && <Badge variant="outline" className="bg-primary/5">Furnished</Badge>}
                         </div>
                     </div>
                 </CardContent>
-                <CardFooter className="p-4 pt-0">
-                    <div className="mt-auto flex flex-wrap gap-2">
-                        {property.is_furnished && <Badge variant="outline">Furnished</Badge>}
-                        {property.power_supply && <Badge variant="outline" className="flex items-center gap-1"><Zap size={12}/>{property.power_supply}</Badge>}
-                        {property.water_supply && <Badge variant="outline" className="flex items-center gap-1"><Droplets size={12}/>{property.water_supply}</Badge>}
-                        {property.security_type && property.security_type.length > 0 && <Badge variant="outline" className="flex items-center gap-1"><Shield size={12}/>Security</Badge>}
-                    </div>
-                </CardFooter>
             </div>
         </Card>
         <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Create an Account to Continue</AlertDialogTitle>
+              <AlertDialogTitle>Save to Your Profile</AlertDialogTitle>
               <AlertDialogDescription>
-                To save properties, you need to have an account. It's free and only takes a minute!
+                Sign in to save your favorite properties and receive updates when prices change or when similar homes are listed.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => router.push('/auth')}>Sign Up / Sign In</AlertDialogAction>
+              <AlertDialogAction onClick={() => router.push('/auth')}>Continue to Sign In</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -211,48 +215,49 @@ export function PropertyCard({
   return (
     <>
       <Card className={cn(
-        "overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col border-2",
-        isSelected ? "border-primary bg-primary/5" : "border-transparent"
+        "overflow-hidden transition-all duration-300 hover:shadow-2xl flex flex-col border-2 group",
+        isSelected ? "border-primary bg-primary/5 shadow-md" : "border-transparent shadow-sm"
       )}>
-          <div className="relative h-64">
+          <div className="relative h-64 overflow-hidden">
               <Link href={`/property/${property.id}`} className="relative block h-full w-full">
                   <Image
                   src={currentImageUrl}
                   alt={property.address || 'a property'}
                   fill
-                  className="w-full object-cover transition-transform duration-300 hover:scale-105"
+                  className="w-full object-cover group-hover:scale-110 transition-transform duration-700"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   onError={() => {
                     setCurrentImageUrl(getFallbackImage(property.home_type));
                   }}
                   />
               </Link>
-              <div className="absolute left-3 top-3">
-                  {property.status && <Badge variant="secondary" className="font-medium">{property.status}</Badge>}
+              <div className="absolute left-3 top-3 flex gap-2">
+                  <Badge variant="secondary" className="font-bold bg-white/90 backdrop-blur-sm text-foreground shadow-sm">{property.status || 'Active'}</Badge>
+                  <Badge className="font-bold uppercase shadow-sm">{property.listing_type}</Badge>
               </div>
               <div className="absolute right-3 top-3 flex flex-col gap-2">
-                  <Badge variant="default" className="capitalize">{property.listing_type}</Badge>
                   <Button
                       size="icon"
                       variant="secondary"
-                      className="h-8 w-8 rounded-full bg-white/80 hover:bg-white self-end"
+                      className="h-9 w-9 rounded-full bg-white/90 hover:bg-white shadow-sm"
                       onClick={handleToggleSave}
-                      aria-label={isSaved ? "Unsave property" : "Save property"}
                   >
-                      <Heart
-                          className={cn(
-                          "h-4 w-4 text-primary transition-all",
-                          isSaved && "fill-primary"
-                          )}
-                      />
+                      <Heart className={cn("h-5 w-5 text-primary", isSaved && "fill-primary")} />
+                  </Button>
+                  <Button
+                      size="icon"
+                      variant="secondary"
+                      className="h-9 w-9 rounded-full bg-white/90 hover:bg-white shadow-sm"
+                      onClick={handleShare}
+                  >
+                      <Share2 className="h-5 w-5 text-foreground" />
                   </Button>
               </div>
-              
           </div>
-        <CardContent className="p-4 flex-grow flex flex-col">
-          <div>
-            <div className="flex justify-between items-start">
-              <p className="text-2xl font-bold text-primary">
+        <CardContent className="p-5 flex-grow flex flex-col">
+          <div className="mb-4">
+            <div className="flex justify-between items-start mb-1">
+              <p className="text-2xl font-black text-primary">
                 {formatNaira(property.price)}
                 {isRental && property.price_period && (
                   <span className="text-sm font-normal text-muted-foreground ml-1">
@@ -268,52 +273,50 @@ export function PropertyCard({
                 />
               )}
             </div>
-            <div className="flex items-start text-muted-foreground mt-1 gap-2">
-              <MapPin size={16} className="mt-0.5 shrink-0" />
-              <p className="font-semibold text-foreground hover:text-primary">
-                  {property.estate_name ? `${property.estate_name} Estate` : property.address}, {property.city}
-              </p>
-            </div>
+            <Link href={`/property/${property.id}`}>
+                <div className="flex items-start text-muted-foreground gap-1.5 group/link">
+                    <MapPin size={16} className="mt-1 shrink-0 text-primary" />
+                    <p className="font-bold text-foreground group-hover/link:text-primary transition-colors line-clamp-1 text-lg">
+                        {property.address}, {property.city}
+                    </p>
+                </div>
+            </Link>
           </div>
 
-          <div className="mt-4 grid grid-cols-3 gap-2 border-y py-3 text-center">
-              <div className="flex flex-col items-center gap-1">
-                  <Bed className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm"><span className="font-medium text-foreground">{property.beds}</span> Beds</span>
+          <div className="grid grid-cols-3 gap-2 border-y py-4 text-center">
+              <div className="flex flex-col items-center gap-1 border-r">
+                  <Bed className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-bold">{property.beds} <span className="text-[10px] text-muted-foreground font-normal uppercase">Beds</span></span>
+              </div>
+              <div className="flex flex-col items-center gap-1 border-r">
+                  <Bath className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-bold">{property.baths} <span className="text-[10px] text-muted-foreground font-normal uppercase">Baths</span></span>
               </div>
               <div className="flex flex-col items-center gap-1">
-                  <Bath className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm"><span className="font-medium text-foreground">{property.baths}</span> Baths</span>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                  <Square className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm"><span className="font-medium text-foreground">{(property.sqft / 10.764).toFixed(0)}</span> m²</span>
+                  <Square className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-bold">{(property.sqft / 10.764).toFixed(0)} <span className="text-[10px] text-muted-foreground font-normal uppercase">m²</span></span>
               </div>
           </div>
           
-          <div className="mt-3 flex flex-wrap gap-2">
-              {property.is_furnished && <Badge variant="outline">Furnished</Badge>}
-              {property.power_supply && <Badge variant="outline" className="flex items-center gap-1"><Zap size={12}/>{property.power_supply}</Badge>}
-              {property.water_supply && <Badge variant="outline" className="flex items-center gap-1"><Droplets size={12}/>{property.water_supply}</Badge>}
-              {property.security_type && property.security_type.length > 0 && <Badge variant="outline" className="flex items-center gap-1"><Shield size={12}/>Security</Badge>}
+          <div className="mt-4 flex flex-wrap gap-2">
+              {property.is_furnished && <Badge variant="outline" className="text-[10px] bg-muted/50">Furnished</Badge>}
+              {property.power_supply && <Badge variant="outline" className="text-[10px] bg-muted/50 flex items-center gap-1"><Zap size={10} className="text-yellow-500" />{property.power_supply}</Badge>}
+              {property.water_supply && <Badge variant="outline" className="text-[10px] bg-muted/50 flex items-center gap-1"><Droplets size={10} className="text-blue-500" />Water</Badge>}
           </div>
-        
         </CardContent>
         {showDashboardControls && (
-          <CardFooter className="p-4 border-t flex justify-between items-center">
-              <div className="flex items-center space-x-2">
-                  <p className="text-xs text-muted-foreground">Select to compare</p>
-              </div>
-              <Button variant="ghost" size="sm">Add Note</Button>
+          <CardFooter className="p-4 border-t flex justify-between items-center bg-muted/20">
+              <p className="text-xs font-semibold text-muted-foreground">Compare properties</p>
+              <Button variant="ghost" size="sm" className="h-8 text-xs font-bold">Add Note</Button>
           </CardFooter>
         )}
       </Card>
       <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Create an Account to Continue</AlertDialogTitle>
+            <AlertDialogTitle>Personalize Your Journey</AlertDialogTitle>
             <AlertDialogDescription>
-              To save properties, you need to have an account. It's free and only takes a minute!
+              Create an account to save properties, organize your search, and be the first to know about new listings in your favorite areas.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

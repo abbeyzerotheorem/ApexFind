@@ -1,5 +1,3 @@
-
-
 'use client';
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { Property } from "@/types";
 import Link from "next/link";
+import { Home } from "lucide-react";
 
 const INITIAL_LOAD_COUNT = 9;
 
@@ -22,47 +21,47 @@ export default function SearchResults({ properties, view }: { properties: Proper
     
     return (
         <div className="flex-grow">
-            <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 pb-8">
-                <div className="flex items-center justify-between py-4">
-                    <p className="text-sm text-muted-foreground">
-                        {properties.length} homes
-                    </p>
-                </div>
-
-                <div>
-                    <ScrollArea>
-                         {properties.length > 0 ? (
-                            <div className={cn(
-                                view === 'grid'
-                                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                                : "space-y-6"
-                            )}>
-                                {properties.slice(0, visibleCount).map((property) => (
-                                    <PropertyCard key={property.id} property={property} viewMode={view as 'grid' | 'list'} />
-                                ))}
+            <div className="pb-8">
+                {properties.length > 0 ? (
+                    <div className={cn(
+                        "grid gap-6",
+                        view === 'grid' 
+                            ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3" 
+                            : "grid-cols-1"
+                    )}>
+                        {properties.slice(0, visibleCount).map((property) => (
+                            <PropertyCard 
+                                key={property.id} 
+                                property={property} 
+                                viewMode={view as 'grid' | 'list'} 
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-20 text-center bg-card rounded-2xl border-2 border-dashed">
+                        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6">
+                            <Home className="h-10 w-10 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-2xl font-bold">No matches found</h3>
+                        <p className="text-muted-foreground mt-2 max-w-md mx-auto px-4">
+                            We couldn't find any properties matching your exact filters. Try broadening your price range or exploring nearby areas.
+                        </p>
+                        <div className="mt-10">
+                            <h4 className="font-bold text-sm uppercase tracking-widest text-muted-foreground mb-4">Popular Locations:</h4>
+                            <div className="flex flex-wrap justify-center gap-3">
+                                <Button variant="secondary" className="rounded-full" asChild><Link href="/search?q=Lagos">Lagos</Link></Button>
+                                <Button variant="secondary" className="rounded-full" asChild><Link href="/search?q=Abuja">Abuja</Link></Button>
+                                <Button variant="secondary" className="rounded-full" asChild><Link href="/search?q=Lekki">Lekki</Link></Button>
+                                <Button variant="secondary" className="rounded-full" asChild><Link href="/search?q=Port-Harcourt">Port Harcourt</Link></Button>
                             </div>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center h-full py-24 text-center">
-                                <h3 className="text-2xl font-semibold">No results found</h3>
-                                <p className="text-muted-foreground mt-2 max-w-md">Try adjusting your search or filters, such as widening the price range or changing the location.</p>
-                                 <div className="mt-6">
-                                    <h4 className="font-semibold mb-2">Popular Searches:</h4>
-                                    <div className="flex flex-wrap justify-center gap-2">
-                                        <Button variant="link" asChild><Link href="/search?q=Lagos">Lagos</Link></Button>
-                                        <Button variant="link" asChild><Link href="/search?q=Abuja">Abuja</Link></Button>
-                                        <Button variant="link" asChild><Link href="/search?q=Lekki">Lekki</Link></Button>
-                                        <Button variant="link" asChild><Link href="/search?q=Port-Harcourt">Port Harcourt</Link></Button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </ScrollArea>
-                </div>
+                        </div>
+                    </div>
+                )}
 
                 {canLoadMore && (
-                    <div className="mt-12 text-center">
-                        <Button size="lg" variant="outline" onClick={handleLoadMore}>
-                            Load More
+                    <div className="mt-16 text-center">
+                        <Button size="lg" variant="outline" onClick={handleLoadMore} className="min-w-[200px] h-14 font-bold border-2">
+                            Load More Properties
                         </Button>
                     </div>
                 )}

@@ -58,7 +58,7 @@ function SearchPageComponent() {
   const beds = searchParams.get('beds');
   const baths = searchParams.get('baths');
   const homeTypes = searchParams.get('homeTypes') ? searchParams.get('homeTypes')!.split(',') : [];
-  const listingType = searchParams.get('type');
+  const listingType = searchParams.get('type') || 'buy';
   const features = searchParams.get('features') ? searchParams.get('features')!.split(',') : [];
   const minSqft = searchParams.get('minSqft') ? parseInt(searchParams.get('minSqft')!) : 0;
   const maxSqft = searchParams.get('maxSqft') ? parseInt(searchParams.get('maxSqft')!) : 0;
@@ -74,14 +74,14 @@ function SearchPageComponent() {
     let filtered = allProperties.filter(property => {
       let matches = true;
 
-      if (listingType) {
-        if (listingType === 'buy' || listingType === 'sale') {
-            matches = matches && property.listing_type === 'sale';
-        } else if (listingType === 'rent') {
-            matches = matches && property.listing_type === 'rent';
-        }
+      // Transaction Type
+      if (listingType === 'buy' || listingType === 'sale') {
+          matches = matches && property.listing_type === 'sale';
+      } else if (listingType === 'rent') {
+          matches = matches && property.listing_type === 'rent';
       }
 
+      // Location Search
       if (searchQuery) {
         matches = matches && (
             property.address.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -89,12 +89,16 @@ function SearchPageComponent() {
             property.state.toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
+
+      // Price Range
       if (minPrice) {
         matches = matches && property.price >= minPrice;
       }
       if (maxPrice < 1000000000) {
         matches = matches && property.price <= maxPrice;
       }
+
+      // Beds & Baths
       if (beds && beds !== 'any') {
           const minBeds = parseInt(beds.replace('+', ''));
           matches = matches && property.beds >= minBeds;
@@ -103,9 +107,13 @@ function SearchPageComponent() {
           const minBaths = parseInt(baths.replace('+', ''));
           matches = matches && property.baths >= minBaths;
       }
+
+      // Home Type
       if (homeTypes.length > 0) {
         matches = matches && homeTypes.includes(property.home_type);
       }
+
+      // Features
       if (features.length > 0) {
           if (features.includes('furnished') && !property.is_furnished) matches = false;
           if (features.includes('pool') && !property.has_pool) matches = false;
@@ -114,32 +122,49 @@ function SearchPageComponent() {
           if (features.includes('borehole') && !property.water_supply?.toLowerCase().includes('borehole')) matches = false;
           if (features.includes('gated') && !property.security_type?.includes('Gated Estate')) matches = false;
       }
+
+      // Size
       if (minSqft) {
           matches = matches && property.sqft >= minSqft;
       }
       if (maxSqft) {
           matches = matches && property.sqft <= maxSqft;
       }
+
+      // Keyword match in description or address
       if (keywords) {
-          matches = matches && (property.description?.toLowerCase().includes(keywords.toLowerCase()) || property.address.toLowerCase().includes(keywords.toLowerCase()));
+          const kw = keywords.toLowerCase();
+          matches = matches && (
+            property.description?.toLowerCase().includes(kw) || 
+            property.address.toLowerCase().includes(kw) ||
+            property.home_type.toLowerCase().includes(kw)
+          );
       }
       
-      if (furnishing === 'furnished') {
-        matches = matches && property.is_furnished === true;
-      } else if (furnishing === 'unfurnished') {
-        matches = matches && !property.is_furnished;
-      }
+      // Rent specific: Furnishing
+      if (listingType === 'rent') {
+        if (furnishing === 'furnished') {
+          matches = matches && property.is_furnished === true;
+        } else if (furnishing === 'unfurnished') {
+          matches = matches && !property.is_furnished;
+        }
 
-      if (pricePeriods.length > 0 && property.listing_type === 'rent') {
-          matches = matches && !!property.price_period && pricePeriods.includes(property.price_period);
+        if (pricePeriods.length > 0) {
+            matches = matches && !!property.price_period && pricePeriods.includes(property.price_period);
+        }
       }
 
       return matches;
     });
 
+    // Sorting
     switch (sort) {
         case 'newest':
-            filtered.sort((a, b) => (b.createdAt?.toDate?.().getTime() || 0) - (a.createdAt?.toDate?.().getTime() || 0));
+            filtered.sort((a, b) => {
+                const timeA = a.createdAt?.toDate?.()?.getTime() || 0;
+                const timeB = b.createdAt?.toDate?.()?.getTime() || 0;
+                return timeB - timeA;
+            });
             break;
         case 'price-low-high':
             filtered.sort((a, b) => a.price - b.price);
@@ -148,6 +173,12 @@ function SearchPageComponent() {
             filtered.sort((a, b) => b.price - a.price);
             break;
         default:
+            // Relevant: could be a mix of featured and newest
+            filtered.sort((a, b) => {
+                const timeA = a.createdAt?.toDate?.()?.getTime() || 0;
+                const timeB = b.createdAt?.toDate?.()?.getTime() || 0;
+                return timeB - timeA;
+            });
             break;
     }
 
@@ -182,15 +213,15 @@ function SearchPageComponent() {
         />
       </div>
       <div className="mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8">
-        <div className="grid flex-1 gap-x-8 gap-y-10 lg:grid-cols-4">
-            <aside className="hidden lg:block">
-                <h2 className="sr-only">Filters</h2>
+        <div className="grid flex-1 gap-x-8 gap-y-10 lg:grid-cols-4 mt-6">
+            <aside className="hidden lg:block sticky top-40 h-fit">
+                <h2 className="text-lg font-bold mb-4">Filters</h2>
                 <FilterControls {...filterProps}/>
             </aside>
 
             <div className="lg:col-span-3">
                 {view === 'map'
-                    ? <div className="h-[75vh]"><MapView properties={filteredProperties} /></div>
+                    ? <div className="h-[75vh] rounded-xl overflow-hidden border shadow-sm"><MapView properties={filteredProperties} /></div>
                     : <SearchResults properties={loading ? [] : filteredProperties} view={view} />
                 }
             </div>

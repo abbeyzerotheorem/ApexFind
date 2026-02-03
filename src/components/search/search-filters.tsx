@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -11,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ChevronRight, SlidersHorizontal, LayoutGrid, List, Map as MapIcon } from "lucide-react";
+import { ChevronRight, SlidersHorizontal, LayoutGrid, List, Map as MapIcon, Save } from "lucide-react";
 import React from "react";
 import { FilterControls } from "./filter-controls";
 import Link from "next/link";
@@ -84,25 +82,21 @@ function createFilterSummary({
   }
 
   if (homeTypes.length > 0) {
-    parts.push(homeTypes.join(', '));
+    parts.push(homeTypes.length === 1 ? homeTypes[0] : `${homeTypes.length} Types`);
   }
 
   if (minPrice > 0 || maxPrice < 500000000) {
     const min = minPrice > 0 ? formatNairaShort(minPrice) : '';
     const max = maxPrice < 500000000 ? formatNairaShort(maxPrice) : '';
     if (min || max) {
-      if (min && max) parts.push(`${min} - ${max}`);
-      else if (min) parts.push(`> ${min}`);
-      else if (max) parts.push(`< ${max}`);
+      if (min && max) parts.push(`${min}-${max}`);
+      else if (min) parts.push(`>${min}`);
+      else if (max) parts.push(`<${max}`);
     }
   }
 
   if (beds && beds !== 'any') {
-    parts.push(`${beds.replace('+', '')}+ Beds`);
-  }
-
-  if (baths && baths !== 'any') {
-    parts.push(`${baths.replace('+', '')}+ Baths`);
+    parts.push(`${beds.replace('+', '')}+Beds`);
   }
 
   return parts.join(' → ');
@@ -181,7 +175,6 @@ export default function SearchFilters({
             await saveSearch(firestore, user.uid, searchName, searchParams.toString());
             setShowSaveSearchDialog(false);
             setSearchName('');
-            // TODO: Show toast notification for success
         } catch (error) {
             console.error("Failed to save search", error);
         } finally {
@@ -216,46 +209,49 @@ export default function SearchFilters({
       <>
         <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col gap-3 py-4">
-                 <div className="flex items-center text-sm overflow-x-auto whitespace-nowrap">
+                 <div className="flex items-center text-xs sm:text-sm overflow-x-auto whitespace-nowrap scrollbar-hide py-1">
                     <Link href="/" className="text-muted-foreground hover:text-foreground flex-shrink-0">Home</Link>
-                    <ChevronRight className="h-4 w-4 flex-shrink-0" />
-                    <span className="font-semibold text-ellipsis overflow-hidden">{filterSummary}</span>
+                    <ChevronRight className="h-4 w-4 flex-shrink-0 mx-1 text-muted-foreground" />
+                    <span className="font-semibold text-primary truncate">{filterSummary}</span>
+                    <span className="ml-2 text-muted-foreground">({propertyCount} listings)</span>
                 </div>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="flex-grow">
+                    <div className="flex-grow max-w-2xl">
                         <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
                             <AutocompleteSearch 
                               allLocations={allLocations} 
                               value={searchQuery}
                               onChange={setSearchQuery}
+                              className="h-11"
                             />
-                            <Button type="submit">Search</Button>
+                            <Button type="submit" className="h-11 px-6">Search</Button>
                         </form>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
-                        <ToggleGroup type="single" value={view} onValueChange={handleViewChange} aria-label="View mode">
-                            <ToggleGroupItem value="grid" aria-label="Grid View"><LayoutGrid className="h-4 w-4" /></ToggleGroupItem>
-                            <ToggleGroupItem value="list" aria-label="List View"><List className="h-4 w-4" /></ToggleGroupItem>
-                            <ToggleGroupItem value="map" aria-label="Map View"><MapIcon className="h-4 w-4" /></ToggleGroupItem>
+                        <ToggleGroup type="single" value={view} onValueChange={handleViewChange} className="bg-muted p-1 rounded-lg">
+                            <ToggleGroupItem value="grid" className="rounded-md h-8 w-8 p-0" aria-label="Grid View"><LayoutGrid className="h-4 w-4" /></ToggleGroupItem>
+                            <ToggleGroupItem value="list" className="rounded-md h-8 w-8 p-0" aria-label="List View"><List className="h-4 w-4" /></ToggleGroupItem>
+                            <ToggleGroupItem value="map" className="rounded-md h-8 w-8 p-0" aria-label="Map View"><MapIcon className="h-4 w-4" /></ToggleGroupItem>
                         </ToggleGroup>
-                        <ToggleGroup type="single" value={listingType || 'buy'} onValueChange={handleTypeChange} aria-label="Transaction Type">
-                            <ToggleGroupItem value="buy" aria-label="For Sale">Buy</ToggleGroupItem>
-                            <ToggleGroupItem value="rent" aria-label="For Rent">Rent</ToggleGroupItem>
+                        
+                        <ToggleGroup type="single" value={listingType || 'buy'} onValueChange={handleTypeChange} className="bg-muted p-1 rounded-lg">
+                            <ToggleGroupItem value="buy" className="rounded-md h-8 px-3 text-xs" aria-label="For Sale">Buy</ToggleGroupItem>
+                            <ToggleGroupItem value="rent" className="rounded-md h-8 px-3 text-xs" aria-label="For Rent">Rent</ToggleGroupItem>
                         </ToggleGroup>
 
-                        <Button variant="outline" size="sm" onClick={handleSaveSearchClick}>
-                            Save Search
+                        <Button variant="outline" size="sm" onClick={handleSaveSearchClick} className="h-10 gap-2">
+                            <Save className="h-4 w-4" /> Save
                         </Button>
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                    <span>Sort by: </span>
-                                    <span className="font-semibold ml-1 capitalize">{initialSort.replace('-', ' ')}</span>
+                                <Button variant="outline" size="sm" className="h-10">
+                                    <span className="hidden sm:inline">Sort: </span>
+                                    <span className="font-semibold capitalize">{initialSort.replace('-', ' ')}</span>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent>
+                            <DropdownMenuContent align="end">
                                 <DropdownMenuRadioGroup value={initialSort} onValueChange={handleSortChange}>
                                     <DropdownMenuRadioItem value="relevant">Relevant</DropdownMenuRadioItem>
                                     <DropdownMenuRadioItem value="newest">Newest</DropdownMenuRadioItem>
@@ -267,14 +263,14 @@ export default function SearchFilters({
 
                         <Sheet>
                           <SheetTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-9 lg:hidden">
+                            <Button variant="outline" size="sm" className="h-10 lg:hidden">
                               <SlidersHorizontal className="mr-2 h-4 w-4" />
-                              All Filters
+                              Filters
                             </Button>
                           </SheetTrigger>
-                          <SheetContent className="w-full max-w-md sm:max-w-md overflow-y-auto">
-                            <SheetHeader>
-                              <SheetTitle>All Filters</SheetTitle>
+                          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+                            <SheetHeader className="mb-6">
+                              <SheetTitle className="text-2xl font-bold">Search Filters</SheetTitle>
                             </SheetHeader>
                             <FilterControls 
                                 minPrice={minPrice}
@@ -300,12 +296,23 @@ export default function SearchFilters({
         <Dialog open={showSaveSearchDialog} onOpenChange={setShowSaveSearchDialog}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Save Search</DialogTitle>
-                    <DialogDescription>Give this search a name so you can find it later and get alerts.</DialogDescription>
+                    <DialogTitle>Save Your Search</DialogTitle>
+                    <DialogDescription>Get instant alerts when new properties matching your filters are listed.</DialogDescription>
                 </DialogHeader>
-                <div className="space-y-2 py-4">
-                    <Label htmlFor="search-name">Search Name</Label>
-                    <Input id="search-name" value={searchName} onChange={(e) => setSearchName(e.target.value)} placeholder="e.g. Lekki Apartments under ₦50M" />
+                <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="search-name">Search Name</Label>
+                        <Input 
+                            id="search-name" 
+                            value={searchName} 
+                            onChange={(e) => setSearchName(e.target.value)} 
+                            placeholder="e.g. Luxury Duplexes in Lekki" 
+                        />
+                    </div>
+                    <div className="p-3 bg-muted rounded-lg text-xs text-muted-foreground">
+                        <p className="font-semibold mb-1">Filters to save:</p>
+                        <p>{filterSummary}</p>
+                    </div>
                 </div>
                 <DialogFooter>
                     <Button variant="ghost" onClick={() => setShowSaveSearchDialog(false)}>Cancel</Button>
@@ -319,9 +326,9 @@ export default function SearchFilters({
         <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitleAuth>Create an Account to Continue</AlertDialogTitleAuth>
+              <AlertDialogTitleAuth>Sign In Required</AlertDialogTitleAuth>
               <AlertDialogDescription>
-                To save searches and get alerts, you need to have an account. It's free and only takes a minute!
+                You need an account to save searches and receive real-time property alerts. It's free and takes less than a minute.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
