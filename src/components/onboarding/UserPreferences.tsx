@@ -2,101 +2,59 @@
 'use client'
 
 import { useState } from 'react'
-import { MapPin, Home, TrendingUp, Bell, Check, ArrowRight } from 'lucide-react'
+import { MapPin, Bell, Check, ArrowRight, Loader2 } from 'lucide-react'
 import Image from 'next/image'
-import { getFirestore, doc, setDoc } from 'firebase/firestore'
-
-
-// Import your preference illustrations
-const LocationIllustration = '/illustrations/preferences-locations.jpg'
-const PropertyTypesIllustration = '/illustrations/preferences-types.jpg'
-const BudgetIllustration = '/illustrations/preferences-budget.jpg'
+import { doc, setDoc } from 'firebase/firestore'
+import { useFirestore } from '@/firebase'
+import { PlaceHolderImages } from '@/lib/placeholder-images'
+import { cn } from '@/lib/utils'
 
 const NIGERIAN_LOCATIONS = [
   { 
     id: 'lagos', 
     name: 'Lagos', 
-    color: 'from-[#64B5F6] to-blue-500',
-    popular: ['Lekki', 'Ikeja', 'Victoria Island', 'Ajah'],
+    color: 'from-blue-400 to-blue-600',
+    popular: ['Lekki', 'Ikeja', 'VI', 'Ajah'],
     description: 'Commercial hub with luxury properties'
   },
   { 
     id: 'abuja', 
     name: 'Abuja', 
-    color: 'from-green-500 to-emerald-500',
+    color: 'from-green-400 to-emerald-600',
     popular: ['Maitama', 'Asokoro', 'Wuse', 'Garki'],
-    description: 'Capital city with diplomatic properties'
+    description: 'Capital city with diplomatic estates'
   },
   { 
     id: 'rivers', 
     name: 'Port Harcourt', 
-    color: 'from-purple-500 to-purple-600',
-    popular: ['GRA', 'Old GRA', 'Trans-Amadi'],
-    description: 'Oil & gas hub with waterfront properties'
+    color: 'from-purple-400 to-purple-600',
+    popular: ['GRA', 'Trans-Amadi'],
+    description: 'Oil hub with waterfront living'
   },
   { 
     id: 'oyo', 
     name: 'Ibadan', 
-    color: 'from-orange-500 to-orange-600',
-    popular: ['Bodija', 'Iwo Road', 'Mokola'],
-    description: 'Historic city with affordable properties'
-  },
-  { 
-    id: 'kano', 
-    name: 'Kano', 
-    color: 'from-red-500 to-red-600',
-    popular: ['Nassarawa', 'Bompai', 'Gyadi-Gyadi'],
-    description: 'Northern commercial center'
-  },
-  { 
-    id: 'delta', 
-    name: 'Delta', 
-    color: 'from-yellow-500 to-yellow-600',
-    popular: ['Warri', 'Asaba', 'Ughelli'],
-    description: 'Oil-rich region with growing real estate'
+    color: 'from-orange-400 to-orange-600',
+    popular: ['Bodija', 'Iwo Road'],
+    description: 'Historic city with growing developments'
   }
 ]
 
 const PROPERTY_TYPES = [
-  { id: 'apartment', name: 'Apartment', icon: '🏢', color: 'bg-blue-100 text-blue-800' },
-  { id: 'duplex', name: 'Duplex', icon: '🏘️', color: 'bg-green-100 text-green-800' },
-  { id: 'bungalow', name: 'Bungalow', icon: '🏡', color: 'bg-yellow-100 text-yellow-800' },
-  { id: 'commercial', name: 'Commercial', icon: '🏬', color: 'bg-purple-100 text-purple-800' },
-  { id: 'land', name: 'Land', icon: '🗺️', color: 'bg-orange-100 text-orange-800' },
-  { id: 'shortlet', name: 'Shortlet', icon: '🏨', color: 'bg-pink-100 text-pink-800' }
+  { id: 'apartment', name: 'Apartment', icon: '🏢' },
+  { id: 'duplex', name: 'Duplex', icon: '🏘️' },
+  { id: 'bungalow', name: 'Bungalow', icon: '🏡' },
+  { id: 'commercial', name: 'Commercial', icon: '🏬' },
+  { id: 'land', name: 'Land', icon: '🗺️' },
+  { id: 'shortlet', name: 'Shortlet', icon: '🏨' }
 ]
 
 const BUDGET_RANGES = [
-  { 
-    id: 'under5m', 
-    label: 'Under ₦5M', 
-    description: 'Affordable starter properties',
-    icon: '💰'
-  },
-  { 
-    id: '5m-20m', 
-    label: '₦5M - ₦20M', 
-    description: 'Middle-class family homes',
-    icon: '🏠'
-  },
-  { 
-    id: '20m-50m', 
-    label: '₦20M - ₦50M', 
-    description: 'Luxury apartments & duplexes',
-    icon: '🏢'
-  },
-  { 
-    id: '50m-100m', 
-    label: '₦50M - ₦100M', 
-    description: 'High-end properties',
-    icon: '🏰'
-  },
-  { 
-    id: '100m+', 
-    label: '₦100M+', 
-    description: 'Premium & investment properties',
-    icon: '💎'
-  }
+  { id: 'under5m', label: 'Under ₦5M', icon: '💰' },
+  { id: '5m-20m', label: '₦5M - ₦20M', icon: '🏠' },
+  { id: '20m-50m', label: '₦20M - ₦50M', icon: '🏢' },
+  { id: '50m-100m', label: '₦50M - ₦100M', icon: '🏰' },
+  { id: '100m+', label: '₦100M+', icon: '💎' }
 ]
 
 interface UserPreferencesProps {
@@ -107,6 +65,7 @@ interface UserPreferencesProps {
 export default function UserPreferences({ userId, onComplete }: UserPreferencesProps) {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
+  const firestore = useFirestore()
   const [preferences, setPreferences] = useState({
     locations: [] as string[],
     propertyTypes: [] as string[],
@@ -134,230 +93,172 @@ export default function UserPreferences({ userId, onComplete }: UserPreferencesP
   }
 
   const handleSubmit = async () => {
+    if (!firestore || !userId) return;
     setLoading(true)
-    
     try {
-      const db = getFirestore()
-      const userDocRef = doc(db, 'users', userId)
-
-      // Save preferences to Firebase directly from client
+      const userDocRef = doc(firestore, 'users', userId)
       await setDoc(userDocRef, {
         preferences,
         preferencesCompletedAt: new Date().toISOString()
       }, { merge: true })
 
-
-      // Mark preferences as set
       localStorage.setItem(`apexfind_preferences_${userId}`, 'true')
-      
-      // Call completion callback
-      if (onComplete) {
-        onComplete()
-      }
-      
+      if (onComplete) onComplete()
     } catch (error) {
       console.error('Error saving preferences:', error)
-      alert('Failed to save preferences. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  const getStepIllustration = () => {
-    switch(step) {
-      case 1: return LocationIllustration
-      case 2: return PropertyTypesIllustration
-      case 3: return BudgetIllustration
-      default: return LocationIllustration
-    }
-  }
-
-  const getStepTitle = () => {
-    switch(step) {
-      case 1: return 'Where in Nigeria are you looking?'
-      case 2: return 'What type of property interests you?'
-      case 3: return 'Set your budget & preferences'
-      default: return 'Customize Your Experience'
-    }
-  }
+  const illustrationId = step === 1 ? 'preferences-locations' : step === 2 ? 'preferences-types' : 'preferences-budget';
+  const illustration = PlaceHolderImages.find(img => img.id === illustrationId);
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-[#64B5F6]/10 via-white to-[#008751]/5 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col border border-gray-200">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+      <div className="bg-background rounded-[2rem] shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col border overflow-hidden animate-slideUp">
         {/* Header */}
-        <div className="p-8 border-b bg-gradient-to-r from-[#64B5F6]/5 to-white flex-shrink-0">
+        <div className="p-8 border-b bg-card flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#64B5F6] to-[#42A5F5] rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-xl">A</span>
+              <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
+                <span className="text-primary-foreground font-black text-xl">A</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Customize ApexFind</h1>
-                <p className="text-gray-600">Tell us what you're looking for in Nigeria</p>
+                <h1 className="text-2xl font-black text-foreground tracking-tight">Personalize ApexFind</h1>
+                <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Step {step} of 3</p>
               </div>
             </div>
             
-            <div className="text-right">
-              <div className="text-sm font-medium text-gray-500">Step {step} of 3</div>
-              <div className="flex gap-1 mt-2">
-                {[1, 2, 3].map((stepNumber) => (
-                  <div
-                    key={stepNumber}
-                    className={`w-8 h-2 rounded-full transition-all ${
-                      step >= stepNumber ? 'bg-[#64B5F6]' : 'bg-gray-200'
-                    }`}
-                  />
-                ))}
-              </div>
+            <div className="flex gap-1">
+              {[1, 2, 3].map((stepNumber) => (
+                <div
+                  key={stepNumber}
+                  className={cn(
+                    "w-10 h-2 rounded-full transition-all duration-500",
+                    step >= stepNumber ? "bg-primary" : "bg-muted"
+                  )}
+                />
+              ))}
             </div>
           </div>
         </div>
 
         {/* Main content */}
-        <div className="overflow-y-auto">
+        <div className="overflow-y-auto bg-background custom-scrollbar">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
             {/* Illustration side */}
-            <div className="relative">
-              <div className="sticky top-8">
-                <div className="relative h-64 lg:h-80 rounded-xl overflow-hidden bg-gradient-to-br from-[#64B5F6]/10 to-[#64B5F6]/5 p-8">
-                  <Image
-                    src={getStepIllustration()}
-                    alt={`Onboarding step ${step} illustration`}
-                    className="object-contain w-full h-full"
-                    priority
-                    fill
-                    sizes="(max-width: 1024px) 90vw, 50vw"
-                  />
-                </div>
-                
-                <div className="mt-8 space-y-4">
-                  <h3 className="text-xl font-bold text-gray-900">{getStepTitle()}</h3>
-                  <p className="text-gray-600">
-                    {step === 1 && 'Select cities to get personalized property recommendations'}
-                    {step === 2 && 'Choose property types to see relevant listings'}
-                    {step === 3 && 'Set your budget to find properties within your range'}
-                  </p>
-                  
-                  {step === 3 && (
-                    <div className="p-4 bg-gradient-to-r from-[#64B5F6]/10 to-[#008751]/10 rounded-lg border border-[#64B5F6]/20">
-                      <p className="text-sm text-gray-700">
-                        💡 <strong>Nigerian Market Insight:</strong> Lagos and Abuja prices are typically 
-                        20-40% higher than other states.
-                      </p>
-                    </div>
+            <div className="relative hidden lg:block">
+              <div className="sticky top-0">
+                <div className="relative h-[400px] rounded-[2rem] overflow-hidden bg-muted/30 p-4 border-2 border-dashed">
+                  {illustration && (
+                    <Image
+                      src={illustration.imageUrl}
+                      alt={illustration.description}
+                      data-ai-hint={illustration.imageHint}
+                      className="object-cover w-full h-full rounded-2xl"
+                      priority
+                      fill
+                    />
                   )}
+                </div>
+                <div className="mt-8 space-y-4 px-2">
+                  <h3 className="text-2xl font-black text-foreground">
+                    {step === 1 ? 'Location Targeting' : step === 2 ? 'Finding Your Style' : 'Market Positioning'}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {step === 1 && 'Select the cities where you want to focus your search. We will monitor these markets for you.'}
+                    {step === 2 && 'Choosing your preferred property types helps our AI curate a highly relevant list of options.'}
+                    {step === 3 && 'Define your budget boundaries to avoid mismatched listings and save valuable time.'}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Preferences side */}
+            {/* Selection side */}
             <div className="space-y-8">
-              {/* Step 1: Locations */}
               {step === 1 && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {NIGERIAN_LOCATIONS.map(location => (
-                      <button
-                        key={location.id}
-                        onClick={() => handleLocationToggle(location.id)}
-                        className={`p-6 rounded-xl border-2 transition-all text-left relative overflow-hidden group ${
-                          preferences.locations.includes(location.id)
-                            ? 'border-[#64B5F6] bg-gradient-to-r from-[#64B5F6]/5 to-transparent shadow-lg'
-                            : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
-                        }`}
-                      >
-                        {/* Selection indicator */}
-                        {preferences.locations.includes(location.id) && (
-                          <div className="absolute top-4 right-4 w-6 h-6 bg-[#64B5F6] rounded-full flex items-center justify-center">
-                            <Check size={14} className="text-white" />
-                          </div>
-                        )}
-                        
-                        {/* Gradient background */}
-                        <div className={`absolute inset-0 bg-gradient-to-br ${location.color} opacity-5 group-hover:opacity-10 transition-opacity`} />
-                        
-                        <div className="relative">
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-lg font-bold text-gray-900">{location.name}</span>
-                            <span className="text-2xl">
-                              {location.id === 'lagos' && '🌴'}
-                              {location.id === 'abuja' && '🏛️'}
-                              {location.id === 'rivers' && '⛽'}
-                              {location.id === 'oyo' && '📚'}
-                              {location.id === 'kano' && '🏺'}
-                              {location.id === 'delta' && '🛢️'}
-                            </span>
-                          </div>
-                          
-                          <p className="text-sm text-gray-600 mb-4">{location.description}</p>
-                          
-                          <div className="flex flex-wrap gap-2">
-                            {location.popular.map(area => (
-                              <span key={area} className="px-3 py-1 bg-gray-100 rounded-full text-sm font-medium">
-                                {area}
-                              </span>
-                            ))}
-                          </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {NIGERIAN_LOCATIONS.map(location => (
+                    <button
+                      key={location.id}
+                      onClick={() => handleLocationToggle(location.id)}
+                      className={cn(
+                        "p-6 rounded-2xl border-2 transition-all text-left relative overflow-hidden group",
+                        preferences.locations.includes(location.id)
+                          ? "border-primary bg-primary/5 shadow-md scale-[1.02]"
+                          : "border-border hover:border-muted-foreground/30 bg-card"
+                      )}
+                    >
+                      <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-lg font-black text-foreground">{location.name}</span>
+                          {preferences.locations.includes(location.id) && (
+                            <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-sm">
+                              <Check size={14} className="text-primary-foreground stroke-[3]" />
+                            </div>
+                          )}
                         </div>
-                      </button>
-                    ))}
-                  </div>
+                        <p className="text-xs text-muted-foreground font-medium mb-4">{location.description}</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {location.popular.map(area => (
+                            <span key={area} className="px-2 py-0.5 bg-muted rounded-md text-[10px] font-black uppercase tracking-tight">
+                              {area}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               )}
 
-              {/* Step 2: Property Types */}
               {step === 2 && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {PROPERTY_TYPES.map(type => (
-                      <button
-                        key={type.id}
-                        onClick={() => handlePropertyTypeToggle(type.id)}
-                        className={`p-6 rounded-xl border-2 transition-all text-center relative group ${
-                          preferences.propertyTypes.includes(type.id)
-                            ? 'border-[#64B5F6] bg-gradient-to-b from-[#64B5F6]/5 to-transparent shadow-lg scale-105'
-                            : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
-                        }`}
-                      >
-                        {preferences.propertyTypes.includes(type.id) && (
-                          <div className="absolute -top-2 -right-2 w-8 h-8 bg-[#64B5F6] rounded-full flex items-center justify-center shadow-lg">
-                            <Check size={16} className="text-white" />
-                          </div>
-                        )}
-                        
-                        <div className="text-4xl mb-4">{type.icon}</div>
-                        <span className="font-bold text-gray-900">{type.name}</span>
-                      </button>
-                    ))}
-                  </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {PROPERTY_TYPES.map(type => (
+                    <button
+                      key={type.id}
+                      onClick={() => handlePropertyTypeToggle(type.id)}
+                      className={cn(
+                        "p-8 rounded-2xl border-2 transition-all text-center relative group",
+                        preferences.propertyTypes.includes(type.id)
+                          ? "border-primary bg-primary/5 shadow-md scale-105"
+                          : "border-border hover:border-muted-foreground/30 bg-card"
+                      )}
+                    >
+                      <div className="text-4xl mb-4">{type.icon}</div>
+                      <span className="font-black text-foreground uppercase tracking-widest text-xs">{type.name}</span>
+                      {preferences.propertyTypes.includes(type.id) && (
+                        <div className="absolute top-3 right-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-sm">
+                          <Check size={14} className="text-primary-foreground stroke-[3]" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
                 </div>
               )}
 
-              {/* Step 3: Budget & Preferences */}
               {step === 3 && (
                 <div className="space-y-8">
-                  {/* Budget Range */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-gray-900">Select Your Budget Range</h3>
-                    <div className="space-y-3">
+                    <Label className="font-black text-sm uppercase tracking-widest text-muted-foreground">Select Budget Range</Label>
+                    <div className="grid grid-cols-1 gap-3">
                       {BUDGET_RANGES.map(range => (
                         <button
                           key={range.id}
                           onClick={() => setPreferences(prev => ({ ...prev, budgetRange: range.id }))}
-                          className={`w-full p-5 rounded-xl border-2 transition-all text-left flex items-center gap-4 ${
+                          className={cn(
+                            "w-full p-5 rounded-2xl border-2 transition-all text-left flex items-center gap-4",
                             preferences.budgetRange === range.id
-                              ? 'border-[#64B5F6] bg-gradient-to-r from-[#64B5F6]/5 to-transparent shadow-lg'
-                              : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
-                          }`}
+                              ? "border-primary bg-primary/5 shadow-md"
+                              : "border-border hover:border-muted-foreground/30 bg-card"
+                          )}
                         >
-                          <div className="text-3xl">{range.icon}</div>
-                          <div className="flex-1">
-                            <div className="font-bold text-gray-900 text-lg">{range.label}</div>
-                            <div className="text-sm text-gray-600">{range.description}</div>
-                          </div>
+                          <div className="text-2xl">{range.icon}</div>
+                          <span className="flex-1 font-black text-foreground">{range.label}</span>
                           {preferences.budgetRange === range.id && (
-                            <div className="w-6 h-6 bg-[#64B5F6] rounded-full flex items-center justify-center">
-                              <Check size={14} className="text-white" />
+                            <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-sm">
+                              <Check size={14} className="text-primary-foreground stroke-[3]" />
                             </div>
                           )}
                         </button>
@@ -365,109 +266,56 @@ export default function UserPreferences({ userId, onComplete }: UserPreferencesP
                     </div>
                   </div>
 
-                  {/* Alert Preferences */}
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between p-5 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-[#64B5F6]/10 rounded-lg flex items-center justify-center">
-                          <Bell className="text-[#64B5F6]" size={24} />
-                        </div>
-                        <div>
-                          <p className="font-bold text-gray-900">Property Alerts</p>
-                          <p className="text-sm text-gray-600">Get notified about new properties</p>
-                        </div>
+                  <div className="flex items-center justify-between p-6 rounded-2xl border-2 border-dashed bg-muted/20">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shadow-sm border border-primary/20">
+                        <Bell className="text-primary" size={24} />
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={preferences.savedSearches}
-                          onChange={(e) => setPreferences(prev => ({ ...prev, savedSearches: e.target.checked }))}
-                          className="sr-only peer"
-                        />
-                        <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#64B5F6]"></div>
-                      </label>
+                      <div>
+                        <p className="font-black text-foreground">Smart Alerts</p>
+                        <p className="text-xs font-medium text-muted-foreground">Real-time matching enabled</p>
+                      </div>
                     </div>
-
-                    {preferences.savedSearches && (
-                      <div className="p-5 rounded-xl border border-gray-200">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-10 h-10 bg-[#64B5F6]/10 rounded-lg flex items-center justify-center">
-                            <Bell className="text-[#64B5F6]" size={20} />
-                          </div>
-                          <div>
-                            <p className="font-bold text-gray-900">Alert Frequency</p>
-                            <p className="text-sm text-gray-600">How often to receive notifications</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          {['instant', 'daily', 'weekly'].map(freq => (
-                            <button
-                              key={freq}
-                              onClick={() => setPreferences(prev => ({ ...prev, alertFrequency: freq }))}
-                              className={`px-5 py-3 rounded-lg capitalize font-medium transition-all ${
-                                preferences.alertFrequency === freq
-                                  ? 'bg-[#64B5F6] text-white shadow-lg'
-                                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                              }`}
-                            >
-                              {freq}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <Check className="text-green-500 stroke-[4]" />
                   </div>
                 </div>
               )}
 
-              {/* Navigation buttons */}
+              {/* Navigation */}
               <div className="flex gap-4 pt-8 border-t">
                 {step > 1 && (
                   <button
                     onClick={() => setStep(step - 1)}
-                    className="px-8 py-4 border-2 border-gray-300 rounded-xl hover:bg-gray-50 font-semibold text-gray-700 transition-all"
+                    className="px-8 py-4 border-2 border-border rounded-xl hover:bg-muted font-black text-muted-foreground transition-all flex-1"
                   >
                     Back
                   </button>
                 )}
                 
                 <button
-                  onClick={() => {
-                    if (step < 3) {
-                      setStep(step + 1)
-                    } else {
-                      handleSubmit()
-                    }
-                  }}
+                  onClick={() => step < 3 ? setStep(step + 1) : handleSubmit()}
                   disabled={
                     (step === 1 && preferences.locations.length === 0) ||
                     (step === 2 && preferences.propertyTypes.length === 0) ||
                     (step === 3 && !preferences.budgetRange) ||
                     loading
                   }
-                  className="flex-1 px-8 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3 bg-gradient-to-r from-[#64B5F6] to-[#42A5F5] hover:from-[#42A5F5] hover:to-[#64B5F6] text-white shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-[2] px-8 py-4 rounded-xl font-black transition-all flex items-center justify-center gap-3 bg-primary text-primary-foreground shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Saving Preferences...
-                    </>
+                    <Loader2 className="w-6 h-6 animate-spin" />
                   ) : (
                     <>
-                      {step === 3 ? 'Complete Setup & View Properties' : 'Continue'}
+                      {step === 3 ? 'Finish Setup' : 'Continue'}
                       {step < 3 && <ArrowRight size={20} />}
                     </>
                   )}
                 </button>
               </div>
 
-              {/* Skip option */}
               {step === 1 && (
                 <div className="text-center">
-                  <button
-                    onClick={handleSubmit}
-                    className="text-[#64B5F6] hover:text-[#42A5F5] font-medium"
-                  >
+                  <button onClick={handleSubmit} className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
                     Skip preferences for now
                   </button>
                 </div>
