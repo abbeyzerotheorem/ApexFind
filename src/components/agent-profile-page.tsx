@@ -3,7 +3,7 @@
 import { notFound } from 'next/navigation';
 import { useDoc, useCollection, useFirestore, useUser } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
-import { Loader2, Mail, Phone, Star, ShieldCheck, Award, MessageSquare, Info } from 'lucide-react';
+import { Loader2, Mail, Phone, Star, ShieldCheck, Award, MessageSquare, Info, Globe } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,7 +61,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
             const conversationId = await getOrCreateConversation(
                 firestore,
                 { uid: user.uid, displayName: user.displayName, photoURL: user.photoURL },
-                { uid: agent.id, displayName: agent.displayName || null, photoURL: agent.photoURL || null }
+                { uid: agent.id, displayName: agent.displayName || agent.name || null, photoURL: agent.photoURL || agent.imageUrl || null }
             );
             router.push(`/messages?convoId=${conversationId}`);
         } catch (error) {
@@ -74,8 +74,6 @@ export default function AgentProfilePage({ id }: { id: string }) {
     const handleCallAgent = () => {
         if (agent?.phoneNumber) {
             window.location.href = `tel:${agent.phoneNumber}`;
-        } else {
-            handleContactAgent();
         }
     };
 
@@ -90,7 +88,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
 
     if (!agent) return notFound();
     
-    const aboutText = agent.about || `A seasoned professional with ${agent.experience || 0} years of experience in the Nigerian real estate market, ${agent.displayName} is dedicated to helping clients find their perfect home. Specializing in ${(agent.specialties || []).join(', ') || 'Residential Real Estate'}, they bring a wealth of local knowledge and a commitment to transparent transactions.`;
+    const aboutText = agent.about || `A dedicated real estate professional with ${agent.experience || 0} years of expertise in the Nigerian property market. ${agent.displayName || agent.name} specializes in ${(agent.specialties || []).join(', ') || 'Residential Real Estate'} and is committed to providing transparent, data-driven advice to every client.`;
 
     return (
         <div className="flex min-h-screen flex-col bg-background py-8 sm:py-12">
@@ -98,15 +96,15 @@ export default function AgentProfilePage({ id }: { id: string }) {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     {/* Left Column: Profile Card */}
                     <div className="lg:col-span-1 space-y-6">
-                        <Card className="sticky top-24 overflow-hidden border-2 shadow-sm">
+                        <Card className="sticky top-24 overflow-hidden border shadow-sm">
                              <CardContent className="p-8 text-center bg-muted/5">
-                                <Avatar className="h-32 w-32 mx-auto mb-6 border-4 border-background shadow-xl ring-2 ring-primary/20">
-                                    <AvatarImage src={agent.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${agent.displayName || 'A'}`} alt={agent.displayName || 'Agent'} />
-                                    <AvatarFallback className="text-3xl font-bold">{(agent.displayName || 'A').charAt(0)}</AvatarFallback>
+                                <Avatar className="h-32 w-32 mx-auto mb-6 border-4 border-background shadow-xl">
+                                    <AvatarImage src={agent.photoURL || agent.imageUrl || `https://api.dicebear.com/8.x/initials/svg?seed=${agent.displayName || agent.name || 'A'}`} alt={agent.displayName || 'Agent'} className="object-cover" />
+                                    <AvatarFallback className="text-3xl font-bold">{(agent.displayName || agent.name || 'A').charAt(0)}</AvatarFallback>
                                 </Avatar>
-                                <h1 className="text-2xl font-bold">{agent.displayName}</h1>
+                                <h1 className="text-2xl font-bold">{agent.displayName || agent.name}</h1>
                                 <p className="text-primary font-bold mt-1 uppercase text-xs tracking-widest">{agent.title || 'Real Estate Consultant'}</p>
-                                <p className="text-muted-foreground text-sm mt-1">{agent.company || 'ApexFind Realty'}</p>
+                                <p className="text-muted-foreground text-sm mt-1">{agent.company || 'ApexFind Reality'}</p>
                                 
                                 <div className="mt-4 flex items-center justify-center gap-1.5 py-2 px-4 bg-yellow-50 text-yellow-800 rounded-full w-fit mx-auto border border-yellow-100 shadow-sm">
                                     <Star className="h-4 w-4 fill-current" />
@@ -121,13 +119,15 @@ export default function AgentProfilePage({ id }: { id: string }) {
                                     </Button>
                                     <div className="grid grid-cols-2 gap-2">
                                         <Button variant="outline" className="h-11 font-semibold" asChild>
-                                            <a href={`mailto:${agent.email || ''}?subject=Inquiry via ApexFind Profile`}>
+                                            <a href={`mailto:${agent.email || ''}?subject=Inquiry from ApexFind Profile`}>
                                                 <Mail className="mr-2 h-4 w-4" /> Email
                                             </a>
                                         </Button>
-                                        <Button variant="outline" className="h-11 font-semibold" onClick={handleCallAgent}>
-                                            <Phone className="mr-2 h-4 w-4" /> Call
-                                        </Button>
+                                        {agent.phoneNumber && (
+                                            <Button variant="outline" className="h-11 font-semibold" onClick={handleCallAgent}>
+                                                <Phone className="mr-2 h-4 w-4" /> Call
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
                             </CardContent>
@@ -144,11 +144,11 @@ export default function AgentProfilePage({ id }: { id: string }) {
                         </Card>
 
                         {/* Professional Verification Card */}
-                        <Card className="border-2 shadow-sm">
+                        <Card className="border shadow-sm">
                             <CardHeader className="border-b bg-muted/5">
-                                <CardTitle className="text-lg flex items-center gap-2">
+                                <CardTitle className="text-lg flex items-center gap-2 font-bold">
                                     <ShieldCheck className="h-5 w-5 text-primary" />
-                                    Vetted Credentials
+                                    Professional Trust
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-6 space-y-6">
@@ -163,12 +163,12 @@ export default function AgentProfilePage({ id }: { id: string }) {
                                                 <span className="font-mono font-bold text-sm">{agent.licenseNumber}</span>
                                             </div>
                                         </div>
-                                        <Badge className="bg-green-600 text-white border-none font-bold">Verified</Badge>
+                                        <Badge className="bg-green-600 text-white border-none font-bold">Vetted</Badge>
                                     </div>
                                 ) : (
                                     <div className="p-4 bg-muted/30 rounded-xl text-sm text-muted-foreground flex items-center gap-3">
                                         <Info className="h-4 w-4 shrink-0" />
-                                        <span>License verification currently pending.</span>
+                                        <span>License verification currently in progress.</span>
                                     </div>
                                 )}
 
@@ -191,7 +191,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
                     {/* Right Column: Content */}
                     <div className="lg:col-span-2 space-y-12">
                         <section>
-                            <h2 className="text-3xl font-extrabold mb-6">Professional Biography</h2>
+                            <h2 className="text-3xl font-extrabold mb-6">About the Agent</h2>
                             <p className="text-muted-foreground text-lg leading-relaxed bg-white p-8 rounded-2xl border shadow-sm">
                                 {aboutText}
                             </p>
@@ -208,7 +208,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
                                 </div>
                                 <div className="space-y-3">
                                     <p className="text-xs text-muted-foreground uppercase font-black tracking-widest flex items-center gap-2">
-                                        <GlobeIcon className="h-4 w-4 text-primary" /> Spoken Languages
+                                        <Globe className="h-4 w-4 text-primary" /> Spoken Languages
                                     </p>
                                     <p className="text-lg font-bold text-foreground">
                                         {(agent.languages && agent.languages.length > 0 ? agent.languages : ['English']).join(' • ')}
@@ -219,8 +219,8 @@ export default function AgentProfilePage({ id }: { id: string }) {
 
                         <section className="pt-8 border-t">
                             <div className="flex items-center justify-between mb-8">
-                                <h2 className="text-3xl font-extrabold">Active Portfolio</h2>
-                                <Badge variant="outline" className="text-lg px-4 h-9 font-black border-2 bg-white">{properties?.length || 0}</Badge>
+                                <h2 className="text-3xl font-extrabold">Active Listings</h2>
+                                <Badge variant="outline" className="text-lg px-4 h-9 font-black border-2 bg-white shadow-sm">{properties?.length || 0}</Badge>
                             </div>
                              <div className="mt-6">
                                 {propertiesLoading ? (
@@ -238,7 +238,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
                                         <div className="text-center py-20 bg-muted/20 rounded-2xl border-2 border-dashed">
                                             <Info className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-30" />
                                             <h3 className="text-xl font-bold text-muted-foreground">No active listings</h3>
-                                            <p className="text-sm text-muted-foreground/70 mt-1">Check back soon for new properties from this professional.</p>
+                                            <p className="text-sm text-muted-foreground/70 mt-1">Check back soon for new property opportunities from this agent.</p>
                                         </div>
                                     )
                                 )}
@@ -246,12 +246,12 @@ export default function AgentProfilePage({ id }: { id: string }) {
                         </section>
 
                         <section className="pt-8 border-t">
-                             <h2 className="text-3xl font-extrabold mb-8">Verified Reviews</h2>
+                             <h2 className="text-3xl font-extrabold mb-8">Client Success Stories</h2>
                               <div className="text-center py-20 bg-primary/5 rounded-2xl border border-primary/10">
                                     <Star className="mx-auto h-12 w-12 text-primary opacity-20 mb-4" />
-                                    <h3 className="text-xl font-bold">No reviews yet</h3>
+                                    <h3 className="text-xl font-bold">Building a Reputation</h3>
                                     <p className="text-muted-foreground mt-2 max-w-sm mx-auto">
-                                        This agent is building their reputation on ApexFind. Be the first to share your experience after your tour!
+                                        As this professional builds their client history on ApexFind, verified reviews will appear here. Be the first to share your experience!
                                     </p>
                                 </div>
                         </section>
@@ -264,7 +264,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Sign In to Connect</AlertDialogTitle>
                   <AlertDialogDescription>
-                    To message this agent directly and track your inquiries, you need to have an active ApexFind account.
+                    To message this agent directly and manage your property inquiries, you need to have an active ApexFind account.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -275,25 +275,4 @@ export default function AgentProfilePage({ id }: { id: string }) {
             </AlertDialog>
         </div>
     );
-}
-
-function GlobeIcon(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="2" y1="12" x2="22" y2="12" />
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-        </svg>
-    )
 }
