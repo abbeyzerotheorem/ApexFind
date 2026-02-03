@@ -28,7 +28,7 @@ const SPECIALTIES = ["Luxury Homes", "First-time Buyers", "Commercial", "Rentals
 export default function AgentSearchPage() {
     const firestore = useFirestore();
     const { user } = useUser();
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = setSearchTerm('');
     const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
     const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
     
@@ -119,7 +119,7 @@ export default function AgentSearchPage() {
                             <DropdownMenuContent className="w-56" align="end">
                                 <DropdownMenuLabel>Filter by Expertise</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                {SPECIALITIES.map(spec => (
+                                {SPECIALTIES.map(spec => (
                                     <DropdownMenuCheckboxItem 
                                         key={spec}
                                         checked={selectedSpecialties.includes(spec)}
