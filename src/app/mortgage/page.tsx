@@ -63,8 +63,8 @@ export default function MortgagePage() {
     });
     
     const paymentBreakdownData = useMemo(() => [
-        { name: 'Principal', value: result?.loanAmount > 0 ? result.loanAmount : 0, fill: 'hsl(var(--primary))' },
-        { name: 'Total Interest', value: result?.totalInterest > 0 ? result.totalInterest : 0, fill: 'hsl(var(--accent))' },
+        { name: 'Principal', value: (result?.loanAmount > 0 ? result.loanAmount : 0) || 0, fill: 'hsl(var(--primary))' },
+        { name: 'Total Interest', value: (result?.totalInterest > 0 ? result.totalInterest : 0) || 0, fill: 'hsl(var(--accent))' },
     ], [result]);
 
     const handlePriceInputChange = (val: string) => {

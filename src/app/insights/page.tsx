@@ -7,13 +7,12 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 
 import { PropertyCard } from "@/components/property-card";
 import AgentPromotion from "@/components/agent-promotion";
 import { Utensils, GraduationCap, TrainFront, Wallet, Info, TrendingUp, MapPin, Search, ArrowUpRight } from "lucide-react";
-import Image from "next/image";
 import Link from 'next/link';
 import AutocompleteSearch from "@/components/autocomplete-search";
 import allStatesWithLgas from "@/jsons/nigeria-states.json";
 import { formatNaira, formatNairaShort } from "@/lib/naira-formatter";
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, where, limit } from 'firebase/firestore';
+import { collection, query, where, limit, or } from 'firebase/firestore';
 import type { Property } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -38,9 +37,13 @@ export default function InsightsPage() {
 
     const featuredPropertiesQuery = useMemo(() => {
         if (!firestore) return null;
+        // Use an OR query to match either city or state, making results feel more "active"
         return query(
             collection(firestore, 'properties'),
-            where('city', '==', displayLocation),
+            or(
+                where('city', '==', displayLocation),
+                where('state', '==', displayLocation)
+            ),
             limit(6)
         );
     }, [firestore, displayLocation]);
@@ -65,7 +68,7 @@ export default function InsightsPage() {
         }
     };
 
-    const isLagos = displayLocation.toLowerCase() === 'lagos' || displayLocation.toLowerCase() === 'lekki' || displayLocation.toLowerCase() === 'ikeja';
+    const isMajorHub = ['Lagos', 'Abuja', 'Rivers', 'Port Harcourt', 'Ikeja', 'Lekki'].includes(displayLocation);
 
     return (
         <div className="flex min-h-screen flex-col bg-background">
@@ -116,26 +119,26 @@ export default function InsightsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <MetricCard 
                         label="Median List Price" 
-                        value={isLagos ? formatNaira(155000000) : "Benchmarking"} 
-                        trend={isLagos ? "+2.5% YoY" : "Available on Request"} 
+                        value={isMajorHub ? formatNaira(155000000) : "Benchmarking"} 
+                        trend={isMajorHub ? "+2.5% YoY" : "Aggregating"} 
                         trendUp={true} 
                     />
                     <MetricCard 
-                        label="Price per Sqft" 
-                        value={isLagos ? formatNaira(450000) : "Benchmarking"} 
-                        trend={isLagos ? "+5.1% YoY" : "Stable"} 
+                        label="Price per m²" 
+                        value={isMajorHub ? formatNaira(450000) : "Benchmarking"} 
+                        trend={isMajorHub ? "+5.1% YoY" : "Stable"} 
                         trendUp={true} 
                     />
                     <MetricCard 
                         label="Avg. Days on Market" 
-                        value={isLagos ? "85 Days" : "90+ Days"} 
-                        trend={isLagos ? "-5 days YoY" : "Average"} 
+                        value={isMajorHub ? "85 Days" : "Calculating"} 
+                        trend={isMajorHub ? "-5 days YoY" : "Normal"} 
                         trendUp={true} 
                     />
                     <MetricCard 
                         label="Active Inventory" 
-                        value={isLagos ? "1,250+" : "Tracking..."} 
-                        trend={isLagos ? "+12% YoY" : "Growing"} 
+                        value={isMajorHub ? "1,250+" : "Scanning..."} 
+                        trend={isMajorHub ? "+12% YoY" : "Growing"} 
                         trendUp={true} 
                     />
                 </div>
@@ -186,36 +189,36 @@ export default function InsightsPage() {
                 </Card>
                 
                 {/* Lifestyle Spotlight */}
-                {isLagos ? (
+                {isMajorHub ? (
                     <section className="mt-20 bg-secondary/30 py-16 px-8 rounded-[2rem] border-2 border-dashed">
                         <div className="text-center mb-12">
                             <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
                                 Life in {displayLocation}
                             </h2>
                             <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground leading-relaxed">
-                                Discover why {displayLocation} remains the top destination for property investment and luxury living in West Africa.
+                                Discover why {displayLocation} remains a top destination for property investment and luxury living in West Africa.
                             </p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
                             <LifestyleFeature 
                                 icon={Utensils} 
                                 title="Vibrant Lifestyle" 
-                                desc={`World-class restaurants, open-air markets, and a globally recognized arts and music scene define ${displayLocation}.`}
+                                desc={`World-class restaurants and a globally recognized arts scene define the ${displayLocation} experience.`}
                             />
                             <LifestyleFeature 
                                 icon={Wallet} 
                                 title="Cost of Living" 
-                                desc={`${displayLocation} offers diverse housing tiers for all income levels, from prime luxury estates to emerging suburban areas.`}
+                                desc={`${displayLocation} offers diverse housing tiers for all income levels, from luxury estates to emerging hubs.`}
                             />
                             <LifestyleFeature 
                                 icon={GraduationCap} 
                                 title="Top Schools" 
-                                desc="Home to elite international primary and secondary schools with British and American curricula."
+                                desc="Home to elite international primary and secondary schools with globally recognized curricula."
                             />
                             <LifestyleFeature 
                                 icon={TrainFront} 
                                 title="Infrastructure" 
-                                desc="Major transport upgrades, including state-of-the-art rail systems, are transforming the urban commute."
+                                desc="Major transport upgrades, including modern rail systems, are transforming the urban commute."
                             />
                         </div>
                     </section>

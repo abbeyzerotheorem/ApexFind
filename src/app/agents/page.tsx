@@ -75,7 +75,7 @@ export default function AgentSearchPage() {
                     </p>
                 </div>
 
-                <div className="mb-8 flex flex-col lg:flex-row gap-4">
+                <div className="mb-8 flex flex-col lg:row gap-4">
                     <div className="relative flex-grow">
                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
                         <Input 
