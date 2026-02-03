@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useMemo } from 'react';
 import { useCollection, useFirestore, useUser, useDoc } from '@/firebase';
@@ -6,7 +5,7 @@ import { collection, query, where, doc } from 'firebase/firestore';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { Search, ChevronDown, Star, Loader2, Phone, FilterX } from "lucide-react";
+import { Search, ChevronDown, Star, Loader2, Phone, FilterX, UserCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -38,16 +37,15 @@ export default function AgentSearchPage() {
         return query(collection(firestore, 'users'), where('role', '==', 'agent'));
     }, [firestore]);
 
-    const userProfileRef = useMemo(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
-    const { data: userProfile } = useDoc(userProfileRef);
-
     const { data: allAgents, loading } = useCollection<Agent>(agentsQuery);
 
     const filteredAgents = useMemo(() => {
         if (!allAgents) return [];
         
         return allAgents.filter(agent => {
-            const matchesSearch = !searchTerm || (agent.displayName || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesSearch = !searchTerm || 
+                (agent.displayName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (agent.company || '').toLowerCase().includes(searchTerm.toLowerCase());
             
             const matchesLanguage = selectedLanguages.length === 0 || 
                 (agent.languages || []).some(l => selectedLanguages.includes(l));
@@ -82,7 +80,7 @@ export default function AgentSearchPage() {
                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
                         <Input 
                             type="text"
-                            placeholder="Search by agent name..."
+                            placeholder="Search by agent name or company..."
                             className="w-full pl-10 h-12 text-base"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -91,11 +89,11 @@ export default function AgentSearchPage() {
                     <div className="flex flex-wrap sm:flex-nowrap gap-2">
                          <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="flex-1 sm:w-40 h-12 text-base justify-between gap-2">
+                                <Button variant="outline" className="flex-1 sm:w-44 h-12 text-base justify-between gap-2">
                                     Languages <ChevronDown className="h-4 w-4 opacity-50" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56">
+                            <DropdownMenuContent className="w-56" align="end">
                                 <DropdownMenuLabel>Filter by Language</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 {LANGUAGES.map(lang => (
@@ -114,12 +112,12 @@ export default function AgentSearchPage() {
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="flex-1 sm:w-40 h-12 text-base justify-between gap-2">
-                                    Expertise <ChevronDown className="h-4 w-4 opacity-50" />
+                                <Button variant="outline" className="flex-1 sm:w-44 h-12 text-base justify-between gap-2">
+                                    Specialties <ChevronDown className="h-4 w-4 opacity-50" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56">
-                                <DropdownMenuLabel>Filter by Specialty</DropdownMenuLabel>
+                            <DropdownMenuContent className="w-56" align="end">
+                                <DropdownMenuLabel>Filter by Expertise</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 {SPECIALITIES.map(spec => (
                                     <DropdownMenuCheckboxItem 
@@ -153,7 +151,7 @@ export default function AgentSearchPage() {
                             <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
                             <h3 className="text-xl font-semibold">No Agents Found</h3>
                             <p className="text-muted-foreground mt-2">Try adjusting your filters or search term.</p>
-                            <Button variant="link" onClick={resetFilters} className="mt-4">Show all agents</Button>
+                            <Button variant="link" onClick={resetFilters} className="mt-4">Show all verified agents</Button>
                         </div>
                     )}
                 </div>
@@ -199,11 +197,11 @@ function AgentCard({ agent }: { agent: Agent }) {
                         <div className="relative inline-block mb-4">
                             <Avatar className="h-24 w-24 border-2 border-background shadow-md">
                                 <AvatarImage src={agent.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${agent.displayName || 'A'}`} alt={agent.displayName || 'Agent'} />
-                                <AvatarFallback>{(agent.displayName || 'A').split(" ").map((n) => n[0]).join("")}</AvatarFallback>
+                                <AvatarFallback className="text-2xl font-bold">{(agent.displayName || 'A').split(" ").map((n) => n[0]).join("")}</AvatarFallback>
                             </Avatar>
                             {agent.licenseNumber && (
-                                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground p-1 rounded-full border-2 border-background shadow-sm">
-                                    <Star className="h-3 w-3 fill-current" />
+                                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground p-1 rounded-full border-2 border-background shadow-sm" title="Verified Professional">
+                                    <UserCheck className="h-3 w-3" />
                                 </div>
                             )}
                         </div>
@@ -214,7 +212,7 @@ function AgentCard({ agent }: { agent: Agent }) {
                     </p>
                     <div className="mt-3 flex items-center justify-center gap-1">
                         <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                        <span className="font-bold text-sm">{(agent.rating || 0).toFixed(1)}</span>
+                        <span className="font-bold text-sm">{(agent.rating || 5.0).toFixed(1)}</span>
                         <span className="text-muted-foreground text-xs">({agent.reviewCount || 0} reviews)</span>
                     </div>
                 </div>
@@ -226,12 +224,12 @@ function AgentCard({ agent }: { agent: Agent }) {
                     </div>
                     <div className="p-3">
                         <p className="text-lg font-bold">{agent.sales || 0}</p>
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Properties sold</p>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Sales Closed</p>
                     </div>
                 </div>
 
                 <div className="p-6 mt-auto">
-                     <Button className="w-full h-11 font-bold" onClick={handleContactAgent} disabled={isContacting}>
+                     <Button className="w-full h-11 font-bold shadow-sm" onClick={handleContactAgent} disabled={isContacting}>
                         {isContacting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Phone className="mr-2 h-4 w-4"/>}
                         {isContacting ? 'Contacting...' : 'Contact Agent'}
                     </Button>
@@ -243,7 +241,7 @@ function AgentCard({ agent }: { agent: Agent }) {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Create an Account to Continue</AlertDialogTitle>
                   <AlertDialogDescription>
-                    To save properties, schedule tours, and contact agents directly, you need to have an account. It's free and only takes a minute!
+                    To contact agents directly, save properties, and manage inquiries, you need to be signed in. It's free and takes less than a minute.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

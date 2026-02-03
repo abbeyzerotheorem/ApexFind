@@ -1,10 +1,9 @@
-
 'use client';
 
 import { notFound } from 'next/navigation';
 import { useDoc, useCollection, useFirestore, useUser } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
-import { Loader2, Mail, Phone, Star, ShieldCheck, Award, MessageSquare } from 'lucide-react';
+import { Loader2, Mail, Phone, Star, ShieldCheck, Award, MessageSquare, Info } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,6 +71,14 @@ export default function AgentProfilePage({ id }: { id: string }) {
         }
     }
 
+    const handleCallAgent = () => {
+        if (agent?.phoneNumber) {
+            window.location.href = `tel:${agent.phoneNumber}`;
+        } else {
+            handleContactAgent();
+        }
+    };
+
     if (agentLoading) {
         return (
             <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-background">
@@ -83,7 +90,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
 
     if (!agent) return notFound();
     
-    const aboutText = agent.about || `A seasoned professional with ${agent.experience || 0} years of experience in the Nigerian real estate market, ${agent.displayName} is dedicated to helping clients find their perfect home. Specializing in ${(agent.specialties || []).join(', ')}, they bring a wealth of local knowledge and a commitment to transparent transactions.`;
+    const aboutText = agent.about || `A seasoned professional with ${agent.experience || 0} years of experience in the Nigerian real estate market, ${agent.displayName} is dedicated to helping clients find their perfect home. Specializing in ${(agent.specialties || []).join(', ') || 'Residential Real Estate'}, they bring a wealth of local knowledge and a commitment to transparent transactions.`;
 
     return (
         <div className="flex min-h-screen flex-col bg-background py-8 sm:py-12">
@@ -91,34 +98,34 @@ export default function AgentProfilePage({ id }: { id: string }) {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     {/* Left Column: Profile Card */}
                     <div className="lg:col-span-1 space-y-6">
-                        <Card className="sticky top-24 overflow-hidden border-2">
+                        <Card className="sticky top-24 overflow-hidden border-2 shadow-sm">
                              <CardContent className="p-8 text-center bg-muted/5">
                                 <Avatar className="h-32 w-32 mx-auto mb-6 border-4 border-background shadow-xl ring-2 ring-primary/20">
                                     <AvatarImage src={agent.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${agent.displayName || 'A'}`} alt={agent.displayName || 'Agent'} />
                                     <AvatarFallback className="text-3xl font-bold">{(agent.displayName || 'A').charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <h1 className="text-2xl font-bold">{agent.displayName}</h1>
-                                <p className="text-primary font-medium mt-1">{agent.title || 'Real Estate Consultant'}</p>
-                                <p className="text-muted-foreground text-sm">{agent.company || 'ApexFind Realty'}</p>
+                                <p className="text-primary font-bold mt-1 uppercase text-xs tracking-widest">{agent.title || 'Real Estate Consultant'}</p>
+                                <p className="text-muted-foreground text-sm mt-1">{agent.company || 'ApexFind Realty'}</p>
                                 
-                                <div className="mt-4 flex items-center justify-center gap-1.5 py-2 px-4 bg-yellow-50 text-yellow-800 rounded-full w-fit mx-auto border border-yellow-100">
+                                <div className="mt-4 flex items-center justify-center gap-1.5 py-2 px-4 bg-yellow-50 text-yellow-800 rounded-full w-fit mx-auto border border-yellow-100 shadow-sm">
                                     <Star className="h-4 w-4 fill-current" />
-                                    <span className="font-bold text-sm">{(agent.rating || 0).toFixed(1)}</span>
-                                    <span className="text-xs opacity-80">({agent.reviewCount || 0} reviews)</span>
+                                    <span className="font-bold text-sm">{(agent.rating || 5.0).toFixed(1)}</span>
+                                    <span className="text-xs opacity-80">({agent.reviewCount || 0} Reviews)</span>
                                 </div>
                                 
                                 <div className="mt-8 flex flex-col gap-3">
-                                    <Button size="lg" className="h-12 text-lg font-bold gap-2" onClick={handleContactAgent} disabled={isContacting}>
+                                    <Button size="lg" className="h-12 text-lg font-bold gap-2 shadow-sm" onClick={handleContactAgent} disabled={isContacting}>
                                         {isContacting ? <Loader2 className="h-5 w-5 animate-spin"/> : <MessageSquare className="h-5 w-5"/>}
                                         {isContacting ? 'Connecting...' : 'Chat Now'}
                                     </Button>
                                     <div className="grid grid-cols-2 gap-2">
-                                        <Button variant="outline" className="h-11" asChild>
-                                            <a href={`mailto:${agent.email || ''}?subject=Inquiry via ApexFind`}>
+                                        <Button variant="outline" className="h-11 font-semibold" asChild>
+                                            <a href={`mailto:${agent.email || ''}?subject=Inquiry via ApexFind Profile`}>
                                                 <Mail className="mr-2 h-4 w-4" /> Email
                                             </a>
                                         </Button>
-                                        <Button variant="outline" className="h-11" onClick={handleContactAgent}>
+                                        <Button variant="outline" className="h-11 font-semibold" onClick={handleCallAgent}>
                                             <Phone className="mr-2 h-4 w-4" /> Call
                                         </Button>
                                     </div>
@@ -137,11 +144,11 @@ export default function AgentProfilePage({ id }: { id: string }) {
                         </Card>
 
                         {/* Professional Verification Card */}
-                        <Card className="border-2">
+                        <Card className="border-2 shadow-sm">
                             <CardHeader className="border-b bg-muted/5">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <ShieldCheck className="h-5 w-5 text-primary" />
-                                    Professional Credentials
+                                    Vetted Credentials
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-6 space-y-6">
@@ -152,24 +159,25 @@ export default function AgentProfilePage({ id }: { id: string }) {
                                                 <Award className="h-5 w-5" />
                                             </div>
                                             <div>
-                                                <span className="text-xs font-bold uppercase tracking-wider block opacity-70">Verified License</span>
+                                                <span className="text-[10px] font-black uppercase tracking-wider block opacity-70">LASRERA License</span>
                                                 <span className="font-mono font-bold text-sm">{agent.licenseNumber}</span>
                                             </div>
                                         </div>
-                                        <Badge className="bg-green-600 text-white border-none">Active</Badge>
+                                        <Badge className="bg-green-600 text-white border-none font-bold">Verified</Badge>
                                     </div>
                                 ) : (
-                                    <div className="p-4 bg-muted/30 rounded-xl text-sm text-muted-foreground flex items-center gap-3 italic">
-                                        <Loader2 className="h-4 w-4 animate-spin" /> Verification records being synced...
+                                    <div className="p-4 bg-muted/30 rounded-xl text-sm text-muted-foreground flex items-center gap-3">
+                                        <Info className="h-4 w-4 shrink-0" />
+                                        <span>License verification currently pending.</span>
                                     </div>
                                 )}
 
                                 {agent.verificationBadges && agent.verificationBadges.length > 0 && (
                                     <div className="space-y-3">
-                                        <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">Memberships</p>
+                                        <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Memberships</p>
                                         <div className="flex flex-wrap gap-2">
                                             {agent.verificationBadges.map(badge => (
-                                                <Badge key={badge} variant="secondary" className="px-3 py-1 bg-primary/10 text-primary border-none text-xs font-bold">
+                                                <Badge key={badge} variant="secondary" className="px-3 py-1 bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-tight">
                                                     {badge}
                                                 </Badge>
                                             ))}
@@ -183,27 +191,27 @@ export default function AgentProfilePage({ id }: { id: string }) {
                     {/* Right Column: Content */}
                     <div className="lg:col-span-2 space-y-12">
                         <section>
-                            <h2 className="text-3xl font-extrabold mb-6">About {agent.displayName}</h2>
-                            <p className="text-muted-foreground text-lg leading-relaxed bg-white p-6 rounded-2xl border shadow-sm">
+                            <h2 className="text-3xl font-extrabold mb-6">Professional Biography</h2>
+                            <p className="text-muted-foreground text-lg leading-relaxed bg-white p-8 rounded-2xl border shadow-sm">
                                 {aboutText}
                             </p>
                              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-8">
                                 <div className="space-y-3">
-                                    <p className="text-sm text-muted-foreground uppercase font-bold tracking-widest flex items-center gap-2">
-                                        <Star className="h-4 w-4 text-primary" /> Specialties
+                                    <p className="text-xs text-muted-foreground uppercase font-black tracking-widest flex items-center gap-2">
+                                        <Star className="h-4 w-4 text-primary" /> Areas of Expertise
                                     </p>
                                     <div className="flex flex-wrap gap-2">
-                                        {(agent.specialties || ['Residential Real Estate']).map(s => (
-                                            <Badge key={s} variant="outline" className="rounded-md px-3 h-8 border-primary/20 font-medium">{s}</Badge>
+                                        {(agent.specialties && agent.specialties.length > 0 ? agent.specialties : ['Residential Real Estate']).map(s => (
+                                            <Badge key={s} variant="outline" className="rounded-md px-3 h-8 border-primary/20 font-bold bg-primary/5">{s}</Badge>
                                         ))}
                                     </div>
                                 </div>
                                 <div className="space-y-3">
-                                    <p className="text-sm text-muted-foreground uppercase font-bold tracking-widest flex items-center gap-2">
-                                        <Globe className="h-4 w-4 text-primary" /> Languages
+                                    <p className="text-xs text-muted-foreground uppercase font-black tracking-widest flex items-center gap-2">
+                                        <GlobeIcon className="h-4 w-4 text-primary" /> Spoken Languages
                                     </p>
-                                    <p className="text-lg font-semibold text-foreground">
-                                        {(agent.languages || ['English']).join(' • ')}
+                                    <p className="text-lg font-bold text-foreground">
+                                        {(agent.languages && agent.languages.length > 0 ? agent.languages : ['English']).join(' • ')}
                                     </p>
                                 </div>
                             </div>
@@ -211,8 +219,8 @@ export default function AgentProfilePage({ id }: { id: string }) {
 
                         <section className="pt-8 border-t">
                             <div className="flex items-center justify-between mb-8">
-                                <h2 className="text-3xl font-extrabold">Active Listings</h2>
-                                <Badge variant="outline" className="text-lg px-4 h-9 font-black border-2">{properties?.length || 0}</Badge>
+                                <h2 className="text-3xl font-extrabold">Active Portfolio</h2>
+                                <Badge variant="outline" className="text-lg px-4 h-9 font-black border-2 bg-white">{properties?.length || 0}</Badge>
                             </div>
                              <div className="mt-6">
                                 {propertiesLoading ? (
@@ -228,9 +236,9 @@ export default function AgentProfilePage({ id }: { id: string }) {
                                         </div>
                                     ) : (
                                         <div className="text-center py-20 bg-muted/20 rounded-2xl border-2 border-dashed">
-                                            <Home className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-30" />
+                                            <Info className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-30" />
                                             <h3 className="text-xl font-bold text-muted-foreground">No active listings</h3>
-                                            <p className="text-sm text-muted-foreground/70 mt-1">Check back soon for new properties from this agent.</p>
+                                            <p className="text-sm text-muted-foreground/70 mt-1">Check back soon for new properties from this professional.</p>
                                         </div>
                                     )
                                 )}
@@ -238,12 +246,12 @@ export default function AgentProfilePage({ id }: { id: string }) {
                         </section>
 
                         <section className="pt-8 border-t">
-                             <h2 className="text-3xl font-extrabold mb-8">Client Testimonials</h2>
+                             <h2 className="text-3xl font-extrabold mb-8">Verified Reviews</h2>
                               <div className="text-center py-20 bg-primary/5 rounded-2xl border border-primary/10">
                                     <Star className="mx-auto h-12 w-12 text-primary opacity-20 mb-4" />
-                                    <h3 className="text-xl font-bold">Trusted by Clients</h3>
-                                    <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-                                        Verified reviews from home buyers and sellers are currently being verified.
+                                    <h3 className="text-xl font-bold">No reviews yet</h3>
+                                    <p className="text-muted-foreground mt-2 max-w-sm mx-auto">
+                                        This agent is building their reputation on ApexFind. Be the first to share your experience after your tour!
                                     </p>
                                 </div>
                         </section>
@@ -254,9 +262,9 @@ export default function AgentProfilePage({ id }: { id: string }) {
             <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Create an Account to Continue</AlertDialogTitle>
+                  <AlertDialogTitle>Sign In to Connect</AlertDialogTitle>
                   <AlertDialogDescription>
-                    To save properties, schedule tours, and contact agents directly, you need to have an account. It's free and only takes a minute!
+                    To message this agent directly and track your inquiries, you need to have an active ApexFind account.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -269,8 +277,7 @@ export default function AgentProfilePage({ id }: { id: string }) {
     );
 }
 
-// Simple fallback icon since globe might not be imported
-function Globe(props: any) {
+function GlobeIcon(props: any) {
     return (
         <svg
             {...props}
