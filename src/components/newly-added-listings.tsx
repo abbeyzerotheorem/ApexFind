@@ -18,21 +18,7 @@ export default function NewlyAddedListings() {
       limit(3)
     );
   }, [firestore]);
-  const { data: properties, loading: propertiesLoading } = useCollection<Property>(propertiesQuery);
-  
-  const usersQuery = useMemo(() => {
-      if (!firestore) return null;
-      return query(collection(firestore, "users"));
-  }, [firestore]);
-  const { data: allUsers, loading: usersLoading } = useCollection(usersQuery);
-
-  const loading = propertiesLoading || usersLoading;
-
-  const filteredProperties = useMemo(() => {
-      if (!properties || !allUsers) return [];
-      const activeUserIds = new Set(allUsers.map(user => user.id));
-      return properties.filter(p => activeUserIds.has(p.agentId));
-  }, [properties, allUsers]);
+  const { data: properties, loading } = useCollection<Property>(propertiesQuery);
 
   if (loading) {
     return (
@@ -45,7 +31,7 @@ export default function NewlyAddedListings() {
   }
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {filteredProperties.map((property) => (
+      {properties?.map((property) => (
         <PropertyCard key={property.id} property={property} />
       ))}
     </div>

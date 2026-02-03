@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, type FormEvent, useMemo } from 'react';
@@ -36,39 +35,27 @@ export default function InsightsPage() {
     const [searchValue, setSearchValue] = useState('Lagos');
     const [displayLocation, setDisplayLocation] = useState('Lagos');
 
-    // Removed orderBy to avoid composite index requirement
     const featuredPropertiesQuery = useMemo(() => {
         if (!firestore) return null;
         return query(
             collection(firestore, 'properties'),
             where('city', '==', displayLocation),
-            limit(10) // Fetch a few more to filter/sort client side
+            limit(10)
         );
     }, [firestore, displayLocation]);
 
     const { data: rawProperties, loading: propertiesLoading } = useCollection<Property>(featuredPropertiesQuery);
 
-    const usersQuery = useMemo(() => {
-        if (!firestore) return null;
-        return query(collection(firestore, "users"));
-    }, [firestore]);
-    const { data: allUsers, loading: usersLoading } = useCollection(usersQuery);
-
-    const loading = propertiesLoading || usersLoading;
-
-    // Client-side filtering and sorting
     const activeProperties = useMemo(() => {
-        if (!rawProperties || !allUsers) return [];
-        const activeUserIds = new Set(allUsers.map(user => user.id));
-        return rawProperties
-            .filter(p => activeUserIds.has(p.agentId))
+        if (!rawProperties) return [];
+        return [...rawProperties]
             .sort((a, b) => {
                 const timeA = a.createdAt?.toDate?.()?.getTime() || 0;
                 const timeB = b.createdAt?.toDate?.()?.getTime() || 0;
                 return timeB - timeA;
             })
             .slice(0, 3);
-    }, [rawProperties, allUsers]);
+    }, [rawProperties]);
 
     const handleSearch = (e: FormEvent) => {
         e.preventDefault();
@@ -189,75 +176,23 @@ export default function InsightsPage() {
                                 <div className="text-center">
                                     <Utensils className="h-10 w-10 text-primary mx-auto"/>
                                     <h3 className="mt-4 text-xl font-semibold">Vibrant Lifestyle</h3>
-                                    <p className="mt-2 text-muted-foreground">From world-class restaurants and bustling open-air markets to a thriving arts and music scene, Lagos offers a dynamic cultural experience. Explore high-end boutiques in Victoria Island or discover unique crafts at the Lekki Arts & Crafts Market.</p>
+                                    <p className="mt-2 text-muted-foreground">From world-class restaurants and bustling open-air markets to a thriving arts and music scene, Lagos offers a dynamic cultural experience.</p>
                                 </div>
                                 <div className="text-center">
                                     <Wallet className="h-10 w-10 text-primary mx-auto"/>
                                     <h3 className="mt-4 text-xl font-semibold">Cost of Living</h3>
-                                    <p className="mt-2 text-muted-foreground">While housing in prime areas like Ikoyi and Lekki is expensive, Lagos offers a wide range of options. Daily expenses for food and transport are affordable, but costs vary significantly based on lifestyle and location.</p>
+                                    <p className="mt-2 text-muted-foreground">While housing in prime areas is expensive, Lagos offers a wide range of options. Daily expenses are generally affordable.</p>
                                 </div>
                                 <div className="text-center">
                                     <GraduationCap className="h-10 w-10 text-primary mx-auto"/>
                                     <h3 className="mt-4 text-xl font-semibold">Top Schools</h3>
-                                    <p className="mt-2 text-muted-foreground">The city is home to top-tier private primary and secondary schools with international curriculums. It also hosts prestigious universities like the University of Lagos, making it a hub for education and research in West Africa.</p>
+                                    <p className="mt-2 text-muted-foreground">The city is home to top-tier private primary and secondary schools with international curriculums.</p>
                                 </div>
                                 <div className="text-center">
                                     <TramFront className="h-10 w-10 text-primary mx-auto"/>
                                     <h3 className="mt-4 text-xl font-semibold">Improving Commute</h3>
-                                    <p className="mt-2 text-muted-foreground">Navigating Lagos is easier with major infrastructure projects. The new Blue and Red Line rail systems are set to significantly reduce traffic, complementing the existing network of ferries and an expanding road system.</p>
+                                    <p className="mt-2 text-muted-foreground">Navigating Lagos is easier with major infrastructure projects like the new Blue and Red Line rail systems.</p>
                                 </div>
-                            </div>
-                        </section>
-
-                        <section className="mt-20">
-                            <div className="text-center">
-                                 <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                                    Neighborhood Highlights
-                                </h2>
-                                  <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-                                    Explore the diverse neighborhoods of Lagos.
-                                </p>
-                            </div>
-                            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                <Card>
-                                    {neighborhoodImage && <Image src={neighborhoodImage.imageUrl} alt="Ikoyi" width={600} height={400} className="rounded-t-lg object-cover w-full aspect-[4/3]" />}
-                                    <CardHeader>
-                                        <CardTitle>Ikoyi</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-muted-foreground">Known for its luxury apartments, high-end boutiques, and exclusive social clubs. A prime location for affluent professionals and expatriates.</p>
-                                        <div className="flex justify-between items-center mt-4 pt-4 border-t">
-                                            <span className="text-sm text-muted-foreground">Median Price</span>
-                                            <span className="font-bold text-lg">{formatNaira(350000000)}</span>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    {neighborhoodImage && <Image src={PlaceHolderImages.find(i=>i.id==='property-2')?.imageUrl ?? ""} alt="Lekki" width={600} height={400} className="rounded-t-lg object-cover w-full aspect-[4/3]" />}
-                                    <CardHeader>
-                                        <CardTitle>Lekki</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-muted-foreground">A sprawling, rapidly developing area popular with young professionals and families, offering a mix of modern estates and vibrant commercial centers.</p>
-                                          <div className="flex justify-between items-center mt-4 pt-4 border-t">
-                                            <span className="text-sm text-muted-foreground">Median Price</span>
-                                            <span className="font-bold text-lg">{formatNaira(120000000)}</span>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                     {neighborhoodImage && <Image src={PlaceHolderImages.find(i=>i.id==='property-6')?.imageUrl ?? ""} alt="Ikeja" width={600} height={400} className="rounded-t-lg object-cover w-full aspect-[4/3]" />}
-                                    <CardHeader>
-                                        <CardTitle>Ikeja</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-muted-foreground">The state capital, a bustling commercial and administrative hub with a mix of residential areas, government offices, and the city's main airport.</p>
-                                          <div className="flex justify-between items-center mt-4 pt-4 border-t">
-                                            <span className="text-sm text-muted-foreground">Median Price</span>
-                                            <span className="font-bold text-lg">{formatNaira(85000000)}</span>
-                                        </div>
-                                    </CardContent>
-                                </Card>
                             </div>
                         </section>
                     </>
@@ -273,7 +208,7 @@ export default function InsightsPage() {
                             Browse a selection of popular properties currently on the market.
                         </p>
                     </div>
-                    {loading ? (
+                    {propertiesLoading ? (
                         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-96 w-full" />)}
                         </div>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Suspense, useMemo, useEffect } from 'react';
@@ -40,7 +39,6 @@ function SearchPageComponent() {
         }
     };
 
-    // We only want to track when the search query is present
     if (searchParams.get('q')) {
         trackSearch();
     }
@@ -52,17 +50,11 @@ function SearchPageComponent() {
   }, [firestore]);
   const { data: allProperties, loading: propertiesLoading } = useCollection<Property>(propertiesQuery);
 
-  const usersQuery = useMemo(() => {
-      if (!firestore) return null;
-      return query(collection(firestore, "users"));
-  }, [firestore]);
-  const { data: allUsers, loading: usersLoading } = useCollection(usersQuery);
-
-  const loading = propertiesLoading || usersLoading;
+  const loading = propertiesLoading;
 
   const searchQuery = searchParams.get('q') || "";
   const minPrice = searchParams.get('minPrice') ? parseInt(searchParams.get('minPrice')!) : 0;
-  const maxPrice = searchParams.get('maxPrice') ? parseInt(searchParams.get('maxPrice')!) : 500000000;
+  const maxPrice = searchParams.get('maxPrice') ? parseInt(searchParams.get('maxPrice')!) : 1000000000;
   const beds = searchParams.get('beds');
   const baths = searchParams.get('baths');
   const homeTypes = searchParams.get('homeTypes') ? searchParams.get('homeTypes')!.split(',') : [];
@@ -77,32 +69,30 @@ function SearchPageComponent() {
   const pricePeriods = searchParams.get('pricePeriods')?.split(',') || [];
 
   const filteredProperties = useMemo(() => {
-    if (loading || !allProperties || !allUsers) return [];
-
-    const activeUserIds = new Set(allUsers.map(user => user.id));
+    if (loading || !allProperties) return [];
 
     let filtered = allProperties.filter(property => {
-      if (!activeUserIds.has(property.agentId)) {
-          return false;
-      }
-      
       let matches = true;
 
       if (listingType) {
-        if (listingType === 'buy') {
+        if (listingType === 'buy' || listingType === 'sale') {
             matches = matches && property.listing_type === 'sale';
-        } else { // for 'rent'
+        } else if (listingType === 'rent') {
             matches = matches && property.listing_type === 'rent';
         }
       }
 
       if (searchQuery) {
-        matches = matches && (property.address.toLowerCase().includes(searchQuery.toLowerCase()) || property.city.toLowerCase().includes(searchQuery.toLowerCase()) || property.state.toLowerCase().includes(searchQuery.toLowerCase()));
+        matches = matches && (
+            property.address.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            property.city.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            property.state.toLowerCase().includes(searchQuery.toLowerCase())
+        );
       }
       if (minPrice) {
         matches = matches && property.price >= minPrice;
       }
-      if (maxPrice < 500000000) {
+      if (maxPrice < 1000000000) {
         matches = matches && property.price <= maxPrice;
       }
       if (beds && beds !== 'any') {
@@ -147,7 +137,6 @@ function SearchPageComponent() {
       return matches;
     });
 
-    // Sorting logic
     switch (sort) {
         case 'newest':
             filtered.sort((a, b) => (b.createdAt?.toDate?.().getTime() || 0) - (a.createdAt?.toDate?.().getTime() || 0));
@@ -158,15 +147,13 @@ function SearchPageComponent() {
         case 'price-high-low':
             filtered.sort((a, b) => b.price - a.price);
             break;
-        case 'relevant':
         default:
-            // No sort for relevance, uses default Firestore order (or can be enhanced)
             break;
     }
 
     return filtered;
 
-  }, [allProperties, allUsers, loading, searchQuery, minPrice, maxPrice, beds, baths, homeTypes, listingType, features, minSqft, maxSqft, keywords, sort, furnishing, pricePeriods]);
+  }, [allProperties, loading, searchQuery, minPrice, maxPrice, beds, baths, homeTypes, listingType, features, minSqft, maxSqft, keywords, sort, furnishing, pricePeriods]);
 
   const filterProps = {
     minPrice: minPrice,

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from "react";
@@ -29,7 +28,7 @@ import {
 
 
 const publicNavLinks = [
-  { name: "Buy", href: "/search" },
+  { name: "Buy", href: "/search?type=buy" },
   { name: "Rent", href: "/search?type=rent" },
   { name: "Sell", href: "/sell" },
   { name: "Find Agents", href: "/agents" },
