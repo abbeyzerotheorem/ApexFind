@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Phone, Mail, Building, Clock } from 'lucide-react';
+import { Phone, Mail, Building, Clock, Loader2, CheckCircle2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -18,63 +18,63 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export default function ContactPage() {
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setFormSubmitted(true);
+        setIsSubmitting(true);
+        // Simulate API call
+        setTimeout(() => {
+            setIsSubmitting(false);
+            setFormSubmitted(true);
+        }, 1500);
     };
 
     return (
-        <div className="bg-background">
+        <div className="bg-background min-h-screen">
             {/* Hero Section */}
-            <section className="bg-secondary py-12 sm:py-20">
+            <section className="bg-secondary/50 py-12 sm:py-20 border-b">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-                    <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Get in Touch</h1>
+                    <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">How can we help?</h1>
                     <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-                        We're here to help. Whether you're a buyer, seller, or agent, find the best way to reach us below.
+                        Our team is available to assist you with property inquiries, agent verification, or technical support.
                     </p>
                 </div>
             </section>
 
             {/* Contact Options Grid */}
-            <section className="py-16 sm:py-24">
+            <section className="py-16">
                 <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                        <Card>
-                            <CardHeader>
-                                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                        <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                            <CardContent className="p-8">
+                                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary mb-6">
                                     <Phone className="h-6 w-6" />
                                 </div>
-                                <CardTitle className="mt-4">Call Us</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-muted-foreground">For immediate assistance</p>
-                                <a href="tel:+23480027393463" className="mt-2 block font-semibold text-primary hover:underline">+234 800-APEX-FIND</a>
+                                <h3 className="font-bold text-lg">Call Us</h3>
+                                <p className="text-sm text-muted-foreground mt-2">Mon-Fri, 9am-5pm WAT</p>
+                                <a href="tel:+23480027393463" className="mt-4 block font-bold text-primary hover:underline">+234 800-APEX-FIND</a>
                             </CardContent>
                         </Card>
-                         <Card>
-                            <CardHeader>
-                                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                         <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                            <CardContent className="p-8">
+                                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary mb-6">
                                     <Mail className="h-6 w-6" />
                                 </div>
-                                <CardTitle className="mt-4">Email Us</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-muted-foreground">For general inquiries</p>
-                                <a href="mailto:support@apexfind.ng" className="mt-2 block font-semibold text-primary hover:underline">support@apexfind.ng</a>
+                                <h3 className="font-bold text-lg">Email Support</h3>
+                                <p className="text-sm text-muted-foreground mt-2">Expect a reply within 24h</p>
+                                <a href="mailto:support@apexfind.ng" className="mt-4 block font-bold text-primary hover:underline">support@apexfind.ng</a>
                             </CardContent>
                         </Card>
-                         <Card>
-                            <CardHeader>
-                                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-[#25D366] text-white">
+                         <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                            <CardContent className="p-8">
+                                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-[#25D366]/10 text-[#25D366] mb-6">
                                     <WhatsAppIcon className="h-6 w-6" />
                                 </div>
-                                <CardTitle className="mt-4">WhatsApp</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-muted-foreground">For quick chats</p>
-                                <a href="https://wa.me/2348012345678" target="_blank" rel="noopener noreferrer" className="mt-2 block font-semibold text-primary hover:underline">+234 801 234 5678</a>
+                                <h3 className="font-bold text-lg">WhatsApp</h3>
+                                <p className="text-sm text-muted-foreground mt-2">Fastest for quick inquiries</p>
+                                <a href="https://wa.me/2348012345678" target="_blank" rel="noopener noreferrer" className="mt-4 block font-bold text-[#25D366] hover:underline">+234 801 234 5678</a>
                             </CardContent>
                         </Card>
                     </div>
@@ -82,91 +82,98 @@ export default function ContactPage() {
             </section>
             
             {/* Main Content (Form & Location) */}
-            <section className="py-16 sm:py-24 bg-secondary">
+            <section className="py-16 bg-secondary/20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                         {/* Contact Form */}
                         <div>
-                            <Card>
+                            <Card className="shadow-lg border-none">
                                 <CardHeader>
-                                    <CardTitle className="text-2xl">Send us a Message</CardTitle>
-                                    <CardDescription>Fill out the form and we'll get back to you within 24-48 hours.</CardDescription>
+                                    <CardTitle className="text-2xl">Submit an Inquiry</CardTitle>
+                                    <CardDescription>Our support specialists will review your message and get back to you shortly.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     {formSubmitted ? (
-                                        <Alert variant="default" className="bg-green-50 border-green-200 text-green-800 [&>svg]:text-green-600">
-                                            <AlertTitle>Thank You!</AlertTitle>
-                                            <AlertDescription>
-                                                Your message has been sent. Our team will get back to you shortly.
-                                            </AlertDescription>
-                                        </Alert>
+                                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                                            <div className="bg-green-100 p-4 rounded-full mb-6">
+                                                <CheckCircle2 className="h-12 w-12 text-green-600" />
+                                            </div>
+                                            <h3 className="text-2xl font-bold text-foreground">Message Received</h3>
+                                            <p className="text-muted-foreground mt-2 max-w-xs">
+                                                Thank you for reaching out. We've received your request and will contact you via email shortly.
+                                            </p>
+                                            <Button variant="outline" className="mt-8" onClick={() => setFormSubmitted(false)}>Send Another Message</Button>
+                                        </div>
                                     ) : (
                                         <form onSubmit={handleSubmit} className="space-y-6">
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div className="space-y-2">
                                                     <Label htmlFor="name">Full Name</Label>
-                                                    <Input id="name" placeholder="Enter your full name" required />
+                                                    <Input id="name" placeholder="John Doe" required className="h-11" />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <Label htmlFor="email">Email Address</Label>
-                                                    <Input id="email" type="email" placeholder="Enter your email" required />
+                                                    <Input id="email" type="email" placeholder="john@example.com" required className="h-11" />
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="category">Category</Label>
+                                                <Label htmlFor="category">What can we help with?</Label>
                                                 <Select required>
-                                                    <SelectTrigger id="category">
-                                                        <SelectValue placeholder="Select a category" />
+                                                    <SelectTrigger id="category" className="h-11">
+                                                        <SelectValue placeholder="Select a topic" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="general">General Inquiry</SelectItem>
-                                                        <SelectItem value="technical">Technical Support</SelectItem>
-                                                        <SelectItem value="agent">Agent Support</SelectItem>
-                                                        <SelectItem value="partnership">Partnership</SelectItem>
+                                                        <SelectItem value="general">Property Inquiry</SelectItem>
+                                                        <SelectItem value="agent">Agent Verification</SelectItem>
+                                                        <SelectItem value="listing">List My Property</SelectItem>
+                                                        <SelectItem value="technical">Technical Issue</SelectItem>
+                                                        <SelectItem value="partnership">Partnership Opportunity</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="message">Message</Label>
-                                                <Textarea id="message" rows={5} placeholder="How can we help you?" required />
+                                                <Label htmlFor="message">Message Details</Label>
+                                                <Textarea id="message" rows={5} placeholder="Tell us more about your request..." required className="resize-none" />
                                             </div>
-                                             <div className="space-y-2">
-                                                <Label htmlFor="attachment">Attachment (Optional)</Label>
-                                                <Input id="attachment" type="file" />
-                                            </div>
-                                            <Button type="submit" className="w-full">Send Message</Button>
+                                            <Button type="submit" className="w-full h-12 font-bold text-lg" disabled={isSubmitting}>
+                                                {isSubmitting ? (
+                                                    <span className="flex items-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /> Sending...</span>
+                                                ) : 'Send Message'}
+                                            </Button>
                                         </form>
                                     )}
                                 </CardContent>
                             </Card>
                         </div>
                         {/* Location Details */}
-                        <div className="space-y-8">
-                             <div className="space-y-4">
-                                <h2 className="text-2xl font-bold">Our Office</h2>
-                                <div className="flex items-start gap-4">
-                                    <div className="mt-1 flex-shrink-0"><Building className="h-5 w-5 text-primary" /></div>
-                                    <div>
-                                        <p className="font-semibold">ApexFind Lagos HQ</p>
-                                        <p className="text-muted-foreground">123 Apex Towers, Victoria Island, Lagos, Nigeria</p>
+                        <div className="space-y-10">
+                             <div className="space-y-6">
+                                <h2 className="text-3xl font-bold">Our Headquarters</h2>
+                                <div className="space-y-4">
+                                    <div className="flex items-start gap-4">
+                                        <div className="mt-1 bg-primary/10 p-2 rounded-lg"><Building className="h-5 w-5 text-primary" /></div>
+                                        <div>
+                                            <p className="font-bold text-lg leading-none mb-1">ApexFind Tech Ltd</p>
+                                            <p className="text-muted-foreground">123 Apex Towers, Victoria Island, Lagos, Nigeria</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="mt-1 flex-shrink-0"><Clock className="h-5 w-5 text-primary" /></div>
-                                     <div>
-                                        <p className="font-semibold">Business Hours</p>
-                                        <p className="text-muted-foreground">Monday - Friday: 9:00 AM - 5:00 PM (WAT)</p>
+                                    <div className="flex items-start gap-4">
+                                        <div className="mt-1 bg-primary/10 p-2 rounded-lg"><Clock className="h-5 w-5 text-primary" /></div>
+                                         <div>
+                                            <p className="font-bold text-lg leading-none mb-1">Business Hours</p>
+                                            <p className="text-muted-foreground">Monday - Friday: 9:00 AM - 5:00 PM (WAT)</p>
+                                        </div>
                                     </div>
                                 </div>
                              </div>
-                            <div className="aspect-video w-full overflow-hidden rounded-lg border">
+                            <div className="aspect-video w-full overflow-hidden rounded-2xl border shadow-lg bg-muted relative">
                                 <iframe
                                     width="100%"
                                     height="100%"
                                     frameBorder="0"
                                     scrolling="no"
                                     src="https://www.openstreetmap.org/export/embed.html?bbox=3.4118,6.4197,3.4318,6.4397&layer=mapnik&marker=6.4297,3.4218"
-                                    className="w-full h-full"
+                                    className="absolute inset-0 grayscale contrast-125"
                                 ></iframe>
                             </div>
                         </div>
