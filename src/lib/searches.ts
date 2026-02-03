@@ -1,7 +1,6 @@
-
 'use client';
 
-import { addDoc, collection, serverTimestamp, type Firestore } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp, type Firestore, doc, deleteDoc } from "firebase/firestore";
 import { formatNairaShort } from "./naira-formatter";
 
 function generateSearchDescription(params: URLSearchParams): string {
@@ -79,4 +78,13 @@ export async function saveSearch(
         console.error("Error saving search: ", error);
         throw error;
     }
+}
+
+export async function deleteSavedSearch(
+    firestore: Firestore,
+    userId: string,
+    searchId: string
+) {
+    const searchRef = doc(firestore, `users/${userId}/saved_searches`, searchId);
+    await deleteDoc(searchRef);
 }
