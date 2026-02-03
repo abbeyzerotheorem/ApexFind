@@ -5,8 +5,8 @@ import { useCollection, useFirestore, useUser, useDoc } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
-import { Search, ChevronDown, Star, Loader2, Phone } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Search, ChevronDown, Star, Loader2, Phone, FilterX } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -21,25 +21,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import type { Agent } from '@/types';
 
-type AgentUser = {
-    id: string;
-    displayName?: string | null;
-    photoURL?: string | null;
-    role?: 'agent' | 'customer';
-    title?: string;
-    company?: string;
-    experience?: number;
-    sales?: number;
-    rating?: number;
-    reviewCount?: number;
-};
-
+const LANGUAGES = ["English", "Yoruba", "Igbo", "Hausa", "French", "Pidgin"];
+const SPECIALTIES = ["Luxury Homes", "First-time Buyers", "Commercial", "Rentals", "Land Sales", "Short-lets"];
 
 export default function AgentSearchPage() {
     const firestore = useFirestore();
     const { user } = useUser();
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+    const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
     
     const agentsQuery = useMemo(() => {
         if (!firestore) return null;
@@ -49,21 +41,28 @@ export default function AgentSearchPage() {
     const userProfileRef = useMemo(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
     const { data: userProfile } = useDoc(userProfileRef);
 
-    const { data: allAgents, loading } = useCollection<Omit<AgentUser, 'id'>>(agentsQuery);
+    const { data: allAgents, loading } = useCollection<Agent>(agentsQuery);
 
     const filteredAgents = useMemo(() => {
         if (!allAgents) return [];
-        if (!searchTerm) return allAgents;
+        
+        return allAgents.filter(agent => {
+            const matchesSearch = !searchTerm || (agent.displayName || '').toLowerCase().includes(searchTerm.toLowerCase());
+            
+            const matchesLanguage = selectedLanguages.length === 0 || 
+                (agent.languages || []).some(l => selectedLanguages.includes(l));
+                
+            const matchesSpecialty = selectedSpecialties.length === 0 || 
+                (agent.specialties || []).some(s => selectedSpecialties.includes(s));
+            
+            return matchesSearch && matchesLanguage && matchesSpecialty;
+        });
+    }, [allAgents, searchTerm, selectedLanguages, selectedSpecialties]);
 
-        const term = searchTerm.toLowerCase();
-        return allAgents.filter(agent => 
-            agent.displayName?.toLowerCase().includes(term)
-        );
-    }, [allAgents, searchTerm]);
-
-
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(e.target.value);
+    const resetFilters = () => {
+        setSearchTerm('');
+        setSelectedLanguages([]);
+        setSelectedSpecialties([]);
     };
 
     return (
@@ -74,60 +73,87 @@ export default function AgentSearchPage() {
                         Find a Local Real Estate Agent
                     </h1>
                     <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-                        Connect with trusted agents to help you with your buying and selling needs.
+                        Connect with verified Nigerian professionals who know your neighborhood inside-out.
                     </p>
                 </div>
 
-                <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="relative md:col-span-2">
-                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <div className="mb-8 flex flex-col lg:flex-row gap-4">
+                    <div className="relative flex-grow">
+                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
                         <Input 
                             type="text"
-                            placeholder="Search by name"
+                            placeholder="Search by agent name..."
                             className="w-full pl-10 h-12 text-base"
                             value={searchTerm}
-                            onChange={handleSearch}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex flex-wrap sm:flex-nowrap gap-2">
                          <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="w-full h-12 text-base justify-between">
-                                    Languages <ChevronDown className="h-4 w-4" />
+                                <Button variant="outline" className="flex-1 sm:w-40 h-12 text-base justify-between gap-2">
+                                    Languages <ChevronDown className="h-4 w-4 opacity-50" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuCheckboxItem>English</DropdownMenuCheckboxItem>
-                                <DropdownMenuCheckboxItem>Yoruba</DropdownMenuCheckboxItem>
-                                <DropdownMenuCheckboxItem>Igbo</DropdownMenuCheckboxItem>
-                                <DropdownMenuCheckboxItem>Hausa</DropdownMenuCheckboxItem>
+                            <DropdownMenuContent className="w-56">
+                                <DropdownMenuLabel>Filter by Language</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {LANGUAGES.map(lang => (
+                                    <DropdownMenuCheckboxItem 
+                                        key={lang}
+                                        checked={selectedLanguages.includes(lang)}
+                                        onCheckedChange={(checked) => {
+                                            setSelectedLanguages(prev => checked ? [...prev, lang] : prev.filter(l => l !== lang))
+                                        }}
+                                    >
+                                        {lang}
+                                    </DropdownMenuCheckboxItem>
+                                ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
+
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="w-full h-12 text-base justify-between">
-                                    Services <ChevronDown className="h-4 w-4" />
+                                <Button variant="outline" className="flex-1 sm:w-40 h-12 text-base justify-between gap-2">
+                                    Expertise <ChevronDown className="h-4 w-4 opacity-50" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuCheckboxItem>Luxury Homes</DropdownMenuCheckboxItem>
-                                <DropdownMenuCheckboxItem>First-time Buyers</DropdownMenuCheckboxItem>
-                                <DropdownMenuCheckboxItem>Commercial</DropdownMenuCheckboxItem>
-                                <DropdownMenuCheckboxItem>Rentals</DropdownMenuCheckboxItem>
+                            <DropdownMenuContent className="w-56">
+                                <DropdownMenuLabel>Filter by Specialty</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {SPECIALITIES.map(spec => (
+                                    <DropdownMenuCheckboxItem 
+                                        key={spec}
+                                        checked={selectedSpecialties.includes(spec)}
+                                        onCheckedChange={(checked) => {
+                                            setSelectedSpecialties(prev => checked ? [...prev, spec] : prev.filter(s => s !== spec))
+                                        }}
+                                    >
+                                        {spec}
+                                    </DropdownMenuCheckboxItem>
+                                ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
+
+                        {(searchTerm || selectedLanguages.length > 0 || selectedSpecialties.length > 0) && (
+                            <Button variant="ghost" onClick={resetFilters} className="h-12 px-4 gap-2 text-muted-foreground">
+                                <FilterX className="h-4 w-4" /> Clear
+                            </Button>
+                        )}
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {loading && <div className="col-span-full flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin" /></div>}
+                    {loading && <div className="col-span-full flex justify-center py-20"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>}
                     {!loading && filteredAgents?.map(agent => (
-                        <AgentCard key={agent.id} agent={agent} currentUserRole={userProfile?.role} />
+                        <AgentCard key={agent.id} agent={agent} />
                     ))}
                     {!loading && (!filteredAgents || filteredAgents.length === 0) && (
-                        <div className="col-span-full text-center py-12">
+                        <div className="col-span-full text-center py-20 bg-muted/30 rounded-xl border-2 border-dashed">
+                            <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
                             <h3 className="text-xl font-semibold">No Agents Found</h3>
-                            <p className="text-muted-foreground mt-2">Try adjusting your search or check back later.</p>
+                            <p className="text-muted-foreground mt-2">Try adjusting your filters or search term.</p>
+                            <Button variant="link" onClick={resetFilters} className="mt-4">Show all agents</Button>
                         </div>
                     )}
                 </div>
@@ -136,7 +162,7 @@ export default function AgentSearchPage() {
     )
 }
 
-function AgentCard({ agent, currentUserRole }: { agent: AgentUser, currentUserRole?: 'agent' | 'customer' }) {
+function AgentCard({ agent }: { agent: Agent }) {
     const { user } = useUser();
     const firestore = useFirestore();
     const router = useRouter();
@@ -167,45 +193,57 @@ function AgentCard({ agent, currentUserRole }: { agent: AgentUser, currentUserRo
 
     return (
         <>
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-lg flex flex-col">
+            <div className="rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-lg hover:border-primary/30 flex flex-col overflow-hidden group">
                 <div className="p-6 text-center">
                     <Link href={`/agents/${agent.id}`}>
-                        <Avatar className="h-24 w-24 mx-auto mb-4">
-                            <AvatarImage src={agent.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${agent.displayName || 'A'}`} alt={agent.displayName || 'Agent'} data-ai-hint="agent portrait" />
-                            <AvatarFallback>{(agent.displayName || 'A').split(" ").map((n) => n[0]).join("")}</AvatarFallback>
-                        </Avatar>
-                        <h3 className="text-xl font-bold">{agent.displayName || 'Unnamed Agent'}</h3>
+                        <div className="relative inline-block mb-4">
+                            <Avatar className="h-24 w-24 border-2 border-background shadow-md">
+                                <AvatarImage src={agent.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${agent.displayName || 'A'}`} alt={agent.displayName || 'Agent'} />
+                                <AvatarFallback>{(agent.displayName || 'A').split(" ").map((n) => n[0]).join("")}</AvatarFallback>
+                            </Avatar>
+                            {agent.licenseNumber && (
+                                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground p-1 rounded-full border-2 border-background shadow-sm">
+                                    <Star className="h-3 w-3 fill-current" />
+                                </div>
+                            )}
+                        </div>
+                        <h3 className="text-xl font-bold group-hover:text-primary transition-colors">{agent.displayName || 'Unnamed Agent'}</h3>
                     </Link>
-                    <p className="text-muted-foreground">{agent.title || 'Real Estate Agent'}, {agent.company || 'ApexFind'}</p>
-                    <div className="mt-2 flex items-center justify-center gap-1">
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                        {agent.title || 'Real Estate Consultant'} • {agent.company || 'ApexFind'}
+                    </p>
+                    <div className="mt-3 flex items-center justify-center gap-1">
                         <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                        <span className="font-bold">{(agent.rating || 0).toFixed(1)}</span>
-                        <span className="text-muted-foreground">({agent.reviewCount || 0} reviews)</span>
+                        <span className="font-bold text-sm">{(agent.rating || 0).toFixed(1)}</span>
+                        <span className="text-muted-foreground text-xs">({agent.reviewCount || 0} reviews)</span>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 border-t text-center">
-                    <div className="p-4 border-r">
-                        <p className="text-2xl font-bold">{agent.experience || 0} yrs</p>
-                        <p className="text-sm text-muted-foreground">Experience</p>
+                
+                <div className="grid grid-cols-2 border-y text-center bg-muted/5">
+                    <div className="p-3 border-r">
+                        <p className="text-lg font-bold">{agent.experience || 0}</p>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Years Exp.</p>
                     </div>
-                    <div className="p-4">
-                        <p className="text-2xl font-bold">{agent.sales || 0}</p>
-                        <p className="text-sm text-muted-foreground">Sales (24 mo)</p>
+                    <div className="p-3">
+                        <p className="text-lg font-bold">{agent.sales || 0}</p>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Properties sold</p>
                     </div>
                 </div>
+
                 <div className="p-6 mt-auto">
-                     <Button className="w-full" onClick={handleContactAgent} disabled={isContacting}>
+                     <Button className="w-full h-11 font-bold" onClick={handleContactAgent} disabled={isContacting}>
                         {isContacting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Phone className="mr-2 h-4 w-4"/>}
                         {isContacting ? 'Contacting...' : 'Contact Agent'}
                     </Button>
                 </div>
             </div>
+            
             <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Create an Account to Continue</AlertDialogTitle>
                   <AlertDialogDescription>
-                    To save properties, schedule tours, and contact agents, you need to have an account. It's free and only takes a minute!
+                    To save properties, schedule tours, and contact agents directly, you need to have an account. It's free and only takes a minute!
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -217,5 +255,3 @@ function AgentCard({ agent, currentUserRole }: { agent: AgentUser, currentUserRo
         </>
     )
 }
-
-    
