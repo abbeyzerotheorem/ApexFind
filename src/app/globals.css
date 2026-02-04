@@ -78,3 +78,12 @@
     @apply font-semibold text-2xl text-[hsl(var(--foreground))];
   }
 }
+
+@keyframes zoom-out {
+  from { transform: scale(1.15); }
+  to { transform: scale(1); }
+}
+
+.animate-zoom-out {
+  animation: zoom-out 7s ease-out forwards;
+}
