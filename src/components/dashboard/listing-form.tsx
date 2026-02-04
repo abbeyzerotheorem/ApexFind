@@ -21,6 +21,7 @@ import Image from 'next/image';
 import { X, Loader2, Save, AlertCircle } from 'lucide-react';
 import allNigerianStates from '@/jsons/nigeria-states.json';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 const propertySchema = z.object({
   address: z.string().min(1, 'Address is required'),
