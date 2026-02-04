@@ -7,6 +7,7 @@ import MarketInsights from "@/components/market-insights";
 import NewlyAddedListings from "@/components/newly-added-listings";
 import Testimonials from "@/components/testimonials";
 import TrustIndicators from "@/components/trust-indicators";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import Link from "next/link";
 
 export default function Home() {
@@ -14,59 +15,69 @@ export default function Home() {
     <>
       <HeroSearch />
       
-      <div className="animate-slideUp [animation-delay:200ms]">
+      <ScrollReveal delay={200}>
         <TrustIndicators />
-      </div>
+      </ScrollReveal>
 
-      <section className="py-16 animate-slideUp [animation-delay:400ms]">
+      <section className="py-16">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-10">
-            <h2 className="text-3xl font-bold">Featured Properties</h2>
-            <Link
-              href="/search"
-              className="text-primary hover:text-primary/80 font-semibold"
-            >
-              View All →
-            </Link>
-          </div>
-          <HighlightedListings />
+          <ScrollReveal>
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-3xl font-bold text-foreground">Featured Properties</h2>
+              <Link
+                href="/search"
+                className="text-primary hover:text-primary/80 font-semibold flex items-center gap-1"
+              >
+                View All <span className="text-xl">→</span>
+              </Link>
+            </div>
+          </ScrollReveal>
+          
+          <ScrollReveal delay={300}>
+            <HighlightedListings />
+          </ScrollReveal>
         </div>
       </section>
 
-      <div className="animate-slideUp [animation-delay:600ms]">
+      <ScrollReveal delay={200}>
         <HowItWorks />
-      </div>
+      </ScrollReveal>
 
-      <div className="animate-slideUp">
+      <ScrollReveal>
         <LocationSpotlight />
-      </div>
+      </ScrollReveal>
 
-      <section className="py-16 bg-secondary animate-slideUp">
+      <section className="py-16 bg-secondary/30">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-10">
-            <h2 className="text-3xl font-bold">Newly Added</h2>
-            <Link
-              href="/search?sort=newest"
-              className="text-primary hover:text-primary/80 font-semibold"
-            >
-              View All →
-            </Link>
-          </div>
-          <NewlyAddedListings />
+          <ScrollReveal>
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-3xl font-bold text-foreground">Newly Added</h2>
+              <Link
+                href="/search?sort=newest"
+                className="text-primary hover:text-primary/80 font-semibold flex items-center gap-1"
+              >
+                View All <span className="text-xl">→</span>
+              </Link>
+            </div>
+          </ScrollReveal>
+          
+          <ScrollReveal delay={300}>
+            <NewlyAddedListings />
+          </ScrollReveal>
         </div>
       </section>
 
-      <div className="animate-slideUp">
+      <ScrollReveal>
         <AgentPromotion />
-      </div>
+      </ScrollReveal>
 
-      <div className="animate-slideUp">
+      <ScrollReveal>
         <Testimonials />
-      </div>
+      </ScrollReveal>
 
-      <div className="animate-slideUp">
+      <ScrollReveal>
         <MarketInsights />
-      </div>
+      </ScrollReveal>
     </>
   );
 }
