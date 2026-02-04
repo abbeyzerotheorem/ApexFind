@@ -13,9 +13,12 @@ export default function Home() {
   return (
     <>
       <HeroSearch />
-      <TrustIndicators />
+      
+      <div className="animate-slideUp [animation-delay:200ms]">
+        <TrustIndicators />
+      </div>
 
-      <section className="py-16">
+      <section className="py-16 animate-slideUp [animation-delay:400ms]">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-10">
             <h2 className="text-3xl font-bold">Featured Properties</h2>
@@ -30,10 +33,15 @@ export default function Home() {
         </div>
       </section>
 
-      <HowItWorks />
-      <LocationSpotlight />
+      <div className="animate-slideUp [animation-delay:600ms]">
+        <HowItWorks />
+      </div>
 
-      <section className="py-16 bg-secondary">
+      <div className="animate-slideUp">
+        <LocationSpotlight />
+      </div>
+
+      <section className="py-16 bg-secondary animate-slideUp">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-10">
             <h2 className="text-3xl font-bold">Newly Added</h2>
@@ -48,9 +56,17 @@ export default function Home() {
         </div>
       </section>
 
-      <AgentPromotion />
-      <Testimonials />
-      <MarketInsights />
+      <div className="animate-slideUp">
+        <AgentPromotion />
+      </div>
+
+      <div className="animate-slideUp">
+        <Testimonials />
+      </div>
+
+      <div className="animate-slideUp">
+        <MarketInsights />
+      </div>
     </>
   );
 }
