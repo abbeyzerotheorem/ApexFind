@@ -1,7 +1,29 @@
+
 'use client';
 
 import { notFound, useRouter } from 'next/navigation';
-import { BedDouble, Bath, Maximize, Calendar as CalendarIcon, Car, Home, Droplet, Heart, Printer, MapPin, Zap, Shield, Loader2, Users, Clock, Info, ChevronRight, Share2, TrendingUp, ArrowRight } from 'lucide-react';
+import { 
+  BedDouble, 
+  Bath, 
+  Maximize, 
+  Calendar as CalendarIcon, 
+  Car, 
+  Home, 
+  Droplet, 
+  Heart, 
+  Printer, 
+  MapPin, 
+  Zap, 
+  Shield, 
+  Loader2, 
+  Users, 
+  Clock, 
+  Info, 
+  ChevronRight, 
+  Share2, 
+  TrendingUp, 
+  ArrowRight 
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { MediaGallery } from '@/components/property/media-gallery';

@@ -105,49 +105,49 @@
     {
       "id": "onboarding-welcome",
       "description": "Illustration of a welcoming real estate platform.",
-      "imageUrl": "https://images.unsplash.com/photo-1650966115202-d10e368f5047?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx3ZWxjb21lJTIwaG9tZXxlbnwwfHx8fDE3NzAxNTY5NzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "/illustrations/welcome.svg",
       "imageHint": "welcome home"
     },
     {
       "id": "onboarding-search",
       "description": "Illustration of property search filters.",
-      "imageUrl": "https://images.unsplash.com/photo-1743796055664-3473eedab36e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxzZWFyY2glMjBtYXB8ZW58MHx8fHwxNzcwMTU2OTczfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "/illustrations/search.svg",
       "imageHint": "search map"
     },
     {
       "id": "onboarding-compare",
       "description": "Illustration of side-by-side property comparison.",
-      "imageUrl": "https://picsum.photos/seed/103/800/600",
+      "imageUrl": "/illustrations/compare.svg",
       "imageHint": "compare homes"
     },
     {
       "id": "onboarding-alerts",
       "description": "Illustration of real-time property alerts.",
-      "imageUrl": "https://images.unsplash.com/photo-1756576357697-13dfc5fff61c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtb2JpbGUlMjBub3RpZmljYXRpb258ZW58MHx8fHwxNzcwMTU2OTcyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "/illustrations/alerts.svg",
       "imageHint": "mobile notification"
     },
     {
       "id": "onboarding-agents",
       "description": "Illustration of trusted agents.",
-      "imageUrl": "https://images.unsplash.com/photo-1763479169474-728a7de108c3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBhZ2VudHxlbnwwfHx8fDE3NzAxNTY5NzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "/illustrations/agents.svg",
       "imageHint": "professional agent"
     },
     {
       "id": "preferences-locations",
       "description": "Illustration of Nigerian locations.",
-      "imageUrl": "https://images.unsplash.com/photo-1567985191431-c1a6366e9918?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxuaWdlcmlhJTIwY2l0aWVzfGVufDB8fHx8MTc3MDE1Njk3M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "/illustrations/locations.svg",
       "imageHint": "nigeria cities"
     },
     {
       "id": "preferences-types",
       "description": "Illustration of different property types.",
-      "imageUrl": "https://images.unsplash.com/photo-1740158325728-7cb43af3afdc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxob3VzZSUyMHR5cGVzfGVufDB8fHx8MTc3MDE1Njk3Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "/illustrations/property-types.svg",
       "imageHint": "house types"
     },
     {
       "id": "preferences-budget",
       "description": "Illustration of budget management.",
-      "imageUrl": "https://images.unsplash.com/photo-1769028871759-8099b7474ac4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxidWRnZXQlMjBncm93dGh8ZW58MHx8fHwxNzcwMTU2OTczfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "/illustrations/budget.svg",
       "imageHint": "budget growth"
     }
   ]
