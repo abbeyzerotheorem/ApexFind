@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -22,6 +21,7 @@ import { X, Loader2, Save, AlertCircle } from 'lucide-react';
 import allNigerianStates from '@/jsons/nigeria-states.json';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const propertySchema = z.object({
   address: z.string().min(1, 'Address is required'),
