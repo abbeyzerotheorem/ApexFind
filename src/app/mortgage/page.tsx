@@ -191,14 +191,23 @@ export default function MortgagePage() {
                                 <CardHeader className="border-b bg-muted/5">
                                     <CardTitle className="text-lg">Cost Breakdown</CardTitle>
                                 </CardHeader>
-                                <CardContent className="py-6 h-[180px]">
+                                <CardContent className="py-6 h-[250px]">
                                      <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
-                                            <Pie data={paymentBreakdownData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={45} outerRadius={65} paddingAngle={8}>
+                                            <Pie 
+                                                data={paymentBreakdownData} 
+                                                dataKey="value" 
+                                                nameKey="name" 
+                                                cx="50%" 
+                                                cy="45%" 
+                                                innerRadius={45} 
+                                                outerRadius={65} 
+                                                paddingAngle={8}
+                                            >
                                                 {paymentBreakdownData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                             </Pie>
                                             <Tooltip formatter={(value: number) => formatNaira(value)} />
-                                            <Legend verticalAlign="bottom" iconType="circle" />
+                                            <Legend verticalAlign="bottom" iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </CardContent>
