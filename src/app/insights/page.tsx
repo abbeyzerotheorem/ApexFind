@@ -17,6 +17,7 @@ import type { Property } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
 // Benchmark market data for visualization
 const marketData = [
@@ -103,170 +104,182 @@ export default function InsightsPage() {
 
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
                 {/* Market Overview Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
-                    <div>
-                        <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-                            {displayLocation} Market Overview
-                        </h2>
-                        <p className="text-muted-foreground mt-1">Key metrics aggregated from current residential and commercial listings.</p>
+                <ScrollReveal>
+                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+                        <div>
+                            <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+                                {displayLocation} Market Overview
+                            </h2>
+                            <p className="text-muted-foreground mt-1">Key metrics aggregated from current residential and commercial listings.</p>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm font-bold text-primary bg-primary/10 px-4 py-2 rounded-full">
+                            <TrendingUp className="h-4 w-4" /> Market Status: Active
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm font-bold text-primary bg-primary/10 px-4 py-2 rounded-full">
-                        <TrendingUp className="h-4 w-4" /> Market Status: Active
-                    </div>
-                </div>
+                </ScrollReveal>
 
                 {/* Metrics Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <MetricCard 
-                        label="Median List Price" 
-                        value={isMajorHub ? formatNaira(155000000) : "Benchmarking"} 
-                        trend={isMajorHub ? "+2.5% YoY" : "Aggregating"} 
-                        trendUp={true} 
-                    />
-                    <MetricCard 
-                        label="Price per m²" 
-                        value={isMajorHub ? formatNaira(450000) : "Benchmarking"} 
-                        trend={isMajorHub ? "+5.1% YoY" : "Stable"} 
-                        trendUp={true} 
-                    />
-                    <MetricCard 
-                        label="Avg. Days on Market" 
-                        value={isMajorHub ? "85 Days" : "Calculating"} 
-                        trend={isMajorHub ? "-5 days YoY" : "Normal"} 
-                        trendUp={true} 
-                    />
-                    <MetricCard 
-                        label="Active Inventory" 
-                        value={isMajorHub ? "1,250+" : "Scanning..."} 
-                        trend={isMajorHub ? "+12% YoY" : "Growing"} 
-                        trendUp={true} 
-                    />
-                </div>
+                <ScrollReveal delay={200}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <MetricCard 
+                            label="Median List Price" 
+                            value={isMajorHub ? formatNaira(155000000) : "Benchmarking"} 
+                            trend={isMajorHub ? "+2.5% YoY" : "Aggregating"} 
+                            trendUp={true} 
+                        />
+                        <MetricCard 
+                            label="Price per m²" 
+                            value={isMajorHub ? formatNaira(450000) : "Benchmarking"} 
+                            trend={isMajorHub ? "+5.1% YoY" : "Stable"} 
+                            trendUp={true} 
+                        />
+                        <MetricCard 
+                            label="Avg. Days on Market" 
+                            value={isMajorHub ? "85 Days" : "Calculating"} 
+                            trend={isMajorHub ? "-5 days YoY" : "Normal"} 
+                            trendUp={true} 
+                        />
+                        <MetricCard 
+                            label="Active Inventory" 
+                            value={isMajorHub ? "1,250+" : "Scanning..."} 
+                            trend={isMajorHub ? "+12% YoY" : "Growing"} 
+                            trendUp={true} 
+                        />
+                    </div>
+                </ScrollReveal>
 
                 {/* Trend Chart Section */}
-                <Card className="mt-8 shadow-sm overflow-hidden border-2">
-                    <CardHeader className="bg-muted/5 border-b">
-                        <CardTitle className="flex items-center gap-2">
-                            <TrendingUp className="h-5 w-5 text-primary" /> 6-Month Pricing Trend
-                        </CardTitle>
-                        <CardDescription>Visual breakdown of median property values in {displayLocation} (Naira).</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-8">
-                        <div className="h-[350px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={marketData}>
-                                    <XAxis 
-                                        dataKey="month" 
-                                        stroke="#888888" 
-                                        fontSize={12} 
-                                        tickLine={false} 
-                                        axisLine={false} 
-                                    />
-                                    <YAxis 
-                                        stroke="#888888" 
-                                        fontSize={12} 
-                                        tickLine={false} 
-                                        axisLine={false} 
-                                        tickFormatter={(value) => formatNairaShort(value)} 
-                                    />
-                                    <Tooltip
-                                        cursor={{ fill: 'rgba(0,0,0,0.05)' }}
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                                        formatter={(value: number) => [formatNaira(value), "Median Price"]}
-                                    />
-                                    <Bar dataKey="price" radius={[6, 6, 0, 0]}>
-                                        {marketData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={`hsl(var(--primary))`} fillOpacity={0.6 + (index / marketData.length) * 0.4} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                        <p className="text-[10px] text-center text-muted-foreground mt-6 uppercase font-bold tracking-widest">
-                            * Data aggregated from ApexFind verified listings and historical registry records.
-                        </p>
-                    </CardContent>
-                </Card>
+                <ScrollReveal delay={400}>
+                    <Card className="mt-8 shadow-sm overflow-hidden border-2">
+                        <CardHeader className="bg-muted/5 border-b">
+                            <CardTitle className="flex items-center gap-2">
+                                <TrendingUp className="h-5 w-5 text-primary" /> 6-Month Pricing Trend
+                            </CardTitle>
+                            <CardDescription>Visual breakdown of median property values in {displayLocation} (Naira).</CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-8">
+                            <div className="h-[350px] w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={marketData}>
+                                        <XAxis 
+                                            dataKey="month" 
+                                            stroke="#888888" 
+                                            fontSize={12} 
+                                            tickLine={false} 
+                                            axisLine={false} 
+                                        />
+                                        <YAxis 
+                                            stroke="#888888" 
+                                            fontSize={12} 
+                                            tickLine={false} 
+                                            axisLine={false} 
+                                            tickFormatter={(value) => formatNairaShort(value)} 
+                                        />
+                                        <Tooltip
+                                            cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                            formatter={(value: number) => [formatNaira(value), "Median Price"]}
+                                        />
+                                        <Bar dataKey="price" radius={[6, 6, 0, 0]}>
+                                            {marketData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={`hsl(var(--primary))`} fillOpacity={0.6 + (index / marketData.length) * 0.4} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                            <p className="text-[10px] text-center text-muted-foreground mt-6 uppercase font-bold tracking-widest">
+                                * Data aggregated from ApexFind verified listings and historical registry records.
+                            </p>
+                        </CardContent>
+                    </Card>
+                </ScrollReveal>
                 
                 {/* Lifestyle Spotlight */}
-                {isMajorHub ? (
-                    <section className="mt-20 bg-secondary/30 py-16 px-8 rounded-[2rem] border-2 border-dashed">
-                        <div className="text-center mb-12">
-                            <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-                                Life in {displayLocation}
-                            </h2>
-                            <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground leading-relaxed">
-                                Discover why {displayLocation} remains a top destination for property investment and luxury living in West Africa.
+                <ScrollReveal>
+                    {isMajorHub ? (
+                        <section className="mt-20 bg-secondary/30 py-16 px-8 rounded-[2rem] border-2 border-dashed">
+                            <div className="text-center mb-12">
+                                <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+                                    Life in {displayLocation}
+                                </h2>
+                                <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground leading-relaxed">
+                                    Discover why {displayLocation} remains a top destination for property investment and luxury living in West Africa.
+                                </p>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+                                <LifestyleFeature 
+                                    icon={Utensils} 
+                                    title="Vibrant Lifestyle" 
+                                    desc={`World-class restaurants and a globally recognized arts scene define the ${displayLocation} experience.`}
+                                />
+                                <LifestyleFeature 
+                                    icon={Wallet} 
+                                    title="Cost of Living" 
+                                    desc={`${displayLocation} offers diverse housing tiers for all income levels, from luxury estates to emerging hubs.`}
+                                />
+                                <LifestyleFeature 
+                                    icon={GraduationCap} 
+                                    title="Top Schools" 
+                                    desc="Home to elite international primary and secondary schools with globally recognized curricula."
+                                />
+                                <LifestyleFeature 
+                                    icon={TrainFront} 
+                                    title="Infrastructure" 
+                                    desc="Major transport upgrades, including modern rail systems, are transforming the urban commute."
+                                />
+                            </div>
+                        </section>
+                    ) : (
+                        <div className="mt-20 text-center py-24 bg-muted/20 rounded-[2rem] border-2 border-dashed">
+                            <Info className="mx-auto h-12 w-12 text-muted-foreground opacity-30 mb-4" />
+                            <h3 className="text-2xl font-black">Neighborhood Intelligence</h3>
+                            <p className="mt-2 text-muted-foreground max-w-md mx-auto px-4">
+                                We are currently compiling lifestyle and infrastructure data for {displayLocation}. Explore active listings below in the meantime.
                             </p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-                            <LifestyleFeature 
-                                icon={Utensils} 
-                                title="Vibrant Lifestyle" 
-                                desc={`World-class restaurants and a globally recognized arts scene define the ${displayLocation} experience.`}
-                            />
-                            <LifestyleFeature 
-                                icon={Wallet} 
-                                title="Cost of Living" 
-                                desc={`${displayLocation} offers diverse housing tiers for all income levels, from luxury estates to emerging hubs.`}
-                            />
-                            <LifestyleFeature 
-                                icon={GraduationCap} 
-                                title="Top Schools" 
-                                desc="Home to elite international primary and secondary schools with globally recognized curricula."
-                            />
-                            <LifestyleFeature 
-                                icon={TrainFront} 
-                                title="Infrastructure" 
-                                desc="Major transport upgrades, including modern rail systems, are transforming the urban commute."
-                            />
-                        </div>
-                    </section>
-                ) : (
-                    <div className="mt-20 text-center py-24 bg-muted/20 rounded-[2rem] border-2 border-dashed">
-                        <Info className="mx-auto h-12 w-12 text-muted-foreground opacity-30 mb-4" />
-                        <h3 className="text-2xl font-black">Neighborhood Intelligence</h3>
-                        <p className="mt-2 text-muted-foreground max-w-md mx-auto px-4">
-                            We are currently compiling lifestyle and infrastructure data for {displayLocation}. Explore active listings below in the meantime.
-                        </p>
-                    </div>
-                )}
+                    )}
+                </ScrollReveal>
 
                 {/* Featured Properties */}
                 <section className="mt-24">
-                    <div className="flex items-center justify-between mb-10">
-                        <div>
-                            <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-                                Active Listings in {displayLocation}
-                            </h2>
-                            <p className="text-muted-foreground mt-1">Verified properties currently available for sale or rent.</p>
+                    <ScrollReveal>
+                        <div className="flex items-center justify-between mb-10">
+                            <div>
+                                <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+                                    Active Listings in {displayLocation}
+                                </h2>
+                                <p className="text-muted-foreground mt-1">Verified properties currently available for sale or rent.</p>
+                            </div>
+                            <Button variant="outline" className="hidden sm:flex font-bold" asChild>
+                                <Link href={`/search?q=${displayLocation}`}>View All <ArrowUpRight className="ml-2 h-4 w-4" /></Link>
+                            </Button>
                         </div>
-                        <Button variant="outline" className="hidden sm:flex font-bold" asChild>
-                            <Link href={`/search?q=${displayLocation}`}>View All <ArrowUpRight className="ml-2 h-4 w-4" /></Link>
-                        </Button>
-                    </div>
+                    </ScrollReveal>
 
                     {propertiesLoading ? (
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-[400px] w-full rounded-2xl" />)}
                         </div>
                     ) : (
-                        activeProperties.length > 0 ? (
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                                {activeProperties.map((p) => (
-                                    <PropertyCard key={p.id} property={p} />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-20 bg-card rounded-2xl border-2 shadow-sm">
-                                <MapPin className="h-12 w-12 text-primary/30 mx-auto mb-4" />
-                                <h3 className="text-xl font-bold">No live properties in {displayLocation}</h3>
-                                <p className="text-muted-foreground mt-2 mb-8">Be the first to list a property in this area or explore nearby neighborhoods.</p>
-                                <Button size="lg" className="font-bold" asChild>
-                                    <Link href="/search">Explore Nearby Areas</Link>
-                                </Button>
-                            </div>
-                        )
+                        <ScrollReveal delay={200}>
+                            {activeProperties.length > 0 ? (
+                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                    {activeProperties.map((p) => (
+                                        <PropertyCard key={p.id} property={p} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-20 bg-card rounded-2xl border-2 shadow-sm">
+                                    <MapPin className="h-12 w-12 text-primary/30 mx-auto mb-4" />
+                                    <h3 className="text-xl font-bold">No live properties in {displayLocation}</h3>
+                                    <p className="text-muted-foreground mt-2 mb-8">Be the first to list a property in this area or explore nearby neighborhoods.</p>
+                                    <Button size="lg" className="font-bold" asChild>
+                                        <Link href="/search">Explore Nearby Areas</Link>
+                                    </Button>
+                                </div>
+                            )}
+                        </ScrollReveal>
                     )}
                     
                     {activeProperties.length > 0 && (
@@ -279,9 +292,11 @@ export default function InsightsPage() {
                 </section>
 
                 {/* Agent Matching */}
-                <section className="mt-24">
-                    <AgentPromotion />
-                </section>
+                <ScrollReveal>
+                    <section className="mt-24">
+                        <AgentPromotion />
+                    </section>
+                </ScrollReveal>
             </div>
         </div>
     );
