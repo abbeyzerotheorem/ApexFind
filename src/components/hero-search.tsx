@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -13,11 +13,30 @@ import allStatesWithLgas from "@/jsons/nigeria-states.json";
 
 const allLocations = allStatesWithLgas.flatMap(state => [state.name, ...state.lgas]);
 
-const stats = [
-    { value: '10,000+', label: 'Properties Listed' },
-    { value: '500+', label: 'Verified Agents' },
-    { value: '2,000+', label: 'Happy Clients' },
+const statsData = [
+    { target: 10000, suffix: '+', label: 'Properties Listed' },
+    { target: 500, suffix: '+', label: 'Verified Agents' },
+    { target: 2000, suffix: '+', label: 'Happy Clients' },
 ]
+
+function AnimatedCounter({ value, duration = 2000 }: { value: number, duration?: number }) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTimestamp: number | null = null;
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      setCount(Math.floor(progress * value));
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }, [value, duration]);
+
+  return <span>{count.toLocaleString()}</span>;
+}
 
 export default function HeroSearch() {
   const heroImage = PlaceHolderImages.find(p => p.id === 'hero-background');
@@ -50,9 +69,12 @@ export default function HeroSearch() {
         
         <div className="mt-12 w-full max-w-4xl">
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-6 sm:gap-x-12">
-                {stats.map((stat) => (
+                {statsData.map((stat) => (
                     <div key={stat.label}>
-                        <p className="text-3xl font-bold text-white">{stat.value}</p>
+                        <p className="text-3xl font-bold text-white">
+                          <AnimatedCounter value={stat.target} />
+                          {stat.suffix}
+                        </p>
                         <p className="text-sm font-medium text-gray-300">{stat.label}</p>
                     </div>
                 ))}
